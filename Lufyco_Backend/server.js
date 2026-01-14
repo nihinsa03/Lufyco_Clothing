@@ -14,6 +14,8 @@ connectDB();
 app.use(cors());
 app.use(express.json());
 
+app.use('/api/products', require('./routes/productRoutes'));
+
 app.get('/', (req, res) => {
     res.send('Lufyco Clothing Backend is running!');
 });
