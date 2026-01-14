@@ -1,11 +1,12 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
   View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, FlatList,
-  Dimensions, SafeAreaView
+  Dimensions, SafeAreaView, ActivityIndicator
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCart } from "../context/CartContext";
+import api from "../api/api";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -20,6 +21,30 @@ type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 const HomeScreen = ({ navigation }: Props) => {
   const { count } = useCart();
+  const [products, setProducts] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetchProducts();
+  }, []);
+
+  const fetchProducts = async () => {
+    try {
+      const { data } = await api.get('/products');
+      // Adding colors locally for visual demo as DB doesn't have them yet
+      const productsWithColors = data.map((p: any) => ({
+        ...p,
+        id: p._id, // Map _id to id
+        colors: ["#000", "#00f", "#f00"], // Dummy colors
+        image: { uri: "https://via.placeholder.com/150" } // Dummy image since db has "url" string
+      }));
+      setProducts(productsWithColors);
+    } catch (error) {
+      console.error("Failed to fetch products:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const menCategories = [
     { name: "SHIRTS", image: require("../../assets/images/categories/men/shirts.png") },
@@ -49,13 +74,6 @@ const HomeScreen = ({ navigation }: Props) => {
     { name: "PERFUME", image: require("../../assets/images/categories/women/perfume.jpg") },
     { name: "SPORTS SHOES", image: require("../../assets/images/categories/women/sports-shoes.jpg") },
     { name: "BOTTLES", image: require("../../assets/images/categories/women/bottles.jpg") },
-  ];
-
-  const products = [
-    { id: 1, name: "Nike air jordan retro fashion", price: "LKR 36000.00", colors: ["#000", "#00f", "#0f0", "#f00", "#0ff"], image: require("../../assets/images/shoe.png") },
-    { id: 2, name: "Classic new black glasses", price: "LKR 3500.00", colors: ["#000", "#8B4513", "#A52A2A", "#D2B48C"], image: require("../../assets/images/glasses.png") },
-    { id: 3, name: "Navy Blue shirt", price: "LKR 3200.00", colors: ["#000", "#00f", "#f00"], image: require("../../assets/images/shirt.png") },
-    { id: 4, name: "Brown box Luxury Bag", price: "LKR 5500.00", colors: ["#A0522D"], image: require("../../assets/images/bag.png") },
   ];
 
   const bottomTabs = [
@@ -138,31 +156,35 @@ const HomeScreen = ({ navigation }: Props) => {
             <TouchableOpacity><Text style={styles.seeAll}>SEE ALL</Text></TouchableOpacity>
           </View>
 
-          <FlatList
-            data={products}
-            numColumns={2}
-            scrollEnabled={false}
-            keyExtractor={(item) => item.id.toString()}
-            columnWrapperStyle={{ justifyContent: "space-between" }}
-            renderItem={({ item }) => (
-              <View style={styles.productCard}>
-                <Image source={item.image} style={styles.productImage} />
-                <TouchableOpacity style={styles.wishlistIcon}>
-                  <Feather name="heart" size={18} color="#000" />
-                </TouchableOpacity>
-                <View style={styles.colorRow}>
-                  {item.colors.slice(0, 3).map((color, idx) => (
-                    <View key={idx} style={[styles.colorDot, { backgroundColor: color }]} />
-                  ))}
-                  {item.colors.length > 3 && (
-                    <Text style={styles.colorLabel}>All {item.colors.length} Colors</Text>
-                  )}
+          {loading ? (
+            <ActivityIndicator size="large" color="#000" style={{ marginTop: 20 }} />
+          ) : (
+            <FlatList
+              data={products}
+              numColumns={2}
+              scrollEnabled={false}
+              keyExtractor={(item) => item.id.toString()}
+              columnWrapperStyle={{ justifyContent: "space-between" }}
+              renderItem={({ item }) => (
+                <View style={styles.productCard}>
+                  <Image source={item.image} style={styles.productImage} />
+                  <TouchableOpacity style={styles.wishlistIcon}>
+                    <Feather name="heart" size={18} color="#000" />
+                  </TouchableOpacity>
+                  <View style={styles.colorRow}>
+                    {item.colors.slice(0, 3).map((color: string, idx: number) => (
+                      <View key={idx} style={[styles.colorDot, { backgroundColor: color }]} />
+                    ))}
+                    {item.colors.length > 3 && (
+                      <Text style={styles.colorLabel}>All {item.colors.length} Colors</Text>
+                    )}
+                  </View>
+                  <Text numberOfLines={1} style={styles.productName}>{item.name}</Text>
+                  <Text style={styles.productPrice}>{item.price}</Text>
                 </View>
-                <Text numberOfLines={1} style={styles.productName}>{item.name}</Text>
-                <Text style={styles.productPrice}>{item.price}</Text>
-              </View>
-            )}
-          />
+              )}
+            />
+          )}
         </ScrollView>
 
         {/* Bottom Tab Bar */}

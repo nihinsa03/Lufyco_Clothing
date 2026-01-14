@@ -1,14 +1,52 @@
-import React from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import React, { useState } from "react";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
+import api from "../api/api";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Type the navigation prop
 type SignupScreenNavigationProp = StackNavigationProp<RootStackParamList, "Signup">;
 
 const SignupScreen = () => {
   const navigation = useNavigation<SignupScreenNavigationProp>();
+
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleSignup = async () => {
+    if (!name || !email || !password || !confirmPassword) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert("Error", "Passwords do not match");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { data } = await api.post('/users/register', { name, email, password });
+
+      // Save user data (optional - maybe just navigate to login or auto-login)
+      // await AsyncStorage.setItem('userInfo', JSON.stringify(data));
+
+      Alert.alert("Success", "Account created successfully!", [
+        { text: "OK", onPress: () => navigation.navigate("Login") }
+      ]);
+    } catch (error: any) {
+      console.log(error);
+      Alert.alert("Error", error.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
       <Text style={styles.logo}>Fashion</Text>
@@ -16,27 +54,55 @@ const SignupScreen = () => {
       <Text style={styles.subtitle}>Make your life More Smarter</Text>
 
       <Text style={styles.label}>Full Name</Text>
-      <TextInput style={styles.input} placeholder="Enter Name" />
+      <TextInput
+        style={styles.input}
+        placeholder="Enter Name"
+        value={name}
+        onChangeText={setName}
+      />
 
       <Text style={styles.label}>Email Address</Text>
-      <TextInput style={styles.input} placeholder="Enter your Email Address" keyboardType="email-address" />
+      <TextInput
+        style={styles.input}
+        placeholder="Enter your Email Address"
+        keyboardType="email-address"
+        value={email}
+        onChangeText={setEmail}
+        autoCapitalize="none"
+      />
 
       <Text style={styles.label}>Password</Text>
-      <TextInput style={styles.input} placeholder="Enter your Password" secureTextEntry />
+      <TextInput
+        style={styles.input}
+        placeholder="Enter your Password"
+        secureTextEntry
+        value={password}
+        onChangeText={setPassword}
+      />
 
       <Text style={styles.label}>Confirm Password</Text>
-      <TextInput style={styles.input} placeholder="Enter your Password" secureTextEntry />
+      <TextInput
+        style={styles.input}
+        placeholder="Enter your Password"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
 
-        {/* Sign Up Button */}
-        <TouchableOpacity style={styles.signupButton} onPress={() => navigation.navigate("Verification")}>
-        <Text style={styles.signupButtonText}>Sign up</Text>
+      {/* Sign Up Button */}
+      <TouchableOpacity
+        style={styles.signupButton}
+        onPress={handleSignup}
+        disabled={loading}
+      >
+        {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.signupButtonText}>Sign up</Text>}
       </TouchableOpacity>
 
       <Text style={styles.loginText}>
-      Already have an account?{" "}
-      <TouchableOpacity onPress={() => navigation.navigate("Login")}>
-    <Text style={styles.loginLink}> Login</Text>
-    </TouchableOpacity>
+        Already have an account?{" "}
+        <TouchableOpacity onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.loginLink}> Login</Text>
+        </TouchableOpacity>
       </Text>
 
 
@@ -113,7 +179,7 @@ const styles = StyleSheet.create({
   loginLink: {
     color: "#007BFF",
     fontWeight: "bold",
-    
+
   },
   orText: {
     textAlign: "center",

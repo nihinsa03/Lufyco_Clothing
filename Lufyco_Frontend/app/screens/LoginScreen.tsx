@@ -1,8 +1,10 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../navigation/AppNavigator"; // Import RootStackParamList
+import { RootStackParamList } from "../navigation/AppNavigator";
+import api from "../api/api";
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 // Type the navigation prop
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Login">;
@@ -11,6 +13,31 @@ const LoginScreen = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const handleLogin = async () => {
+    if (!email || !password) {
+      Alert.alert("Error", "Please fill in all fields");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const { data } = await api.post('/users/login', { email, password });
+
+      // Save user session
+      await AsyncStorage.setItem('userInfo', JSON.stringify(data));
+
+      Alert.alert("Success", "Welcome back!", [
+        { text: "OK", onPress: () => navigation.navigate("Home") }
+      ]);
+    } catch (error: any) {
+      console.log(error);
+      Alert.alert("Error", error.response?.data?.message || "Invalid credentials");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <View style={styles.container}>
@@ -26,6 +53,7 @@ const LoginScreen = () => {
         keyboardType="email-address"
         value={email}
         onChangeText={setEmail}
+        autoCapitalize="none"
       />
 
       {/* Password Input */}
@@ -41,12 +69,16 @@ const LoginScreen = () => {
       {/* Forgot Password */}
       <TouchableOpacity onPress={() => navigation.navigate("ForgotPassword")}>
         <Text style={styles.forgotPassword}>Forgot password</Text>
-        </TouchableOpacity>
+      </TouchableOpacity>
 
 
       {/* Sign In Button */}
-      <TouchableOpacity style={styles.signInButton} onPress={() => navigation.navigate("Home")}>
-        <Text style={styles.signInButtonText}>Sign in</Text>
+      <TouchableOpacity
+        style={styles.signInButton}
+        onPress={handleLogin}
+        disabled={loading}
+      >
+        {loading ? <ActivityIndicator color="#FFF" /> : <Text style={styles.signInButtonText}>Sign in</Text>}
       </TouchableOpacity>
 
 
@@ -120,8 +152,8 @@ const styles = StyleSheet.create({
     alignSelf: "flex-end",
     color: "#007BFF",
     marginBottom: 15,
-    marginLeft:250,
-    
+    marginLeft: 250,
+
   },
   signInButton: {
     backgroundColor: "#000",
