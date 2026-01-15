@@ -28,6 +28,8 @@ import WomensWearScreen from "../screens/WomensWearScreen";
 import WomenTopsScreen from "../screens/WomenTopsScreen";
 import WomenTopDetailsScreen from "../screens/WomenTopDetailsScreen";
 import MyCartScreen from "../screens/MyCartScreen";
+import ProductListingScreen from "../screens/ProductListingScreen";
+
 
 
 export type RootStackParamList = {
