@@ -1,94 +1,119 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
-    SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, ScrollView
+    SafeAreaView,
+    View,
+    Text,
+    StyleSheet,
+    TouchableOpacity,
+    Image,
+    ScrollView,
+    Modal,
+    Dimensions
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
+import { useWishlistStore } from "../store/useWishlistStore";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
-import api from "../api/api";
-import { useCart } from "../context/CartContext";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Wishlist">;
+const { width, height } = Dimensions.get("window");
 
 const WishlistScreen: React.FC<Props> = ({ navigation }) => {
-    const [items, setItems] = useState<any[]>([]);
-    const { addItem } = useCart();
+    const { items, removeFromWishlist } = useWishlistStore();
+    const [deleteId, setDeleteId] = useState<string | null>(null);
 
-    const fetchWishlist = async () => {
-        try {
-            const res = await api.get("/wishlist");
-            setItems(res.data);
-        } catch (e) {
-            console.error(e);
+    const confirmDelete = () => {
+        if (deleteId) {
+            removeFromWishlist(deleteId);
+            setDeleteId(null);
         }
     };
 
-    useEffect(() => {
-        fetchWishlist();
-        const unsub = navigation.addListener('focus', fetchWishlist);
-        return unsub;
-    }, [navigation]);
+    if (items.length === 0) {
+        return (
+            <SafeAreaView style={styles.safe}>
+                <View style={styles.header}>
+                    <TouchableOpacity onPress={() => navigation.goBack()}>
+                        <Feather name="arrow-left" size={24} />
+                    </TouchableOpacity>
+                    <Text style={styles.headerTitle}>Wishlist</Text>
+                    <View style={{ width: 24 }} />
+                </View>
 
-    const handleDelete = async (id: string) => {
-        try {
-            await api.delete(`/wishlist/${id}`);
-            fetchWishlist();
-        } catch (e) {
-            console.error(e);
-        }
-    };
+                <View style={styles.emptyContainer}>
+                    <Image
+                        source={require("../../assets/images/bag.png")} // Fallback or use placeholder
+                        style={styles.emptyImg}
+                        resizeMode="contain"
+                    />
+                    <Text style={styles.emptyTitle}>Your wishlist is empty</Text>
+                    <Text style={styles.emptySub}>Tap the heart icon to start saving your favorites</Text>
 
-    const handleMoveToCart = (item: any) => {
-        // Add to cart
-        addItem({
-            id: item.product || item._id, // fallback to wishlist id if product not populated
-            title: item.title,
-            price: item.price,
-            image: item.image && item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png"),
-        }, 1);
-        // Remove from wishlist? Usually "Move to Cart" implies removal from wishlist, but standard "Add to Cart" keeps it.
-        // Let's just Add to Cart for now.
-        alert("Added to cart");
-    };
-
-    return (
-        <SafeAreaView style={styles.safe}>
-            {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 6 }}>
-                    <Feather name="arrow-left" size={22} />
-                </TouchableOpacity>
-                <Text style={styles.headerTitle}>Wishlist</Text>
-                <View style={{ width: 22 }} />
-            </View>
-
-            {items.length === 0 ? (
-                <View style={styles.empty}>
-                    <Image source={require("../../assets/images/bag.png")} style={{ width: 100, height: 100, opacity: 0.5 }} resizeMode="contain" />
-                    <Text style={styles.emptyText}>Your wishlist is empty</Text>
                     <TouchableOpacity style={styles.exploreBtn} onPress={() => navigation.navigate("Home")}>
                         <Text style={styles.exploreText}>Explore Categories</Text>
                     </TouchableOpacity>
                 </View>
-            ) : (
-                <ScrollView contentContainerStyle={{ padding: 16 }}>
-                    {items.map(item => (
-                        <View key={item._id} style={styles.row}>
-                            <Image source={item.image && item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png")} style={styles.img} />
-                            <View style={styles.info}>
-                                <Text style={styles.title} numberOfLines={2}>{item.title}</Text>
-                                <Text style={styles.price}>${item.price}</Text>
-                                <TouchableOpacity style={styles.cartBtn} onPress={() => handleMoveToCart(item)}>
-                                    <Text style={styles.cartBtnText}>Add to Cart</Text>
-                                </TouchableOpacity>
-                            </View>
-                            <TouchableOpacity style={styles.delBtn} onPress={() => handleDelete(item._id)}>
+            </SafeAreaView>
+        );
+    }
+
+    return (
+        <SafeAreaView style={styles.safe}>
+            <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Feather name="arrow-left" size={24} color="#111" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Wishlist</Text>
+                <TouchableOpacity style={{ padding: 4 }}>
+                    <Feather name="more-horizontal" size={24} color="#111" />
+                </TouchableOpacity>
+            </View>
+
+            <ScrollView contentContainerStyle={{ padding: 16 }}>
+                {items.map((item) => (
+                    <View key={item.id} style={styles.card}>
+                        <Image
+                            source={typeof item.image === 'string' ? { uri: item.image } : item.image}
+                            style={styles.itemThumb}
+                        />
+                        <View style={styles.itemInfo}>
+                            <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
+                            <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
+                        </View>
+
+                        <View style={styles.actions}>
+                            <TouchableOpacity style={styles.delBtn} onPress={() => setDeleteId(item.productId)}>
                                 <Feather name="trash-2" size={18} color="#EF4444" />
                             </TouchableOpacity>
+                            <TouchableOpacity
+                                style={styles.cartBtn}
+                                // Navigate to detail to select size/color
+                                onPress={() => navigation.navigate("ProductDetails", { id: item.productId })}
+                            >
+                                <Feather name="shopping-cart" size={16} color="#000" />
+                            </TouchableOpacity>
                         </View>
-                    ))}
-                </ScrollView>
-            )}
+                    </View>
+                ))}
+            </ScrollView>
+
+            {/* Delete Confirmation Modal */}
+            <Modal visible={!!deleteId} transparent animationType="fade">
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <Text style={styles.modalTitle}>Delete product from wishlist?</Text>
+                        <Text style={styles.modalSub}>Are you sure you want to remove this item?</Text>
+
+                        <TouchableOpacity style={styles.modalDeleteBtn} onPress={confirmDelete}>
+                            <Text style={styles.modalDeleteText}>Delete Product</Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setDeleteId(null)}>
+                            <Text style={styles.modalCancelText}>Cancel</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
 
         </SafeAreaView>
     );
@@ -96,22 +121,40 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
 
 const styles = StyleSheet.create({
     safe: { flex: 1, backgroundColor: "#fff" },
-    header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10 },
-    headerTitle: { fontSize: 18, fontWeight: "700" },
+    header: {
+        flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F3F4F6'
+    },
+    headerTitle: { fontSize: 18, fontWeight: '700', color: '#111' },
 
-    empty: { flex: 1, alignItems: "center", justifyContent: "center" },
-    emptyText: { marginTop: 16, fontSize: 18, fontWeight: "600", color: "#666" },
-    exploreBtn: { marginTop: 20, backgroundColor: "#111", paddingHorizontal: 24, paddingVertical: 12, borderRadius: 8 },
-    exploreText: { color: "#fff", fontWeight: "700" },
+    // Empty
+    emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
+    emptyImg: { width: 140, height: 140, marginBottom: 20 },
+    emptyTitle: { fontSize: 20, fontWeight: '800', color: '#111', marginBottom: 8 },
+    emptySub: { textAlign: 'center', color: '#666', lineHeight: 22, fontSize: 14 },
+    exploreBtn: { marginTop: 30, backgroundColor: '#111', paddingHorizontal: 30, paddingVertical: 14, borderRadius: 12 },
+    exploreText: { color: '#fff', fontWeight: '700' },
 
-    row: { flexDirection: "row", marginBottom: 16, backgroundColor: "#F9FAFB", padding: 12, borderRadius: 12, alignItems: "center" },
-    img: { width: 80, height: 80, borderRadius: 8, backgroundColor: "#eee" },
-    info: { flex: 1, marginLeft: 12 },
-    title: { fontWeight: "700", fontSize: 15, marginBottom: 4 },
-    price: { fontWeight: "600", color: "#111", marginBottom: 8 },
-    cartBtn: { backgroundColor: "#111", paddingHorizontal: 12, paddingVertical: 6, borderRadius: 6, alignSelf: "flex-start" },
-    cartBtnText: { color: "#fff", fontSize: 12, fontWeight: "700" },
-    delBtn: { padding: 8 },
+    // List
+    card: { flexDirection: 'row', marginBottom: 16, padding: 12, borderRadius: 16, backgroundColor: '#F9FAFB', alignItems: 'center' },
+    itemThumb: { width: 70, height: 70, borderRadius: 10, backgroundColor: '#eee' },
+    itemInfo: { flex: 1, marginLeft: 12 },
+    itemTitle: { fontSize: 15, fontWeight: '700', color: '#111', marginBottom: 4 },
+    itemPrice: { fontSize: 15, fontWeight: '600', color: '#555' },
+
+    actions: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+    delBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: '#FEE2E2', borderRadius: 8 },
+    cartBtn: { width: 32, height: 32, alignItems: 'center', justifyContent: 'center', backgroundColor: '#E5E7EB', borderRadius: 8 },
+
+    // Modal
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+    modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, alignItems: 'center' },
+    modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 8, color: '#111' },
+    modalSub: { color: '#666', marginBottom: 24 },
+    modalDeleteBtn: { backgroundColor: '#111', paddingVertical: 14, paddingHorizontal: 40, borderRadius: 12, marginBottom: 12, width: '100%', alignItems: 'center' },
+    modalDeleteText: { color: '#fff', fontWeight: '700' },
+    modalCancelBtn: { paddingVertical: 12 },
+    modalCancelText: { color: '#666', fontWeight: '600' }
 });
 
 export default WishlistScreen;

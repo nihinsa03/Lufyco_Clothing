@@ -80,8 +80,8 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
     };
 
     const handleProductPress = (product: Product) => {
-        // Navigate to details if you have a screen for it, else just log
-        // navigation.navigate("ProductDetails", { id: product._id });
+        // Pass both ID and product object to ProductDetails
+        navigation.navigate("ProductDetails", { id: product._id, product: product });
     };
 
     const displayName = title || type || subCategory || category || "Products";

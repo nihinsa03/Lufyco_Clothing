@@ -1,242 +1,230 @@
-import React, { useMemo, useState } from "react";
+import React, { useState } from "react";
 import {
   SafeAreaView,
   View,
   Text,
   StyleSheet,
   TouchableOpacity,
-  Image,
   ScrollView,
+  Image,
+  Dimensions,
+  TextInput,
+  Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useCartStore } from "../store/useCartStore";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
-import { useCart } from "../context/CartContext";
-import VoucherCodeSheet from "@/components/VoucherCodeSheet";
-import api from "../api/api";
-
 
 type Props = NativeStackScreenProps<RootStackParamList, "MyCart">;
-
-const money = (n: number) => `$${n.toFixed(2)}`;
+const { width } = Dimensions.get("window");
 
 const MyCartScreen: React.FC<Props> = ({ navigation }) => {
-  const { items, inc, dec, remove, toggle, subtotal } = useCart();
+  const { items, incrementQty, decrementQty, removeItem, getTotalPrice, clearCart } = useCartStore();
+  const [voucher, setVoucher] = useState("");
+  const [discount, setDiscount] = useState(0);
 
-  // Voucher modal + discount
-  const [voucherOpen, setVoucherOpen] = useState(false);
-  const [voucherCode, setVoucherCode] = useState<string | null>(null);
-  const [discountAmount, setDiscountAmount] = useState(0);
+  const subtotal = getTotalPrice();
+  const shipping = subtotal > 0 ? 10.00 : 0;
+  const total = subtotal + shipping - discount;
 
-  const shipping = 0; // demo
-
-  const total = useMemo(() => Math.max(0, subtotal - discountAmount) + shipping, [subtotal, discountAmount, shipping]);
-
-  const handleCheckout = async () => {
-    if (items.length === 0) return;
-
-    try {
-      const orderData = {
-        orderItems: items.map(i => ({
-          name: i.title,
-          qty: i.qty,
-          image: typeof i.image === 'string' ? i.image : 'placeholder',
-          price: i.price,
-          product: i.id.length === 24 ? i.id : undefined // only if valid mongo id
-        })),
-        itemsPrice: subtotal,
-        shippingPrice: shipping,
-        totalPrice: total,
-        paymentMethod: 'COD', // default
-        shippingAddress: { address: '123 Fake St', city: 'Demo City' } // default for now
-      };
-
-      await api.post('/orders', orderData);
-      alert('Order placed successfully!');
-      // clear(); // create clear() in Context if not exists, but for now we just verify it works
-      navigation.navigate("Home");
-    } catch (e) {
-      console.error(e);
-      alert('Checkout failed');
+  const handleApplyVoucher = () => {
+    if (voucher.toLowerCase() === 'save10') {
+      setDiscount(10);
+      Alert.alert("Voucher Applied", "$10.00 discount applied.");
+    } else {
+      Alert.alert("Invalid Voucher", "Try 'SAVE10'");
     }
   };
 
+  const handleCheckout = () => {
+    // In real app, navigate to Checkout or process payment
+    Alert.alert("Checkout", `Processing payment of $${total.toFixed(2)}`, [
+      { text: "OK", onPress: clearCart }
+    ]);
+  };
+
+  if (items.length === 0) {
+    return (
+      <SafeAreaView style={styles.safe}>
+        <View style={styles.header}>
+          <TouchableOpacity onPress={() => navigation.goBack()}>
+            <Feather name="arrow-left" size={24} />
+          </TouchableOpacity>
+          <Text style={styles.headerTitle}>My Cart</Text>
+          <View style={{ width: 24 }} />
+        </View>
+
+        <View style={styles.emptyContainer}>
+          <View style={styles.emptyCircle}>
+            <Image
+              source={require("../../assets/images/bag.png")} // Fallback or use placeholder
+              style={styles.emptyImg}
+            />
+          </View>
+          <Text style={styles.emptyTitle}>Your cart is empty</Text>
+          <Text style={styles.emptySub}>Looks like you haven't added anything to your cart yet.</Text>
+
+          <TouchableOpacity style={styles.exploreBtn} onPress={() => navigation.navigate("Home")}>
+            <Text style={styles.exploreText}>Explore Categories</Text>
+          </TouchableOpacity>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Header */}
       <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 6 }}>
-          <Feather name="arrow-left" size={22} />
+        <TouchableOpacity onPress={() => navigation.goBack()}>
+          <Feather name="arrow-left" size={24} color="#111" />
         </TouchableOpacity>
-
         <Text style={styles.headerTitle}>My Cart</Text>
-
-        <TouchableOpacity onPress={() => setVoucherOpen(true)} style={{ padding: 6 }}>
+        <TouchableOpacity>
           <Text style={styles.voucherLink}>Voucher Code</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Items */}
-      <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 140 }}>
-        {items.length === 0 ? (
-          <View style={{ marginTop: 50, alignItems: 'center' }}>
-            <Feather name="shopping-cart" size={48} color="#ddd" />
-            <Text style={{ marginTop: 10, color: "#888" }}>Your cart is empty</Text>
-          </View>
-        ) : (
-          items.map((i) => (
-            <View key={i.id} style={styles.itemRow}>
-              <Image source={i.image} style={styles.thumb} />
-              <View style={{ flex: 1, marginHorizontal: 12 }}>
-                <Text style={styles.itemTitle} numberOfLines={2}>{i.title}</Text>
-                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-                  <Text style={styles.price}>{money(i.price)}</Text>
-                  {i.compareAtPrice ? (
-                    <Text style={styles.compare}>{money(i.compareAtPrice)}</Text>
-                  ) : null}
-                </View>
-                {i.size ? <Text style={styles.meta}>Size : {i.size}</Text> : null}
-                <View style={styles.qtyRow}>
-                  <TouchableOpacity style={styles.qtyBtn} onPress={() => dec(i.id)}>
-                    <Text style={styles.qtyBtnText}>−</Text>
-                  </TouchableOpacity>
-                  <Text style={styles.qty}>{i.qty}</Text>
-                  <TouchableOpacity style={styles.qtyBtn} onPress={() => inc(i.id)}>
-                    <Text style={styles.qtyBtnText}>+</Text>
-                  </TouchableOpacity>
-                </View>
+      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
+        {items.map((item) => (
+          <View key={item.id} style={styles.cartItem}>
+            <Image
+              source={typeof item.image === 'string' ? { uri: item.image } : item.image}
+              style={styles.itemThumb}
+            />
+            <View style={styles.itemInfo}>
+              <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
+              <View style={styles.variantRow}>
+                <Text style={styles.variantText}>Size: {item.size || 'N/A'}</Text>
+                <View style={[styles.variantColor, { backgroundColor: item.color || '#000' }]} />
               </View>
-              <View style={{ alignItems: "flex-end" }}>
-                <TouchableOpacity onPress={() => toggle(i.id)} style={styles.checkBtn}>
-                  <Feather name={i.selected ? "check-circle" : "circle"} size={22} color={i.selected ? "#10B981" : "#9CA3AF"} />
-                </TouchableOpacity>
-                <TouchableOpacity onPress={() => remove(i.id)} style={styles.trashBtn}>
-                  <Feather name="trash-2" size={20} color="#EF4444" />
-                </TouchableOpacity>
-              </View>
+              <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
             </View>
-          ))
-        )}
 
-        {items.length > 0 && (
-          <View style={styles.summaryCard}>
-            <Text style={styles.summaryTitle}>Order Info</Text>
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Subtotal</Text>
-              <Text style={styles.summaryValue}>{money(subtotal)}</Text>
-            </View>
-            {discountAmount > 0 ? (
-              <View style={styles.summaryRow}>
-                <Text style={[styles.summaryLabel, { color: "#10B981" }]}>
-                  Discount {voucherCode ? `(${voucherCode})` : ""}
-                </Text>
-                <Text style={[styles.summaryValue, { color: "#10B981" }]}>− {money(discountAmount)}</Text>
+            <View style={styles.rightCol}>
+              <TouchableOpacity onPress={() => removeItem(item.id)} style={{ alignSelf: 'flex-end', padding: 4 }}>
+                <Feather name="trash-2" size={18} color="#EF4444" />
+              </TouchableOpacity>
+
+              <View style={styles.stepper}>
+                <TouchableOpacity onPress={() => decrementQty(item.id)} style={styles.stepBtn}>
+                  <Feather name="minus" size={14} />
+                </TouchableOpacity>
+                <Text style={styles.qtyText}>{item.qty}</Text>
+                <TouchableOpacity onPress={() => incrementQty(item.id)} style={styles.stepBtn}>
+                  <Feather name="plus" size={14} />
+                </TouchableOpacity>
               </View>
-            ) : null}
-            <View style={styles.summaryRow}>
-              <Text style={styles.summaryLabel}>Shipping Cost</Text>
-              <Text style={styles.summaryValue}>{money(shipping)}</Text>
-            </View>
-            <View style={[styles.summaryRow, { marginTop: 6 }]}>
-              <Text style={styles.totalLabel}>Total</Text>
-              <Text style={styles.totalValue}>{money(total)}</Text>
             </View>
           </View>
+        ))}
+
+        <View style={styles.divider} />
+
+        <Text style={styles.sectionTitle}>Order Info</Text>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Subtotal</Text>
+          <Text style={styles.summaryVal}>${subtotal.toFixed(2)}</Text>
+        </View>
+        <View style={styles.summaryRow}>
+          <Text style={styles.summaryLabel}>Shipping Cost</Text>
+          <Text style={styles.summaryVal}>${shipping.toFixed(2)}</Text>
+        </View>
+        {discount > 0 && (
+          <View style={styles.summaryRow}>
+            <Text style={styles.summaryLabel}>Discount</Text>
+            <Text style={[styles.summaryVal, { color: 'green' }]}>-${discount.toFixed(2)}</Text>
+          </View>
         )}
+        <View style={[styles.summaryRow, { marginTop: 12 }]}>
+          <Text style={styles.totalLabel}>Total</Text>
+          <Text style={styles.totalVal}>${total.toFixed(2)}</Text>
+        </View>
+
+        {/* Voucher Input */}
+        <View style={styles.voucherBox}>
+          <Text style={styles.voucherLabel}>Voucher Code</Text>
+          <View style={styles.voucherInputRow}>
+            <TextInput
+              style={styles.voucherInput}
+              placeholder="Enter voucher code"
+              value={voucher}
+              onChangeText={setVoucher}
+            />
+            <TouchableOpacity style={styles.applyBtn} onPress={handleApplyVoucher}>
+              <Text style={styles.applyText}>APPLY</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
       </ScrollView>
 
-      {/* Checkout button */}
-      <View style={styles.bottomBar}>
+      <View style={styles.footer}>
         <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout}>
-          <Text style={styles.checkoutText}>Checkout ({items.length})</Text>
+          <Text style={styles.checkoutText}>Checkout (${total.toFixed(2)})</Text>
         </TouchableOpacity>
       </View>
-
-      {/* Voucher modal */}
-      <VoucherCodeSheet
-        visible={voucherOpen}
-        subtotal={subtotal}
-        onClose={() => setVoucherOpen(false)}
-        onApply={({ code, discountAmount }) => {
-          setVoucherCode(code);
-          setDiscountAmount(discountAmount);
-        }}
-      />
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff" },
-
   header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 6,
-    paddingBottom: 10,
-    justifyContent: "space-between",
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
+    paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F3F4F6'
   },
-  headerTitle: { fontSize: 18, fontWeight: "700" },
-  voucherLink: { color: "#34D399", fontWeight: "700" },
+  headerTitle: { fontSize: 18, fontWeight: '700', color: '#111' },
+  voucherLink: { color: '#2563EB', fontWeight: '600', fontSize: 14 },
 
-  itemRow: {
-    backgroundColor: "#F3F4F6",
-    borderRadius: 14,
-    padding: 12,
-    marginTop: 12,
-    flexDirection: "row",
-  },
-  thumb: { width: 84, height: 84, borderRadius: 10, backgroundColor: "#eee" },
-  itemTitle: { fontSize: 15, fontWeight: "700" },
-  price: { fontSize: 14, fontWeight: "700", marginRight: 8 },
-  compare: { fontSize: 12, color: "#9CA3AF", textDecorationLine: "line-through" },
-  meta: { marginTop: 4, color: "#6B7280" },
+  // Empty State
+  emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
+  emptyCircle: { width: 120, height: 120, borderRadius: 60, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', marginBottom: 20 },
+  emptyImg: { width: 60, height: 60, opacity: 0.5 },
+  emptyTitle: { fontSize: 20, fontWeight: '800', color: '#111', marginBottom: 8 },
+  emptySub: { textAlign: 'center', color: '#666', lineHeight: 22, fontSize: 14 },
+  exploreBtn: { marginTop: 30, backgroundColor: '#111', paddingHorizontal: 30, paddingVertical: 14, borderRadius: 12 },
+  exploreText: { color: '#fff', fontWeight: '700' },
 
-  qtyRow: { flexDirection: "row", alignItems: "center", marginTop: 8 },
-  qtyBtn: {
-    width: 34,
-    height: 34,
-    borderRadius: 8,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  qtyBtnText: { fontSize: 18, fontWeight: "800" },
-  qty: { width: 30, textAlign: "center", fontWeight: "700" },
+  // List
+  cartItem: { flexDirection: 'row', marginBottom: 20, backgroundColor: '#F9FAFB', padding: 10, borderRadius: 16 },
+  itemThumb: { width: 80, height: 80, borderRadius: 12, backgroundColor: '#eee' },
+  itemInfo: { flex: 1, marginLeft: 12, justifyContent: 'center' },
+  itemTitle: { fontSize: 16, fontWeight: '700', color: '#111', marginBottom: 4 },
+  variantRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  variantText: { fontSize: 13, color: '#666' },
+  variantColor: { width: 12, height: 12, borderRadius: 6, marginLeft: 8, borderWidth: 1, borderColor: '#ddd' },
+  itemPrice: { fontSize: 16, fontWeight: '700', color: '#111' },
 
-  checkBtn: { padding: 6 },
-  trashBtn: { padding: 6, marginTop: 16 },
+  rightCol: { justifyContent: 'space-between', alignItems: 'flex-end' },
+  stepper: { flexDirection: 'row', alignItems: 'center', backgroundColor: '#fff', borderRadius: 8, borderWidth: 1, borderColor: '#E5E7EB' },
+  stepBtn: { padding: 6 },
+  qtyText: { width: 20, textAlign: 'center', fontSize: 14, fontWeight: '600' },
 
-  summaryCard: {
-    marginTop: 18,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: "#F9FAFB",
-  },
-  summaryTitle: { fontWeight: "800", fontSize: 16, marginBottom: 8 },
-  summaryRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 6 },
-  summaryLabel: { color: "#6B7280" },
-  summaryValue: { fontWeight: "700" },
-  totalLabel: { fontSize: 16, fontWeight: "800" },
-  totalValue: { fontSize: 16, fontWeight: "800" },
+  divider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 20 },
 
-  bottomBar: {
-    position: "absolute",
-    left: 0, right: 0, bottom: 0,
-    padding: 16,
-    borderTopWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "#fff",
+  sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 12 },
+  summaryRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
+  summaryLabel: { color: '#666', fontSize: 14 },
+  summaryVal: { color: '#111', fontSize: 14, fontWeight: '600' },
+  totalLabel: { fontSize: 18, fontWeight: '800' },
+  totalVal: { fontSize: 18, fontWeight: '800' },
+
+  voucherBox: { marginTop: 30 },
+  voucherLabel: { fontSize: 14, fontWeight: '700', marginBottom: 8, color: '#444' },
+  voucherInputRow: { flexDirection: 'row' },
+  voucherInput: {
+    flex: 1, height: 48, borderWidth: 1, borderColor: '#E5E7EB',
+    borderRadius: 12, paddingHorizontal: 12, backgroundColor: '#F9FAFB'
   },
-  checkoutBtn: {
-    backgroundColor: "#111",
-    borderRadius: 12,
-    height: 52,
-    alignItems: "center",
-    justifyContent: "center",
+  applyBtn: {
+    marginLeft: 12, backgroundColor: '#111', borderRadius: 12,
+    paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center'
   },
-  checkoutText: { color: "#fff", fontWeight: "800", fontSize: 16 },
+  applyText: { color: '#fff', fontWeight: '700', fontSize: 12 },
+
+  footer: { position: 'absolute', bottom: 0, width: '100%', padding: 16, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#F3F4F6' },
+  checkoutBtn: { backgroundColor: '#111', paddingVertical: 16, borderRadius: 14, alignItems: 'center' },
+  checkoutText: { color: '#fff', fontWeight: '700', fontSize: 16 }
 });
 
 export default MyCartScreen;
