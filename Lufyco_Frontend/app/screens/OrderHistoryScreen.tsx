@@ -1,75 +1,56 @@
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 import {
-    SafeAreaView, View, Text, StyleSheet, TouchableOpacity, FlatList, Image, ActivityIndicator
+    SafeAreaView, View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Dimensions
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useAuth } from "../context/AuthContext";
-import api from "../api/api";
-import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import { useNavigation } from "@react-navigation/native";
+import { useOrdersStore, Order } from "../store/useOrdersStore";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 
-type Props = NativeStackScreenProps<RootStackParamList, "OrderHistory">;
+type NavProp = NativeStackNavigationProp<RootStackParamList, "OrderHistory">;
 
-const OrderHistoryScreen: React.FC<Props> = ({ navigation }) => {
-    const { user } = useAuth();
-    const [orders, setOrders] = useState<any[]>([]);
-    const [loading, setLoading] = useState(true);
+const OrderHistoryScreen = () => {
+    const navigation = useNavigation<NavProp>();
+    const { orders } = useOrdersStore();
     const [tab, setTab] = useState<'ongoing' | 'completed'>('ongoing');
 
-    useEffect(() => {
-        if (user?._id) {
-            fetchOrders();
-        } else {
-            setLoading(false); // Guest
-        }
-    }, [user]);
-
-    const fetchOrders = async () => {
-        try {
-            const res = await api.get(`/orders/myorders?userId=${user?._id}`);
-            setOrders(res.data);
-        } catch (e) {
-            console.error(e);
-        } finally {
-            setLoading(false);
-        }
-    };
-
     const filteredOrders = orders.filter(o => {
-        // Dummy logic: Ongoing if < 7 days old or no status 'delivered'
-        // Just showing all in "Ongoing" for now unless status is explicit
-        if (tab === 'ongoing') return !o.isDelivered;
-        return o.isDelivered;
+        if (tab === 'ongoing') return o.status !== 'Delivered';
+        return o.status === 'Delivered';
     });
 
-    const renderItem = ({ item }: { item: any }) => {
-        const firstItem = item.orderItems?.[0];
+    const renderItem = ({ item }: { item: Order }) => {
+        const firstItem = item.items?.[0];
         return (
-            <View style={styles.card}>
+            <TouchableOpacity
+                style={styles.card}
+                onPress={() => navigation.navigate("OrderDetails", { orderId: item.id })}
+            >
                 <View style={styles.cardHeader}>
-                    <Text style={styles.orderId}>Order #{item._id.slice(-6).toUpperCase()}</Text>
-                    <Text style={styles.date}>{new Date(item.createdAt).toLocaleDateString()}</Text>
+                    <Text style={styles.orderId}>Order #{item.id.split('-')[1]}</Text>
+                    <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
                 </View>
                 <View style={styles.cardBody}>
                     <Image
-                        source={firstItem?.image && firstItem.image.startsWith('http') ? { uri: firstItem.image } : require("../../assets/images/clothing.png")}
+                        source={firstItem?.image && typeof firstItem.image === 'string' ? { uri: firstItem.image } : (firstItem?.image || require("../../assets/images/clothing.png"))}
                         style={styles.thumb}
                     />
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                        <Text style={styles.title} numberOfLines={1}>{firstItem?.name || "Product"}</Text>
-                        {item.orderItems.length > 1 && <Text style={styles.subtext}>+ {item.orderItems.length - 1} more items</Text>}
-                        <Text style={styles.price}>${item.totalPrice.toFixed(2)}</Text>
+                        <Text style={styles.title} numberOfLines={1}>{firstItem?.title || "Product"}</Text>
+                        {item.items.length > 1 && <Text style={styles.subtext}>+ {item.items.length - 1} more items</Text>}
+                        <Text style={styles.price}>${item.total.toFixed(2)}</Text>
                     </View>
-                    <View style={[styles.statusBadge, { backgroundColor: item.isPaid ? "#DCFCE7" : "#FEF3C7" }]}>
-                        <Text style={[styles.statusText, { color: item.isPaid ? "#16A34A" : "#D97706" }]}>
-                            {item.isPaid ? "Paid" : "Pending"}
+                    <View style={[styles.statusBadge, { backgroundColor: item.status === 'Delivered' ? "#DCFCE7" : "#DBEAFE" }]}>
+                        <Text style={[styles.statusText, { color: item.status === 'Delivered' ? "#16A34A" : "#1E40AF" }]}>
+                            {item.status}
                         </Text>
                     </View>
                 </View>
-                <TouchableOpacity style={styles.trackBtn}>
-                    <Text style={styles.trackText}>Track Order</Text>
-                </TouchableOpacity>
-            </View>
+                <View style={styles.trackBtn}>
+                    <Text style={styles.trackText}>View Details</Text>
+                </View>
+            </TouchableOpacity>
         );
     };
 
@@ -94,15 +75,25 @@ const OrderHistoryScreen: React.FC<Props> = ({ navigation }) => {
                 </TouchableOpacity>
             </View>
 
-            {loading ? <ActivityIndicator size="large" color="#111" style={{ marginTop: 50 }} /> : (
-                <FlatList
-                    data={filteredOrders}
-                    keyExtractor={i => i._id}
-                    renderItem={renderItem}
-                    contentContainerStyle={{ padding: 16 }}
-                    ListEmptyComponent={<Text style={{ textAlign: "center", marginTop: 40, color: "#888" }}>No orders found.</Text>}
-                />
-            )}
+            <FlatList
+                data={filteredOrders}
+                keyExtractor={i => i.id}
+                renderItem={renderItem}
+                contentContainerStyle={{ padding: 16 }}
+                ListEmptyComponent={
+                    <View style={styles.emptyContainer}>
+                        <Image
+                            source={require("../../assets/images/bag.png")}
+                            style={{ width: 100, height: 100, opacity: 0.5, marginBottom: 20 }}
+                            resizeMode="contain"
+                        />
+                        <Text style={styles.emptyTitle}>No {tab} orders</Text>
+                        <TouchableOpacity style={styles.exploreBtn} onPress={() => navigation.navigate("Home")}>
+                            <Text style={styles.exploreText}>Explore Categories</Text>
+                        </TouchableOpacity>
+                    </View>
+                }
+            />
         </SafeAreaView>
     );
 };
@@ -129,8 +120,13 @@ const styles = StyleSheet.create({
     price: { fontWeight: "700", marginTop: 4 },
     statusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
     statusText: { fontSize: 12, fontWeight: "700" },
-    trackBtn: { marginTop: 16, alignItems: "center", paddingVertical: 10, backgroundColor: "#111", borderRadius: 8 },
-    trackText: { color: "#fff", fontWeight: "700" },
+    trackBtn: { marginTop: 16, alignItems: "center", paddingVertical: 10, backgroundColor: "#F9FAFB", borderRadius: 8 },
+    trackText: { color: "#111", fontWeight: "700" },
+
+    emptyContainer: { alignItems: 'center', marginTop: 80 },
+    emptyTitle: { fontSize: 18, fontWeight: '700', color: '#666', marginBottom: 20 },
+    exploreBtn: { backgroundColor: '#111', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
+    exploreText: { color: '#fff', fontWeight: '700' },
 });
 
 export default OrderHistoryScreen;
