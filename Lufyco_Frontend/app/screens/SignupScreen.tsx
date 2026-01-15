@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -36,9 +36,14 @@ const SignupScreen = () => {
       // Save user data (optional - maybe just navigate to login or auto-login)
       // await AsyncStorage.setItem('userInfo', JSON.stringify(data));
 
-      Alert.alert("Success", "Account created successfully!", [
-        { text: "OK", onPress: () => navigation.navigate("Login") }
-      ]);
+      if (Platform.OS === 'web') {
+        alert("Account created successfully!");
+        navigation.navigate("Login");
+      } else {
+        Alert.alert("Success", "Account created successfully!", [
+          { text: "OK", onPress: () => navigation.navigate("Login") }
+        ]);
+      }
     } catch (error: any) {
       console.log(error);
       Alert.alert("Error", error.response?.data?.message || "Something went wrong");
