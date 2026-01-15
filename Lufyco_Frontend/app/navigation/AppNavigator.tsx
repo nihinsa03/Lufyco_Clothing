@@ -3,10 +3,10 @@ import React from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
 import { useAuth } from "../context/AuthContext";
-// BottomTabNavigator is not implemented yet, using Home as main
-// import BottomTabNavigator from "./BottomTabNavigator";
+import BottomTabNavigator from "./BottomTabNavigator";
 
 import SplashScreen from "../screens/SplashScreen";
+// ...
 import IntroScreen from "../screens/IntroScreen";
 import OffersScreen from "../screens/OffersScreen";
 import PaymentsScreen from "../screens/PaymentsScreen";
@@ -108,6 +108,10 @@ export type RootStackParamList = {
     id: string;
     product?: any;
   };
+  CategoryProducts: undefined;
+  Search: undefined;
+  Filter: undefined;
+
   Wishlist: undefined;
   MyCart: undefined;
 
@@ -155,9 +159,13 @@ export default function AppNavigator() {
       ) : (
         // App Flow
         <Stack.Group>
-          {/* <Stack.Screen name="Main" component={BottomTabNavigator} /> */}
-          <Stack.Screen name="Home" component={HomeScreen} />
-          <Stack.Screen name="Categories" component={CategoriesScreen} />
+          <Stack.Screen name="Main" component={BottomTabNavigator} />
+
+          {/* Screens NOT in Tabs, pushed on top */}
+          <Stack.Screen name="CategoryProducts" component={require('../screens/Shop/CategoryProductsScreen').default} />
+          <Stack.Screen name="Search" component={require('../screens/Shop/SearchScreen').default} />
+          <Stack.Screen name="Filter" component={require('../screens/Shop/FilterModal').default} options={{ presentation: 'modal' }} />
+
           <Stack.Screen name="MensWear" component={MensWearScreen} />
           <Stack.Screen name="MenCasualShirts" component={MenCasualShirtsScreen} />
           <Stack.Screen name="AIStylist" component={AIStylistScreen} />
@@ -173,11 +181,8 @@ export default function AppNavigator() {
           <Stack.Screen name="WomenTops" component={WomenTopsScreen} />
           <Stack.Screen name="WomenTopDetails" component={WomenTopDetailsScreen} />
           <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
-          <Stack.Screen name="Wishlist" component={WishlistScreen} />
-          <Stack.Screen name="Profile" component={ProfileScreen} />
           <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-          <Stack.Screen name="MyCart" component={MyCartScreen} />
 
           {/* Checkout Flow */}
           <Stack.Screen name="CheckoutShipping" component={CheckoutShippingScreen} />
