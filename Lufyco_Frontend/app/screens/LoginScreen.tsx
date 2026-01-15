@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Image, Alert, ActivityIndicator, Platform } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -28,9 +28,14 @@ const LoginScreen = () => {
       // Save user session
       await AsyncStorage.setItem('userInfo', JSON.stringify(data));
 
-      Alert.alert("Success", "Welcome back!", [
-        { text: "OK", onPress: () => navigation.navigate("Home") }
-      ]);
+      if (Platform.OS === 'web') {
+        alert("Welcome back!");
+        navigation.navigate("Home");
+      } else {
+        Alert.alert("Success", "Welcome back!", [
+          { text: "OK", onPress: () => navigation.navigate("Home") }
+        ]);
+      }
     } catch (error: any) {
       console.log(error);
       Alert.alert("Error", error.response?.data?.message || "Invalid credentials");
