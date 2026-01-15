@@ -5,9 +5,11 @@ A full-stack e-commerce mobile application built with React Native (Expo) and No
 ## 🚀 Features
 
 *   **User Authentication**: Secure Login & Signup (JWT/AsyncStorage).
-*   **Product Catalog**: Dynamic product listing fetched from MongoDB.
-*   **Order Management**: Place orders and view order history.
-*   **Shopping Cart**: Manage cart items (Context API).
+*   **Product Catalog**: Rich product listing with categories (Men, Women, Kids, Shoes, Accessories) using **Mock Data** for instant feedback.
+*   **AI Stylist**: Weather-based outfit recommendations and "Plan My Look" feature.
+*   **Shopping Cart**: Fully functional cart with size/color selection (powered by **Zustand**).
+*   **Checkout Flow**: Complete simulation: Cart -> Shipping -> Payment -> Review -> Order Success.
+*   **Order Management**: Place orders and track status.
 *   **Modern UI**: Sleek, responsive design for iOS, Android, and Web.
 
 ## 🛠 Tech Stack
@@ -15,9 +17,9 @@ A full-stack e-commerce mobile application built with React Native (Expo) and No
 ### Frontend
 *   **Framework**: [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
 *   **Navigation**: React Navigation (Stack & Tabs)
-*   **State Management**: Context API
+*   **State Management**: [Zustand](https://github.com/pmndrs/zustand) (Cart, Products, Auth)
 *   **Styling**: StyleSheet / Custom UI Components
-*   **API Client**: Axios
+*   **Data**: Local Mock Data (for Products) + Axios (for Auth/User)
 
 ### Backend
 *   **Runtime**: [Node.js](https://nodejs.org/)
@@ -31,9 +33,8 @@ A full-stack e-commerce mobile application built with React Native (Expo) and No
 
 To run this project, you will need to open **two separate terminals**.
 
-### 1. Start the Backend Server
-
-The backend handles the API and database connection.
+### 1. Start the Backend Server (Optional for UI dev)
+*The backend handles Auth and User data. Product browsing currently works with mock data even if backend is off.*
 
 ```powershell
 cd Lufyco_Backend
@@ -44,7 +45,7 @@ npm start
 
 ### 2. Start the Frontend Application
 
-The frontend connects to the backend running at `http://localhost:5000`.
+The frontend connects to the backend at `http://localhost:5000` but falls back to mock data for products.
 
 ```powershell
 cd Lufyco_Frontend
@@ -72,9 +73,8 @@ Base URL: `http://localhost:5000/api`
 *   `POST /users/register` - Register a new user
 *   `POST /users/login` - Authenticate user
 
-### Products
-*   `GET /products` - Get all products
-*   `POST /products` - Create a product (Admin)
+### Products (Mock Data)
+*   User interface uses local `MOCK_PRODUCTS` for speed and reliability during development.
 
 ### Orders
 *   `POST /orders` - Create a new order
@@ -83,4 +83,7 @@ Base URL: `http://localhost:5000/api`
 ## 📂 Project Structure
 
 *   **/Lufyco_Backend**: Server code, API routes, Models.
-*   **/Lufyco_Frontend**: React Native App, Screens, Components.
+*   **/Lufyco_Frontend**: React Native App.
+    *   `/app/screens`: All application screens (Home, Cart, Checkout, etc.).
+    *   `/app/store`: Zustand stores (`useCartStore`, `useShopStore`, etc.).
+    *   `/app/data`: Mock data files.
