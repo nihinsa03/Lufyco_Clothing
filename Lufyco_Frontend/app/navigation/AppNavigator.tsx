@@ -1,22 +1,28 @@
-// AppNavigator.tsx
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { createStackNavigator } from "@react-navigation/stack";
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "../store/useAuthStore";
 import BottomTabNavigator from "./BottomTabNavigator";
 
 import SplashScreen from "../screens/SplashScreen";
-// ...
+import OnboardingScreen from "../screens/Auth/OnboardingScreen";
+import SignupScreen from "../screens/SignupScreen";
+import EmailVerificationScreen from "../screens/Auth/EmailVerificationScreen";
+import LoginScreen from "../screens/LoginScreen";
+import ForgotPasswordEmailScreen from "../screens/Auth/ForgotPasswordEmailScreen";
+import ForgotPasswordOtpScreen from "../screens/Auth/ForgotPasswordOtpScreen";
+import NewPasswordScreen from "../screens/Auth/NewPasswordScreen";
+import PasswordResetSuccessScreen from "../screens/Auth/PasswordResetSuccessScreen";
+
+// ... Keep existing App screens ...
 import IntroScreen from "../screens/IntroScreen";
 import OffersScreen from "../screens/OffersScreen";
 import PaymentsScreen from "../screens/PaymentsScreen";
-import SignupScreen from "../screens/SignupScreen";
 import VerificationScreen from "../screens/VerificationScreen";
-import LoginScreen from "../screens/LoginScreen";
 import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
 import ForgotPasswordVerificationScreen from "../screens/ForgotPasswordVerificationScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
-import PasswordResetSuccessScreen from "../screens/PasswordResetSuccessScreen";
+// import PasswordResetSuccessScreen from "../screens/PasswordResetSuccessScreen"; // Replaced
 import HomeScreen from "../screens/HomeScreen";
 import CategoriesScreen from "../screens/CategoriesScreen";
 import MensWearScreen from "../screens/MensWearScreen";
@@ -57,18 +63,26 @@ import FAQScreen from "../screens/Profile/FAQScreen";
 
 export type RootStackParamList = {
   Splash: undefined;
+  Onboarding: undefined;
+  Signup: undefined;
+  EmailVerification: { email: string };
+  Login: undefined;
+  ForgotPassword: undefined; // To flow start
+  ForgotPasswordVerification: { email: string }; // OTP
+  ResetPassword: undefined;
+  PasswordResetSuccess: undefined;
+
+  // Existing...
   Intro: undefined;
   Offers: undefined;
   Payments: undefined;
-  Signup: undefined;
   Verification: undefined;
-  Login: undefined;
-  ForgotPassword: undefined;
-  ForgotPasswordVerification: undefined;
-  ResetPassword: undefined;
-  PasswordResetSuccess: undefined;
+  // ForgotPassword: undefined; // types conflict if duplicate, using new flow one
+  // ForgotPasswordVerification: undefined;
+  // ResetPassword: undefined;
+
   Home: undefined;
-  Main: undefined; // Added Main for BottomTabs
+  Main: undefined;
   Categories: undefined;
   Profile: undefined;
   OrderHistory: undefined;
@@ -133,28 +147,32 @@ export type RootStackParamList = {
 const Stack = createStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
-  const { user, loading } = useAuth();
+  const { isAuthenticated, loading } = useAuthStore();
 
+  // Optional: Show global loading if Hydration is slow
   if (loading) {
-    return null; // Or a loading spinner
+    // return <Loading />;
   }
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {!user ? (
+      {!isAuthenticated ? (
         // Auth Flow
         <Stack.Group>
           <Stack.Screen name="Splash" component={SplashScreen} />
-          <Stack.Screen name="Intro" component={IntroScreen} />
+          <Stack.Screen name="Onboarding" component={OnboardingScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={SignupScreen} />
-          <Stack.Screen name="Offers" component={OffersScreen} />
-          {/* Add other auth screens if needed to be accessible without login */}
-          <Stack.Screen name="Verification" component={VerificationScreen} />
-          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-          <Stack.Screen name="ForgotPasswordVerification" component={ForgotPasswordVerificationScreen} />
-          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
+          <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
+
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordEmailScreen} />
+          <Stack.Screen name="ForgotPasswordVerification" component={ForgotPasswordOtpScreen} />
+          <Stack.Screen name="ResetPassword" component={NewPasswordScreen} />
           <Stack.Screen name="PasswordResetSuccess" component={PasswordResetSuccessScreen} />
+
+          {/* Legacy/Other screens if still needed accessible */}
+          <Stack.Screen name="Intro" component={IntroScreen} />
+          <Stack.Screen name="Offers" component={OffersScreen} />
         </Stack.Group>
       ) : (
         // App Flow
