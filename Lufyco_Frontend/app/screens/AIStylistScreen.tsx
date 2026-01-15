@@ -11,8 +11,9 @@ import {
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import * as Location from 'expo-location';
-import { useState, useEffect } from "react";
+import { useWeather } from "../hooks/useWeather";
+// import * as Location from 'expo-location'; // Removed
+// import { useState, useEffect } from "react"; // Removed unnecessary imports
 
 type RootStackParamList = {
   Home: undefined;
@@ -32,49 +33,11 @@ type Props = NativeStackScreenProps<RootStackParamList, "AIStylist">;
 
 const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth(); // <--- Get real user
-  const [weather, setWeather] = useState<{ temp: number, condition: string } | null>(null);
-  const [locationError, setLocationError] = useState<string | null>(null);
+  const { weather, loading, error } = useWeather();
 
-  useEffect(() => {
-    (async () => {
-      let { status } = await Location.requestForegroundPermissionsAsync();
-      if (status !== 'granted') {
-        setLocationError('Permission to access location was denied');
-        return;
-      }
-
-      let location = await Location.getCurrentPositionAsync({});
-      fetchWeather(location.coords.latitude, location.coords.longitude);
-    })();
-  }, []);
-
-  const fetchWeather = async (lat: number, lon: number) => {
-    try {
-      const response = await fetch(
-        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit`
-      );
-      const data = await response.json();
-      const code = data.current_weather.weathercode;
-      const condition = getWeatherCondition(code);
-      setWeather({
-        temp: Math.round(data.current_weather.temperature),
-        condition
-      });
-    } catch (error) {
-      console.error("Error fetching weather:", error);
-    }
-  };
-
-  const getWeatherCondition = (code: number) => {
-    if (code === 0) return "Sunny";
-    if (code >= 1 && code <= 3) return "Partly Cloudy";
-    if (code >= 45 && code <= 48) return "Foggy";
-    if (code >= 51 && code <= 67) return "Rainy";
-    if (code >= 71 && code <= 77) return "Snowy";
-    if (code >= 80 && code <= 82) return "Showers";
-    if (code >= 95 && code <= 99) return "Thunderstorm";
-    return "Cloudy";
-  };
+  // Removed inline optional logic as it is now in useWeather hook
+  // const [weather, setWeather] = useState<{ temp: number, condition: string } | null>(null);
+  // const [locationError, setLocationError] = useState<string | null>(null); ...
 
   // Mock upcoming look data
   const upcomingLook = {
@@ -172,10 +135,10 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
           />
           <View style={{ marginLeft: 12 }}>
             <Text style={styles.weatherMain}>
-              {weather ? `${weather.temp}°F` : "Loading..."}
+              {loading ? "Loading..." : (weather ? `${weather.temp}°F` : "N/A")}
             </Text>
             <Text style={styles.weatherSub}>
-              {locationError || (weather ? weather.condition : "Fetching weather...")}
+              {error || (loading ? "Fetching weather..." : (weather ? weather.condition : "Unknown"))}
             </Text>
           </View>
         </View>

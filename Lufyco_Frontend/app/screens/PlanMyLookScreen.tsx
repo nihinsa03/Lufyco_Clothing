@@ -16,6 +16,7 @@ import dayjs, { Dayjs } from "dayjs";
 
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
+import { useWeather } from "../hooks/useWeather";
 
 type Props = NativeStackScreenProps<RootStackParamList, "PlanMyLook">;
 
@@ -85,6 +86,8 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
   const [whenDj, setWhenDj] = useState<Dayjs>(dayjs());
   const [pickerOpen, setPickerOpen] = useState(false);
 
+  const { weather, loading, error } = useWeather();
+
   const isFuture = timeNeed === "Future";
 
   useEffect(() => {
@@ -99,12 +102,11 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
   const handleGenerate = () => {
     const finalMood = mood ?? "Confident";
     const finalOccasion = occasion ?? "Casual";
-    const weather = "Sunny";
     // Keep only the params your navigator type allows
     navigation.navigate("SuggestedOutfit", {
       mood: finalMood,
       occasion: finalOccasion,
-      weather,
+      weather: weather?.condition || "Sunny",
       // If you later add `whenISO` to SuggestedOutfit params, then:
       // whenISO: whenDj.toISOString(),
     } as any);
@@ -198,10 +200,18 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
         <View style={{ paddingHorizontal: 16, marginTop: 12 }}>
           <SectionTitle>Today’s Weather</SectionTitle>
           <View style={styles.weatherCard}>
-            <Ionicons name="sunny-outline" size={26} color="#FF4D4D" />
+            <Ionicons
+              name={weather?.condition === "Sunny" ? "sunny-outline" : "cloud-outline"}
+              size={26}
+              color={weather?.condition === "Sunny" ? "#FF4D4D" : "#555"}
+            />
             <View style={{ marginLeft: 12 }}>
-              <Text style={styles.weatherMain}>72 F</Text>
-              <Text style={styles.weatherSub}>Sunny</Text>
+              <Text style={styles.weatherMain}>
+                {loading ? "Loading..." : (weather ? `${weather.temp}°F` : "N/A")}
+              </Text>
+              <Text style={styles.weatherSub}>
+                {error || (loading ? "Fetching weather..." : (weather ? weather.condition : "Unknown"))}
+              </Text>
             </View>
           </View>
         </View>
