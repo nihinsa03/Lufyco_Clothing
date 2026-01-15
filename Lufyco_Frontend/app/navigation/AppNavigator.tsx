@@ -47,6 +47,15 @@ export type RootStackParamList = {
   MensWear: undefined;
   MenCasualShirts: undefined;
   AIStylist: undefined;
+  ProductListing: {
+    gender?: string;
+    category?: string;
+    subCategory?: string;
+    type?: string;
+    search?: string;
+    isSale?: boolean;
+    title?: string;
+  };
   MyCloset: undefined;
   PlanMyLook: undefined;
   SuggestedOutfit: { mood: string; occasion: string; weather: string };
@@ -100,6 +109,7 @@ export default function AppNavigator() {
       <Stack.Screen name="AddToCloset" component={AddToClosetScreen} />
       <Stack.Screen name="AddToClosetPreview" component={AddToClosetPreviewScreen} />
       <Stack.Screen name="WomensWear" component={WomensWearScreen} />
+      <Stack.Screen name="ProductListing" component={ProductListingScreen} />
       <Stack.Screen name="WomenTops" component={WomenTopsScreen} />
       <Stack.Screen name="WomenTopDetails" component={WomenTopDetailsScreen} />
       <Stack.Screen name="MyCart" component={MyCartScreen} />

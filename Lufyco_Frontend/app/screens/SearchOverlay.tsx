@@ -15,6 +15,7 @@ type Props = {
   visible: boolean;
   onClose: () => void;
   onOpenFilter?: () => void;
+  onSearch?: (query: string) => void;
 };
 
 const RECENT = [
@@ -26,7 +27,7 @@ const RECENT = [
   "Orange Shirt",
 ];
 
-const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter }) => {
+const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSearch }) => {
   const [query, setQuery] = useState("");
 
   return (
@@ -49,6 +50,7 @@ const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter }) => {
             placeholder="Search"
             style={styles.input}
             placeholderTextColor="#8e8e93"
+            onSubmitEditing={() => onSearch && onSearch(query)}
           />
           <TouchableOpacity
             onPress={onOpenFilter}
@@ -71,7 +73,10 @@ const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter }) => {
             <View style={{ height: 1, backgroundColor: "#F0F0F0" }} />
           )}
           renderItem={({ item }) => (
-            <TouchableOpacity style={styles.row} onPress={() => setQuery(item)}>
+            <TouchableOpacity style={styles.row} onPress={() => {
+              setQuery(item);
+              if (onSearch) onSearch(item);
+            }}>
               <Text style={styles.rowText}>{item}</Text>
               <Feather name="corner-right-up" size={22} color="#C4C4C6" />
             </TouchableOpacity>

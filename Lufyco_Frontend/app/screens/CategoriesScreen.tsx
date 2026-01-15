@@ -173,14 +173,18 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
   const selectedCategory = categoryData[selectedIndex];
 
   const handleItemPress = (sectionTitle: string, itemName: string) => {
-    // Example: route to shirts listing
-    if (
-      selectedCategory.label === "Men's Wear" &&
-      sectionTitle === "Casual Wear" &&
-      itemName === "SHIRTS"
-    ) {
-      navigation.navigate("MenCasualShirts");
-    }
+    // Determine gender based on selectedCategory.label
+    let gender = "";
+    if (selectedCategory.label.includes("Men")) gender = "Men";
+    if (selectedCategory.label.includes("Women")) gender = "Women";
+    if (selectedCategory.label.includes("Kids")) gender = "Kids";
+
+    navigation.navigate("ProductListing", {
+      gender,
+      subCategory: sectionTitle,
+      type: itemName,
+      title: itemName
+    });
   };
 
   return (
