@@ -25,58 +25,109 @@ const moodEmoji: Record<string, string> = {
   Excited: "😁",
 };
 
-import api from "../api/api";
-import { ClothingItem } from "../models";
+// import api from "../api/api";
+// import { ClothingItem } from "../models";
+import { MOCK_PRODUCTS } from "../data/mockProducts";
 
 // ... (keep props and emoji map)
 
 const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
   const { mood, weather, occasion } = route.params;
-  const [closetItems, setClosetItems] = React.useState<ClothingItem[]>([]);
-  const [generatedOutfit, setGeneratedOutfit] = React.useState<ClothingItem[]>([]);
+  // Removed unused state
+  // const [closetItems, setClosetItems] = React.useState<ClothingItem[]>([]);
+
+  const [generatedOutfit, setGeneratedOutfit] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
   const [retry, setRetry] = React.useState(0);
 
   React.useEffect(() => {
-    fetchCloset();
-  }, []);
-
-  const fetchCloset = async () => {
-    try {
-      const { data } = await api.get('/closet'); // Assuming this returns ClothingItem[]
-      setClosetItems(data);
-      setLoading(false);
-    } catch (e) {
-      console.error(e);
-      setLoading(false);
-      // Fallback mock params if empty
-      // ...
-    }
-  };
-
-  React.useEffect(() => {
-    if (closetItems.length > 0) {
-      generateLook();
-    }
-  }, [closetItems, retry]);
+    generateLook();
+  }, [retry, mood, weather, occasion]);
 
   const generateLook = () => {
-    // Simple logic: Pick 1 Top, 1 Bottom, 1 Shoe
-    // Filter by rules if possible.
-    const tops = closetItems.filter(i => i.category === 'Tops');
-    const bottoms = closetItems.filter(i => i.category === 'Bottoms');
-    const shoes = closetItems.filter(i => i.category === 'Shoes');
+    setLoading(true);
 
-    // Random selection
-    const random = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
+    // 1. Filter by Occasion & Weather logic
+    let relevantItems = [...MOCK_PRODUCTS];
 
-    const outfit = [];
-    if (tops.length) outfit.push(random(tops));
-    if (bottoms.length) outfit.push(random(bottoms));
-    if (shoes.length) outfit.push(random(shoes));
+    // Simple heuristic for weather:
+    // If 'Rain', avoid white/light shoes? Or maybe just suggest Jackets.
+    // If 'Snow', suggest Outerwear.
+    // If 'Sunny', suggest T-Shirts/Dresses.
 
-    // If we don't have enough items, maybe pick generic ones or just show what we have
-    setGeneratedOutfit(outfit);
+    const isCold = weather.includes("Rain") || weather.includes("Snow") || weather.includes("Fog") || weather.includes("Cloud");
+    const isHot = weather.includes("Sunny") || weather.includes("Clear");
+
+    // -- Gender assumption: For now, let's mix or pick based on a user profile if we had one.
+    // Since we don't have gender in props, let's just use all relevant items or maybe filter if we knew.
+    // For demo, let's just use all MOCK_PRODUCTS.
+
+    // 2. Pick categories based on Occasion
+    let relevantTops = relevantItems.filter(i => i.subCategory === 'Tops' || i.type === 'T-Shirt' || i.type === 'Shirt' || i.type === 'Blouse' || i.type === 'Hoodie' || i.type === 'Sweater');
+    let relevantBottoms = relevantItems.filter(i => i.subCategory === 'Bottoms' || i.type === 'Jeans' || i.type === 'Pants' || i.type === 'Skirt' || i.type === 'Shorts');
+    let relevantShoes = relevantItems.filter(i => i.category === 'Shoes');
+    let relevantOuterwear = relevantItems.filter(i => i.subCategory === 'Outerwear' || i.type === 'Jacket');
+    let relevantDresses = relevantItems.filter(i => i.subCategory === 'Dresses' || i.type === 'Dress');
+
+    // Refine by Occasion
+    if (occasion === "Office") {
+      relevantTops = relevantTops.filter(i => i.type !== 'T-Shirt' && i.type !== 'Hoodie'); // Formal-ish
+      relevantBottoms = relevantBottoms.filter(i => i.type !== 'Shorts');
+      relevantDresses = relevantDresses.filter(i => i.name.includes("Summer") === false); // Avoid beach dresses
+    } else if (occasion === "Party") {
+      // Maybe prioritize Dresses for women, cool shirts for men
+    } else if (occasion === "Gym") {
+      // ...
+    }
+
+    // Refine by Weather
+    if (isCold) {
+      // Prefer hoodies/sweaters if available, else standard tops + jacket
+      const warmTops = relevantTops.filter(i => i.type === 'Hoodie' || i.type === 'Sweater');
+      if (warmTops.length > 0) relevantTops = warmTops;
+    } else if (isHot) {
+      // Prefer T-Shirts, Shorts, Skirts
+      relevantOuterwear = []; // No jackets
+      relevantTops = relevantTops.filter(i => i.type === 'T-Shirt' || i.type === 'Blouse');
+      relevantBottoms = relevantBottoms.filter(i => i.type === 'Shorts' || i.type === 'Skirt' || i.type === 'Jeans');
+    }
+
+    // 3. Assemble Outfit
+    const outfit: any[] = [];
+    const random = (arr: any[]) => arr.length > 0 ? arr[Math.floor(Math.random() * arr.length)] : null;
+
+    // Decide structure: Dress vs Top/Bottom
+    // 50/50 chance if both valid, or logic based. 
+    // Let's just do Top/Bottom for simplicity unless it's a "Dress" occasion/preference.
+    const useDress = relevantDresses.length > 0 && Math.random() > 0.7; // 30% chance for dress if available
+
+    if (useDress) {
+      const dress = random(relevantDresses);
+      if (dress) outfit.push(dress);
+    } else {
+      const top = random(relevantTops);
+      const bottom = random(relevantBottoms);
+      if (top) outfit.push(top);
+      if (bottom) outfit.push(bottom);
+    }
+
+    // Always add shoes
+    const shoe = random(relevantShoes);
+    if (shoe) outfit.push(shoe);
+
+    // Add jacket if cold and not already picked (though our mock logic is simple)
+    if (isCold && relevantOuterwear.length > 0) {
+      const jacket = random(relevantOuterwear);
+      // Avoid duplicate types if any
+      if (jacket && !outfit.find(i => i._id === jacket._id)) {
+        outfit.push(jacket);
+      }
+    }
+
+    setTimeout(() => {
+      setGeneratedOutfit(outfit);
+      setLoading(false);
+    }, 600);
   };
 
   const handleSave = () => {
@@ -116,7 +167,7 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
               generatedOutfit.map((item, idx) => (
                 <View key={idx} style={styles.outfitItem}>
                   <Image
-                    source={item.imageUri && item.imageUri.startsWith('http') ? { uri: item.imageUri } : require("../../assets/images/clothing.png")}
+                    source={item.image && item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png")}
                     style={styles.outfitImg}
                   />
                   <Text style={styles.outfitLabel}>{item.name}</Text>
