@@ -125,6 +125,7 @@ export type RootStackParamList = {
   CategoryProducts: undefined;
   Search: undefined;
   Filter: undefined;
+  Sale: undefined;
 
   Wishlist: undefined;
   MyCart: undefined;
@@ -183,6 +184,7 @@ export default function AppNavigator() {
           <Stack.Screen name="CategoryProducts" component={require('../screens/Shop/CategoryProductsScreen').default} />
           <Stack.Screen name="Search" component={require('../screens/Shop/SearchScreen').default} />
           <Stack.Screen name="Filter" component={require('../screens/Shop/FilterModal').default} options={{ presentation: 'modal' }} />
+          <Stack.Screen name="Sale" component={require('../screens/Shop/SaleScreen').default} />
 
           <Stack.Screen name="MensWear" component={MensWearScreen} />
           <Stack.Screen name="MenCasualShirts" component={MenCasualShirtsScreen} />

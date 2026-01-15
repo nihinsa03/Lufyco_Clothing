@@ -17,8 +17,13 @@ export interface Product {
     colors: string[];
     sizes: string[];
     isExclusive?: boolean;
-    isLatest?: boolean;
     description?: string;
+
+    // New fields
+    isNewArrival?: boolean;
+    isPopular?: boolean;
+    isPriceDropping?: boolean;
+    discountPercent?: number;
 }
 
 export const mockCategories: Category[] = [
@@ -42,7 +47,8 @@ export const mockProducts: Product[] = [
         tags: ['shirt', 'formal', 'men'],
         colors: ['#FFFFFF', '#000000'],
         sizes: ['S', 'M', 'L', 'XL'],
-        isLatest: true,
+        isNewArrival: true,
+        isPopular: true,
     },
     {
         id: 'p2',
@@ -57,6 +63,8 @@ export const mockProducts: Product[] = [
         colors: ['#FFC0CB', '#FFFFFF'],
         sizes: ['XS', 'S', 'M'],
         isExclusive: true,
+        isPriceDropping: true,
+        discountPercent: 28,
     },
     {
         id: 'p3',
@@ -69,7 +77,7 @@ export const mockProducts: Product[] = [
         tags: ['shoes', 'sports', 'running'],
         colors: ['#0000FF', '#000000'],
         sizes: ['8', '9', '10', '11'],
-        isLatest: true,
+        isNewArrival: true,
     },
     {
         id: 'p4',
@@ -90,13 +98,17 @@ export const mockProducts: Product[] = [
         id: `gen_${i}`,
         title: `Product ${i + 1}`,
         price: 20 + i * 5,
+        oldPrice: i % 3 === 0 ? (20 + i * 5) * 1.2 : undefined,
         rating: 3 + (i % 20) / 10,
         reviews: 10 + i,
         images: [{ uri: `https://via.placeholder.com/300?text=Product+${i + 1}` }],
         categoryId: i % 2 === 0 ? 'c1' : 'c2',
         tags: ['casual'],
-        colors: ['#000000'],
+        colors: ['#000000', '#FF0000', '#00FF00'],
         sizes: ['M', 'L'],
-        isLatest: i < 5,
+        isNewArrival: i < 5,
+        isPopular: i > 10 && i < 15,
+        isPriceDropping: i % 4 === 0,
+        discountPercent: i % 3 === 0 ? 20 : undefined,
     }))
 ];

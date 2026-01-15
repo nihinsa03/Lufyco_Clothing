@@ -1,83 +1,141 @@
 import { create } from 'zustand';
+import { createJSONStorage, persist } from 'zustand/middleware';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { mockProducts, mockCategories, Product, Category } from '../data/mockData';
 
 export interface FilterState {
     query: string;
-    categoryId?: string;
+
+    // Checkbox filters
+    newArrivals: boolean;
+    popularThisWeek: boolean;
+    priceDropping: boolean;
+    discountOnly: boolean;
+    popularity: boolean;
+
+    // Explicit filters (kept if needed)
     priceMin?: number;
     priceMax?: number;
-    ratingMin?: number;
-    selectedColors?: string[];
-    selectedSizes?: string[];
-    sortBy?: 'popular' | 'latest' | 'price_low' | 'price_high';
+    categoryId?: string;
 }
 
 interface ShopState {
     products: Product[];
     categories: Category[];
+
     activeFilters: FilterState;
+    recentSearches: string[];
 
     setQuery: (q: string) => void;
-    setCategory: (id?: string) => void;
+    toggleFilter: (key: keyof FilterState) => void;
     setFilter: (updates: Partial<FilterState>) => void;
     resetFilters: () => void;
+    addRecentSearch: (term: string) => void;
+    clearRecentSearches: () => void;
+
     getFilteredProducts: () => Product[];
+    getSaleProducts: () => Product[];
 }
 
 const initialFilters: FilterState = {
     query: '',
-    categoryId: undefined,
+    newArrivals: false,
+    popularThisWeek: false,
+    priceDropping: false,
+    discountOnly: false,
+    popularity: false,
+
     priceMin: undefined,
     priceMax: undefined,
-    ratingMin: undefined,
-    selectedColors: [],
-    selectedSizes: [],
-    sortBy: 'popular',
+    categoryId: undefined,
 };
 
-export const useShopStore = create<ShopState>((set, get) => ({
-    products: mockProducts,
-    categories: mockCategories,
-    activeFilters: initialFilters,
+export const useShopStore = create<ShopState>()(
+    persist(
+        (set, get) => ({
+            products: mockProducts,
+            categories: mockCategories,
+            activeFilters: initialFilters,
+            recentSearches: [],
 
-    setQuery: (q) => set((state) => ({ activeFilters: { ...state.activeFilters, query: q } })),
-    setCategory: (id) => set((state) => ({ activeFilters: { ...state.activeFilters, categoryId: id } })),
-    setFilter: (updates) => set((state) => ({ activeFilters: { ...state.activeFilters, ...updates } })),
+            setQuery: (q) => set((state) => ({
+                activeFilters: { ...state.activeFilters, query: q }
+            })),
 
-    resetFilters: () => set({ activeFilters: initialFilters }),
+            toggleFilter: (key) => set((state) => {
+                const val = state.activeFilters[key];
+                if (typeof val === 'boolean') {
+                    return { activeFilters: { ...state.activeFilters, [key]: !val } };
+                }
+                return state;
+            }),
 
-    getFilteredProducts: () => {
-        const { products, activeFilters } = get();
-        const { query, categoryId, priceMin, priceMax, ratingMin, sortBy } = activeFilters;
+            setFilter: (updates) => set((state) => ({
+                activeFilters: { ...state.activeFilters, ...updates }
+            })),
 
-        let filtered = products.filter(p => {
-            // Category
-            if (categoryId && p.categoryId !== categoryId) return false;
+            resetFilters: () => set({ activeFilters: initialFilters }),
 
-            // Query
-            if (query && !p.title.toLowerCase().includes(query.toLowerCase()) && !p.tags.some(t => t.toLowerCase().includes(query.toLowerCase()))) return false;
+            addRecentSearch: (term) => set((state) => {
+                if (!term.trim()) return state;
+                const newRecent = [term, ...state.recentSearches.filter(t => t !== term)].slice(0, 8);
+                return { recentSearches: newRecent };
+            }),
 
-            // Price
-            if (priceMin !== undefined && p.price < priceMin) return false;
-            if (priceMax !== undefined && p.price > priceMax) return false;
+            clearRecentSearches: () => set({ recentSearches: [] }),
 
-            // Rating
-            if (ratingMin !== undefined && p.rating < ratingMin) return false;
+            getFilteredProducts: () => {
+                const { products, activeFilters } = get();
+                const {
+                    query, categoryId, priceMin, priceMax,
+                    newArrivals, popularThisWeek, priceDropping, discountOnly, popularity
+                } = activeFilters;
 
-            return true;
-        });
+                let filtered = products.filter(p => {
+                    // Category
+                    if (categoryId && p.categoryId !== categoryId) return false;
 
-        // Sort
-        if (sortBy === 'price_low') {
-            filtered.sort((a, b) => a.price - b.price);
-        } else if (sortBy === 'price_high') {
-            filtered.sort((a, b) => b.price - a.price);
-        } else if (sortBy === 'latest') {
-            // Mock latest by creating id desc or random
-            filtered.sort((a, b) => b.id.localeCompare(a.id));
+                    // Query
+                    if (query) {
+                        const q = query.toLowerCase();
+                        if (!p.title.toLowerCase().includes(q) && !p.tags.some(t => t.toLowerCase().includes(q))) {
+                            return false;
+                        }
+                    }
+
+                    // Price Range
+                    if (priceMin !== undefined && p.price < priceMin) return false;
+                    if (priceMax !== undefined && p.price > priceMax) return false;
+
+                    // Checkbox flags
+                    if (newArrivals && !p.isNewArrival) return false;
+                    if (popularThisWeek && !p.isPopular) return false;
+                    if (priceDropping && !p.isPriceDropping) return false;
+                    if (discountOnly && (!p.oldPrice || p.oldPrice <= p.price)) return false;
+
+                    return true;
+                });
+
+                // Sorting
+                if (popularity) {
+                    filtered.sort((a, b) => b.reviews - a.reviews); // Mock popularity by reviews
+                }
+
+                return filtered;
+            },
+
+            getSaleProducts: () => {
+                const { products } = get();
+                return products.filter(p => p.oldPrice && p.oldPrice > p.price);
+            }
+        }),
+        {
+            name: 'shop-storage',
+            storage: createJSONStorage(() => AsyncStorage),
+            partialize: (state) => ({
+                activeFilters: state.activeFilters,
+                recentSearches: state.recentSearches
+            }),
         }
-        // 'popular' could be sort by reviews
-
-        return filtered;
-    }
-}));
+    )
+);

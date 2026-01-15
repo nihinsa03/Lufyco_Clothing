@@ -8,10 +8,13 @@ import { Product } from '../../data/mockData';
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = (width - 45) / 2;
 
-const CategoryProductsScreen = () => {
+const SaleScreen = () => {
     const navigation = useNavigation<any>();
-    const { getFilteredProducts } = useShopStore();
-    const products = getFilteredProducts();
+    const { getSaleProducts, activeFilters } = useShopStore();
+
+    // In a real app we might combine getSaleProducts with getFilteredProducts logic
+    // For now, let's just get sale products.
+    const products = getSaleProducts();
 
     const renderItem = ({ item }: { item: Product }) => (
         <TouchableOpacity
@@ -27,6 +30,11 @@ const CategoryProductsScreen = () => {
                 <TouchableOpacity style={styles.favIcon}>
                     <Feather name="heart" size={16} color="#000" />
                 </TouchableOpacity>
+                {item.discountPercent && (
+                    <View style={styles.badge}>
+                        <Text style={styles.badgeText}>-{item.discountPercent}%</Text>
+                    </View>
+                )}
             </View>
 
             <View style={styles.colorRow}>
@@ -48,13 +56,10 @@ const CategoryProductsScreen = () => {
     return (
         <SafeAreaView style={styles.container}>
             <View style={styles.header}>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 15 }}>
-                        <Feather name="arrow-left" size={24} color="#000" />
-                    </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Products</Text>
-                </View>
-
+                <TouchableOpacity onPress={() => navigation.goBack()}>
+                    <Feather name="arrow-left" size={24} color="#000" />
+                </TouchableOpacity>
+                <Text style={styles.headerTitle}>Products/Sale</Text>
                 <View style={styles.headerIcons}>
                     <TouchableOpacity onPress={() => navigation.navigate('Filter')} style={{ marginRight: 15 }}>
                         <Feather name="filter" size={22} color="#000" />
@@ -70,11 +75,11 @@ const CategoryProductsScreen = () => {
                 keyExtractor={(item) => item.id}
                 numColumns={2}
                 columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 15 }}
-                contentContainerStyle={{ paddingTop: 15, paddingBottom: 20 }}
+                contentContainerStyle={{ paddingBottom: 20 }}
                 renderItem={renderItem}
                 ListEmptyComponent={
                     <View style={styles.center}>
-                        <Text>No products found.</Text>
+                        <Text>No sale items found.</Text>
                     </View>
                 }
             />
@@ -100,6 +105,11 @@ const styles = StyleSheet.create({
         width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center',
         shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 3, elevation: 2
     },
+    badge: {
+        position: 'absolute', top: 10, left: 10, backgroundColor: '#FF4D4D',
+        paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4
+    },
+    badgeText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
 
     colorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
     dot: { width: 10, height: 10, borderRadius: 5, marginRight: 5, borderWidth: 1, borderColor: '#eee' },
@@ -111,4 +121,4 @@ const styles = StyleSheet.create({
     oldPrice: { fontSize: 12, color: '#999', textDecorationLine: 'line-through' }
 });
 
-export default CategoryProductsScreen;
+export default SaleScreen;

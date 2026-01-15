@@ -14,15 +14,14 @@ const screenWidth = Dimensions.get("window").width;
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 const HomeScreen = ({ navigation }: Props) => {
-  const { products, categories, setCategory } = useShopStore();
+  const { products, categories, setFilter } = useShopStore();
 
-  // Filter for Latest Products
-  const latestProducts = products.filter(p => p.isLatest).slice(0, 4);
+  // Filter for Latest Products (New Arrivals)
+  const latestProducts = products.filter(p => p.isNewArrival).slice(0, 4);
 
   const handleCategoryPress = (catId: string) => {
-    setCategory(catId);
-    navigation.navigate("Main", { screen: "Categories" } as any); // Or navigate to CategoryProducts directly if desired
-    // But typically Home chips -> Listing of that category
+    setFilter({ categoryId: catId });
+    // navigation.navigate("Main", { screen: "Categories" } as any); 
     navigation.navigate("CategoryProducts");
   };
 
@@ -58,7 +57,7 @@ const HomeScreen = ({ navigation }: Props) => {
 
           {/* Categories Chips */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categories}>
-            <TouchableOpacity style={styles.chipActive} onPress={() => setCategory(undefined)}>
+            <TouchableOpacity style={styles.chipActive} onPress={() => setFilter({ categoryId: undefined })}>
               <Text style={styles.chipTextActive}>All</Text>
             </TouchableOpacity>
             {categories.map((item, index) => (
