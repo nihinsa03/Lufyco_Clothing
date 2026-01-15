@@ -10,12 +10,7 @@ import api from "../api/api";
 
 const screenWidth = Dimensions.get("window").width;
 
-type RootStackParamList = {
-  Home: undefined;
-  Categories: undefined;
-  AIStylist: undefined;
-  MyCart: undefined;
-};
+import { RootStackParamList } from "../navigation/AppNavigator";
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
@@ -23,6 +18,22 @@ const HomeScreen = ({ navigation }: Props) => {
   const { count } = useCart();
   const [products, setProducts] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  const handleCategoryPress = (name: string, gender: 'men' | 'women') => {
+    if (gender === 'men') {
+      if (name === "SHIRTS") {
+        navigation.navigate("MenCasualShirts");
+      } else {
+        navigation.navigate("MensWear");
+      }
+    } else if (gender === 'women') {
+      if (name === "TOPS") {
+        navigation.navigate("WomenTops");
+      } else {
+        navigation.navigate("WomensWear");
+      }
+    }
+  };
 
   useEffect(() => {
     fetchProducts();
@@ -130,20 +141,20 @@ const HomeScreen = ({ navigation }: Props) => {
           {/* Men categories */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categories}>
             {menCategories.map((item, index) => (
-              <View key={index} style={styles.categoryItem}>
+              <TouchableOpacity key={index} style={styles.categoryItem} onPress={() => handleCategoryPress(item.name, 'men')}>
                 <Image source={item.image} style={styles.categoryImage} />
                 <Text style={styles.categoryLabel}>{item.name}</Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
 
           {/* Women categories */}
           <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categories}>
             {womenCategories.map((item, index) => (
-              <View key={index} style={styles.categoryItem}>
+              <TouchableOpacity key={index} style={styles.categoryItem} onPress={() => handleCategoryPress(item.name, 'women')}>
                 <Image source={item.image} style={styles.categoryImage} />
                 <Text style={styles.categoryLabel}>{item.name}</Text>
-              </View>
+              </TouchableOpacity>
             ))}
           </ScrollView>
 

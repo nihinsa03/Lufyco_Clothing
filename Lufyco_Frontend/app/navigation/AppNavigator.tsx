@@ -45,18 +45,18 @@ export type RootStackParamList = {
   Home: undefined;
   Categories: undefined; // ✅ Updated to PascalCase
   MensWear: undefined;
-  MenCasualShirts: undefined;  
-  AISylist: undefined;
+  MenCasualShirts: undefined;
+  AIStylist: undefined;
   MyCloset: undefined;
   PlanMyLook: undefined;
   SuggestedOutfit: { mood: string; occasion: string; weather: string };
   ShopNewStyles: undefined;
   UpcomingEvents: undefined;
-   AddToCloset: undefined;
-   AddToClosetPreview: { uri: string };
-   WomensWear: undefined;
-   WomenTops: undefined;
-   WomenTopDetails: {
+  AddToCloset: undefined;
+  AddToClosetPreview: { uri: string };
+  WomensWear: undefined;
+  WomenTops: undefined;
+  WomenTopDetails: {
     id: string;
     title: string;
     price: number;
@@ -103,7 +103,7 @@ export default function AppNavigator() {
       <Stack.Screen name="WomenTops" component={WomenTopsScreen} />
       <Stack.Screen name="WomenTopDetails" component={WomenTopDetailsScreen} />
       <Stack.Screen name="MyCart" component={MyCartScreen} />
-    
+
 
     </Stack.Navigator>
   );

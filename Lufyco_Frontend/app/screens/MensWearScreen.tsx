@@ -13,7 +13,7 @@ import { Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 
-type Props = NativeStackScreenProps<RootStackParamList, "Categories">;
+type Props = NativeStackScreenProps<RootStackParamList, "MensWear">;
 
 const categoryData = [
   {
@@ -87,7 +87,7 @@ const categoryData = [
   },
 ];
 
-const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
+const MensWearScreen: React.FC<Props> = ({ navigation }) => {
   const [selectedIndex, setSelectedIndex] = useState(0);
   const selectedCategory = categoryData[selectedIndex];
 
@@ -274,4 +274,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default CategoriesScreen;
+export default MensWearScreen;
