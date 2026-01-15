@@ -1,3 +1,7 @@
+const SIZES_CLOTHES = ["XS", "S", "M", "L", "XL", "XXL"];
+const SIZES_SHOES = ["6", "7", "8", "9", "10", "11", "12"];
+const SIZES_NONE: string[] = [];
+
 export const MOCK_PRODUCTS = [
     // Men
     {
@@ -11,7 +15,8 @@ export const MOCK_PRODUCTS = [
         type: "T-Shirt",
         gender: "Men",
         colors: ["#000000", "#FFFFFF", "#0000FF"],
-        reviewsCount: 12
+        reviewsCount: 12,
+        sizes: SIZES_CLOTHES
     },
     {
         _id: "m2",
@@ -24,7 +29,8 @@ export const MOCK_PRODUCTS = [
         type: "Jacket",
         gender: "Men",
         colors: ["#333333", "#000080"],
-        reviewsCount: 8
+        reviewsCount: 8,
+        sizes: SIZES_CLOTHES
     },
     {
         _id: "m3",
@@ -37,7 +43,8 @@ export const MOCK_PRODUCTS = [
         type: "Pants",
         gender: "Men",
         colors: ["#000000", "#555555"],
-        reviewsCount: 5
+        reviewsCount: 5,
+        sizes: ["30", "32", "34", "36", "38"]
     },
     {
         _id: "m4",
@@ -50,7 +57,8 @@ export const MOCK_PRODUCTS = [
         type: "Hoodie",
         gender: "Men",
         colors: ["#808080", "#000000"],
-        reviewsCount: 20
+        reviewsCount: 20,
+        sizes: SIZES_CLOTHES
     },
     {
         _id: "m5",
@@ -63,7 +71,8 @@ export const MOCK_PRODUCTS = [
         type: "Shirt",
         gender: "Men",
         colors: ["#FFFFFF", "#ADD8E6"],
-        reviewsCount: 15
+        reviewsCount: 15,
+        sizes: SIZES_CLOTHES
     },
     {
         _id: "m6",
@@ -76,7 +85,8 @@ export const MOCK_PRODUCTS = [
         type: "Pants",
         gender: "Men",
         colors: ["#F5F5DC", "#000080"],
-        reviewsCount: 10
+        reviewsCount: 10,
+        sizes: ["30", "32", "34", "36", "38"]
     },
 
     // Women
@@ -91,7 +101,8 @@ export const MOCK_PRODUCTS = [
         type: "Dress",
         gender: "Women",
         colors: ["#FFC0CB", "#FFFFFF"],
-        reviewsCount: 25
+        reviewsCount: 25,
+        sizes: SIZES_CLOTHES
     },
     {
         _id: "w2",
@@ -104,7 +115,8 @@ export const MOCK_PRODUCTS = [
         type: "Blouse",
         gender: "Women",
         colors: ["#FFFFFF", "#000000"],
-        reviewsCount: 18
+        reviewsCount: 18,
+        sizes: SIZES_CLOTHES
     },
     {
         _id: "w3",
@@ -117,7 +129,8 @@ export const MOCK_PRODUCTS = [
         type: "Jeans",
         gender: "Women",
         colors: ["#0000FF", "#000000"],
-        reviewsCount: 30
+        reviewsCount: 30,
+        sizes: ["26", "28", "30", "32"]
     },
     {
         _id: "w4",
@@ -130,7 +143,8 @@ export const MOCK_PRODUCTS = [
         type: "Skirt",
         gender: "Women",
         colors: ["#FF0000", "#000000"],
-        reviewsCount: 14
+        reviewsCount: 14,
+        sizes: SIZES_CLOTHES
     },
     {
         _id: "w5",
@@ -143,7 +157,8 @@ export const MOCK_PRODUCTS = [
         type: "Sweater",
         gender: "Women",
         colors: ["#F5F5DC", "#A52A2A"],
-        reviewsCount: 22
+        reviewsCount: 22,
+        sizes: SIZES_CLOTHES
     },
     {
         _id: "w6",
@@ -156,7 +171,8 @@ export const MOCK_PRODUCTS = [
         type: "Jacket",
         gender: "Women",
         colors: ["#000000", "#FFFFFF"],
-        reviewsCount: 9
+        reviewsCount: 9,
+        sizes: SIZES_CLOTHES
     },
 
     // Kids
@@ -171,7 +187,8 @@ export const MOCK_PRODUCTS = [
         type: "T-Shirt",
         gender: "Kids",
         colors: ["#FFFF00", "#00FF00"],
-        reviewsCount: 5
+        reviewsCount: 5,
+        sizes: ["4Y", "6Y", "8Y", "10Y", "12Y"]
     },
     {
         _id: "k2",
@@ -184,7 +201,8 @@ export const MOCK_PRODUCTS = [
         type: "Jeans",
         gender: "Kids",
         colors: ["#0000FF"],
-        reviewsCount: 8
+        reviewsCount: 8,
+        sizes: ["4Y", "6Y", "8Y", "10Y", "12Y"]
     },
     {
         _id: "k3",
@@ -197,7 +215,8 @@ export const MOCK_PRODUCTS = [
         type: "Hoodie",
         gender: "Kids",
         colors: ["#FF0000", "#0000FF"],
-        reviewsCount: 12
+        reviewsCount: 12,
+        sizes: ["4Y", "6Y", "8Y", "10Y", "12Y"]
     },
     {
         _id: "k4",
@@ -210,7 +229,8 @@ export const MOCK_PRODUCTS = [
         type: "Shorts",
         gender: "Kids",
         colors: ["#008000", "#FFA500"],
-        reviewsCount: 6
+        reviewsCount: 6,
+        sizes: ["4Y", "6Y", "8Y", "10Y", "12Y"]
     },
     {
         _id: "k5",
@@ -223,7 +243,8 @@ export const MOCK_PRODUCTS = [
         type: "Dress",
         gender: "Kids",
         colors: ["#FFC0CB", "#FFFFFF"],
-        reviewsCount: 9
+        reviewsCount: 9,
+        sizes: ["4Y", "6Y", "8Y", "10Y", "12Y"]
     },
     {
         _id: "k6",
@@ -236,7 +257,8 @@ export const MOCK_PRODUCTS = [
         type: "Jacket",
         gender: "Kids",
         colors: ["#000000", "#000080"],
-        reviewsCount: 7
+        reviewsCount: 7,
+        sizes: ["4Y", "6Y", "8Y", "10Y", "12Y"]
     },
 
     // Shoes
@@ -251,7 +273,8 @@ export const MOCK_PRODUCTS = [
         type: "Sneakers",
         gender: "Men",
         colors: ["#FF0000", "#000000"],
-        reviewsCount: 15
+        reviewsCount: 15,
+        sizes: SIZES_SHOES
     },
     {
         _id: "s2",
@@ -264,7 +287,8 @@ export const MOCK_PRODUCTS = [
         type: "Heels",
         gender: "Women",
         colors: ["#000000", "#FF0000"],
-        reviewsCount: 20
+        reviewsCount: 20,
+        sizes: ["6", "7", "8", "9"]
     },
     {
         _id: "s3",
@@ -277,7 +301,8 @@ export const MOCK_PRODUCTS = [
         type: "Sneakers",
         gender: "Unisex",
         colors: ["#FFFFFF"],
-        reviewsCount: 25
+        reviewsCount: 25,
+        sizes: SIZES_SHOES
     },
     {
         _id: "s4",
@@ -290,7 +315,8 @@ export const MOCK_PRODUCTS = [
         type: "Boots",
         gender: "Men",
         colors: ["#8B4513"],
-        reviewsCount: 10
+        reviewsCount: 10,
+        sizes: SIZES_SHOES
     },
     {
         _id: "s5",
@@ -303,7 +329,8 @@ export const MOCK_PRODUCTS = [
         type: "Sneakers",
         gender: "Kids",
         colors: ["#0000FF", "#FFFF00"],
-        reviewsCount: 8
+        reviewsCount: 8,
+        sizes: ["1", "2", "3", "4", "5"]
     },
     {
         _id: "s6",
@@ -316,7 +343,8 @@ export const MOCK_PRODUCTS = [
         type: "Sandals",
         gender: "Unisex",
         colors: ["#8B4513"],
-        reviewsCount: 12
+        reviewsCount: 12,
+        sizes: SIZES_SHOES
     },
 
     // Accessories
@@ -331,7 +359,8 @@ export const MOCK_PRODUCTS = [
         type: "Belt",
         gender: "Men",
         colors: ["#000000", "#8B4513"],
-        reviewsCount: 18
+        reviewsCount: 18,
+        sizes: SIZES_NONE
     },
     {
         _id: "a2",
@@ -344,7 +373,8 @@ export const MOCK_PRODUCTS = [
         type: "Sunglasses",
         gender: "Unisex",
         colors: ["#000000"],
-        reviewsCount: 30
+        reviewsCount: 30,
+        sizes: SIZES_NONE
     },
     {
         _id: "a3",
@@ -357,7 +387,8 @@ export const MOCK_PRODUCTS = [
         type: "Watch",
         gender: "Unisex",
         colors: ["#C0C0C0"],
-        reviewsCount: 10
+        reviewsCount: 10,
+        sizes: SIZES_NONE
     },
     {
         _id: "a4",
@@ -370,7 +401,8 @@ export const MOCK_PRODUCTS = [
         type: "Scarf",
         gender: "Women",
         colors: ["#FF0000"],
-        reviewsCount: 15
+        reviewsCount: 15,
+        sizes: SIZES_NONE
     },
     {
         _id: "a5",
@@ -383,7 +415,8 @@ export const MOCK_PRODUCTS = [
         type: "Cap",
         gender: "Unisex",
         colors: ["#000000"],
-        reviewsCount: 20
+        reviewsCount: 20,
+        sizes: SIZES_NONE
     },
     {
         _id: "a6",
@@ -396,6 +429,7 @@ export const MOCK_PRODUCTS = [
         type: "Backpack",
         gender: "Unisex",
         colors: ["#000080"],
-        reviewsCount: 25
+        reviewsCount: 25,
+        sizes: SIZES_NONE
     }
 ];

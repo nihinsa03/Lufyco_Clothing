@@ -40,8 +40,8 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     if (!fullProduct) {
         return (
             <SafeAreaView style={styles.safe}>
-                <View style={styles.header}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 16 }}>
+                <View style={{ padding: 16 }}>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 8 }}>
                         <Feather name="arrow-left" size={24} />
                     </TouchableOpacity>
                 </View>
@@ -148,7 +148,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                     <Text style={styles.title}>{fullProduct.title || fullProduct.name}</Text>
 
                     <View style={styles.priceRow}>
-                        {renderRating(fullProduct.rating || 4.5, fullProduct.reviews || 88)}
+                        {renderRating(fullProduct.rating || 4.5, fullProduct.reviewsCount || fullProduct.reviews || 88)}
                         <Text style={styles.price}>${fullProduct.price?.toFixed(2)}</Text>
                         {fullProduct.oldPrice && (
                             <Text style={styles.oldPrice}>${fullProduct.oldPrice?.toFixed(2)}</Text>
