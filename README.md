@@ -33,7 +33,13 @@ A full-stack e-commerce mobile application built with React Native (Expo) and No
 
 To run this project, you will need to open **two separate terminals**.
 
-### 1. Start the Backend Server (Optional for UI dev)
+### Prerequisites
+
+*   [Node.js](https://nodejs.org/) (v18 or higher recommended)
+*   [Git](https://git-scm.com/)
+*   [Expo Go](https://expo.dev/client) app on your mobile device (for physical device testing)
+
+### 1. Start the Backend Server
 *The backend handles Auth and User data. Product browsing currently works with mock data even if backend is off.*
 
 ```powershell
@@ -50,9 +56,19 @@ The frontend connects to the backend at `http://localhost:5000` but falls back t
 ```powershell
 cd Lufyco_Frontend
 npm install  # Install dependencies (only first time)
-npm run web -- --clear
+```
+
+**Option A: Run on Web**
+```powershell
+npm run web
 ```
 *The app should open in your default browser at `http://localhost:8081`.*
+
+**Option B: Run on Mobile (iOS/Android)**
+```powershell
+npm start
+```
+*Scan the QR code with the Expo Go app on your phone, or press `a` for Android Emulator / `i` for iOS Simulator.*
 
 ---
 
