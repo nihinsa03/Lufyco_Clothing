@@ -12,7 +12,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "../store/useAuthStore";
 import { useProfileStore } from "../store/useProfileStore";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
@@ -21,7 +21,7 @@ type NavProp = NativeStackNavigationProp<RootStackParamList, "Profile">;
 
 const ProfileScreen = () => {
     const navigation = useNavigation<NavProp>();
-    const { logout } = useAuth();
+    const logout = useAuthStore((state) => state.logout);
     const { user } = useProfileStore();
 
     const menuItems = [

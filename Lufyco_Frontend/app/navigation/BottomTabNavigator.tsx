@@ -44,7 +44,7 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
                 let IconComp: any = Feather;
 
                 if (route.name === 'Home') iconName = 'home';
-                else if (route.name === 'Categories') iconName = 'grid';
+                else if (route.name === 'AIStylist') iconName = 'command'; // or 'loader', 'star'
                 else if (route.name === 'MyCart') { iconName = 'shopping-cart'; }
                 else if (route.name === 'Wishlist') iconName = 'heart';
                 else if (route.name === 'Profile') iconName = 'user';
@@ -91,11 +91,11 @@ const BottomTabNavigator = () => {
             tabBar={(props) => <CustomTabBar {...props} />}
             screenOptions={{ headerShown: false }}
         >
-            <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: 'Home' }} />
-            <Tab.Screen name="Categories" component={CategoriesScreen} options={{ tabBarLabel: 'Shop' }} />
-            <Tab.Screen name="MyCart" component={MyCartScreen} options={{ tabBarLabel: 'Cart' }} />
-            <Tab.Screen name="Wishlist" component={WishlistScreen} options={{ tabBarLabel: 'Wishlist' }} />
-            <Tab.Screen name="Profile" component={ProfileScreen} options={{ tabBarLabel: 'Profile' }} />
+            <Tab.Screen name="Home" component={HomeScreen as any} options={{ tabBarLabel: 'Home' }} />
+            <Tab.Screen name="AIStylist" component={AIStylistScreen as any} options={{ tabBarLabel: 'AI Stylist' }} />
+            <Tab.Screen name="MyCart" component={MyCartScreen as any} options={{ tabBarLabel: 'Cart' }} />
+            <Tab.Screen name="Wishlist" component={WishlistScreen as any} options={{ tabBarLabel: 'Wishlist' }} />
+            <Tab.Screen name="Profile" component={ProfileScreen as any} options={{ tabBarLabel: 'Profile' }} />
         </Tab.Navigator>
     );
 };

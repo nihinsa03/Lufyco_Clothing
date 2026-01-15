@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
+import * as Location from 'expo-location';
+import { useState, useEffect } from "react";
 
 type RootStackParamList = {
   Home: undefined;
@@ -30,6 +32,49 @@ type Props = NativeStackScreenProps<RootStackParamList, "AIStylist">;
 
 const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth(); // <--- Get real user
+  const [weather, setWeather] = useState<{ temp: number, condition: string } | null>(null);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    (async () => {
+      let { status } = await Location.requestForegroundPermissionsAsync();
+      if (status !== 'granted') {
+        setLocationError('Permission to access location was denied');
+        return;
+      }
+
+      let location = await Location.getCurrentPositionAsync({});
+      fetchWeather(location.coords.latitude, location.coords.longitude);
+    })();
+  }, []);
+
+  const fetchWeather = async (lat: number, lon: number) => {
+    try {
+      const response = await fetch(
+        `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current_weather=true&temperature_unit=fahrenheit`
+      );
+      const data = await response.json();
+      const code = data.current_weather.weathercode;
+      const condition = getWeatherCondition(code);
+      setWeather({
+        temp: Math.round(data.current_weather.temperature),
+        condition
+      });
+    } catch (error) {
+      console.error("Error fetching weather:", error);
+    }
+  };
+
+  const getWeatherCondition = (code: number) => {
+    if (code === 0) return "Sunny";
+    if (code >= 1 && code <= 3) return "Partly Cloudy";
+    if (code >= 45 && code <= 48) return "Foggy";
+    if (code >= 51 && code <= 67) return "Rainy";
+    if (code >= 71 && code <= 77) return "Snowy";
+    if (code >= 80 && code <= 82) return "Showers";
+    if (code >= 95 && code <= 99) return "Thunderstorm";
+    return "Cloudy";
+  };
 
   // Mock upcoming look data
   const upcomingLook = {
@@ -120,29 +165,23 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
         {/* Weather */}
         <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Today’s Weather</Text>
         <View style={styles.weatherCard}>
-          <Ionicons name="sunny-outline" size={28} color="#FF4D4D" />
+          <Ionicons
+            name={weather?.condition === "Sunny" ? "sunny-outline" : "cloud-outline"}
+            size={28}
+            color={weather?.condition === "Sunny" ? "#FF4D4D" : "#555"}
+          />
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.weatherMain}>72°F</Text>
-            <Text style={styles.weatherSub}>Sunny</Text>
+            <Text style={styles.weatherMain}>
+              {weather ? `${weather.temp}°F` : "Loading..."}
+            </Text>
+            <Text style={styles.weatherSub}>
+              {locationError || (weather ? weather.condition : "Fetching weather...")}
+            </Text>
           </View>
         </View>
       </ScrollView>
 
-      {/* Bottom Tab (AI Stylist active) */}
-      <View style={styles.bottomBar}>
-        {[
-          { key: "home", label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
-          { key: "stylist", label: "AI Stylist", icon: "grid", onPress: () => { }, active: true },
-          { key: "cart", label: "My Cart", icon: "shopping-cart", onPress: () => navigation.navigate("MyCart") },
-          { key: "wish", label: "Wishlist", icon: "heart", onPress: () => navigation.navigate("Wishlist") },
-          { key: "profile", label: "Profile", icon: "user", onPress: () => navigation.navigate("Profile") },
-        ].map((t) => (
-          <TouchableOpacity key={t.key} style={styles.tabBtn} onPress={t.onPress}>
-            <Feather name={t.icon as any} size={22} color={t.active ? "#1E90FF" : "#777"} />
-            <Text style={[styles.tabLabel, { color: t.active ? "#1E90FF" : "#777" }]}>{t.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+
     </SafeAreaView>
   );
 };
@@ -276,23 +315,7 @@ const styles = StyleSheet.create({
   weatherMain: { fontSize: 16, fontWeight: "700" },
   weatherSub: { color: "#333" },
 
-  bottomBar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 72,
-    borderTopWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "#fff",
-    flexDirection: "row",
-    paddingBottom: 8,
-    paddingTop: 6,
-    justifyContent: "space-around",
-    alignItems: "center",
-  },
-  tabBtn: { alignItems: "center" },
-  tabLabel: { fontSize: 11, marginTop: 2, fontWeight: "500" },
+
 });
 
 export default AIStylistScreen;
