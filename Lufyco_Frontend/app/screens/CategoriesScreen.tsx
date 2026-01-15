@@ -57,32 +57,114 @@ const categoryData = [
   {
     label: "Women's Wear",
     image: require("../../assets/images/menu/womens-wear.jpg"),
-    sections: [], // handled by WomensWearScreen
+    sections: [
+      {
+        title: "Western Wear",
+        items: [
+          { name: "DRESSES", image: require("../../assets/images/categories/women/dresses.jpg") },
+          { name: "TOPS", image: require("../../assets/images/categories/women/tops.jpg") },
+          { name: "JEANS", image: require("../../assets/images/categories/women/jeans.jpg") },
+          { name: "TROUSERS", image: require("../../assets/images/categories/women/trousers.jpg") },
+          { name: "JACKETS", image: require("../../assets/images/categories/women/jackets.jpg") },
+        ],
+      },
+      {
+        title: "Ethnic Wear",
+        items: [
+          { name: "KURTAS", image: require("../../assets/images/categories/women/kurtas.jpg") },
+          { name: "SAREES", image: require("../../assets/images/categories/women/sarees.jpg") },
+        ],
+      },
+    ],
   },
   {
     label: "Kids' Wear",
     image: require("../../assets/images/menu/kids-wear.jpg"),
-    sections: [],
+    sections: [
+      {
+        title: "Boys",
+        items: [
+          { name: "T-SHIRTS", image: require("../../assets/images/men/casual/tshirts.jpg") },
+          { name: "SHIRTS", image: require("../../assets/images/men/casual/shirts.jpg") },
+          { name: "JEANS", image: require("../../assets/images/men/casual/jeans.jpg") },
+        ],
+      },
+      {
+        title: "Girls",
+        items: [
+          { name: "DRESSES", image: require("../../assets/images/categories/women/dresses.jpg") },
+          { name: "TOPS", image: require("../../assets/images/categories/women/tops.jpg") },
+        ],
+      },
+    ],
   },
   {
     label: "Foot Wear",
     image: require("../../assets/images/menu/foot-wear.jpg"),
-    sections: [],
+    sections: [
+      {
+        title: "Men's Footwear",
+        items: [
+          { name: "CASUAL SHOES", image: require("../../assets/images/categories/men/casual-shoes.jpg") },
+          { name: "SPORTS SHOES", image: require("../../assets/images/categories/men/sports-shoes.jpg") },
+          { name: "FORMAL SHOES", image: require("../../assets/images/men/work/formal-shoes.jpg") },
+        ],
+      },
+      {
+        title: "Women's Footwear",
+        items: [
+          { name: "HEELS", image: require("../../assets/images/categories/women/heels.jpg") },
+          { name: "SPORTS SHOES", image: require("../../assets/images/categories/women/sports-shoes.jpg") },
+        ],
+      },
+    ],
   },
   {
     label: "Beauty Products",
     image: require("../../assets/images/menu/beauty-products.jpg"),
-    sections: [],
+    sections: [
+      {
+        title: "Makeup",
+        items: [
+          { name: "LIPSTICK", image: require("../../assets/images/menu/beauty-products.jpg") },
+          { name: "EYELINER", image: require("../../assets/images/menu/beauty-products.jpg") },
+        ],
+      },
+    ],
   },
   {
     label: "Jewellery",
     image: require("../../assets/images/menu/jewellery.jpg"),
-    sections: [],
+    sections: [
+      {
+        title: "Fashion Jewellery",
+        items: [
+          { name: "EARRINGS", image: require("../../assets/images/menu/jewellery.jpg") },
+          { name: "NECKLACES", image: require("../../assets/images/menu/jewellery.jpg") },
+        ],
+      },
+    ],
   },
   {
     label: "Accessories",
     image: require("../../assets/images/menu/accessories.jpg"),
-    sections: [],
+    sections: [
+      {
+        title: "Men's Accessories",
+        items: [
+          { name: "WATCHES", image: require("../../assets/images/categories/men/watches.jpg") },
+          { name: "BOTTLES", image: require("../../assets/images/categories/men/bottles.jpg") },
+          { name: "PERFUME", image: require("../../assets/images/categories/men/perfume.jpg") },
+        ],
+      },
+      {
+        title: "Women's Accessories",
+        items: [
+          { name: "HANDBAGS", image: require("../../assets/images/categories/women/handbags.jpg") },
+          { name: "PERFUME", image: require("../../assets/images/categories/women/perfume.jpg") },
+        ],
+      },
+    ],
   },
 ];
 
@@ -126,14 +208,7 @@ const CategoriesScreen: React.FC<Props> = ({ navigation }) => {
               <TouchableOpacity
                 key={cat.label}
                 style={[styles.categoryButton, active && styles.selectedCategory]}
-                onPress={() => {
-                  // NEW: if Women's Wear → navigate to WomensWearScreen
-                  if (cat.label === "Women's Wear") {
-                    navigation.navigate("WomensWear");
-                  } else {
-                    setSelectedIndex(index);
-                  }
-                }}
+                onPress={() => setSelectedIndex(index)}
               >
                 <Image source={cat.image} style={styles.categoryImage} />
                 <Text style={[styles.categoryLabel, active && styles.categoryLabelActive]}>
