@@ -45,8 +45,7 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
             title: item.title,
             price: item.price,
             image: item.image && item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png"),
-            qty: 1
-        });
+        }, 1);
         // Remove from wishlist? Usually "Move to Cart" implies removal from wishlist, but standard "Add to Cart" keeps it.
         // Let's just Add to Cart for now.
         alert("Added to cart");

@@ -83,8 +83,12 @@ export type RootStackParamList = {
     colors: string[];
     rating?: number;
     reviewsCount?: number;
-
   };
+  ProductDetails: {
+    id: string; // or product object
+    product?: any;
+  };
+  Wishlist: undefined;
   MyCart: undefined;
 
 };

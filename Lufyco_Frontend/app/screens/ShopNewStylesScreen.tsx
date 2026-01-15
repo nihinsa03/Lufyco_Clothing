@@ -94,7 +94,7 @@ const ShopNewStylesScreen: React.FC<Props> = ({ navigation }) => {
               </View>
 
               <TouchableOpacity
-                onPress={() => {}}
+                onPress={() => { }}
                 style={styles.cartBtn}
                 accessibilityRole="button"
                 accessibilityLabel={`Add ${item.title} to cart`}
@@ -112,20 +112,19 @@ const ShopNewStylesScreen: React.FC<Props> = ({ navigation }) => {
       {/* Bottom bar */}
       <View style={styles.bottomBar}>
         {[
-          { label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
-          // Use the exact route key from your navigator here:
-          { label: "AI Stylist", icon: "grid", onPress: () => navigation.navigate("AISylist") },
-          { label: "My Cart", icon: "shopping-cart", onPress: () => {} },
-          { label: "Wishlist", icon: "heart", onPress: () => {} },
-          { label: "Profile", icon: "user", onPress: () => {} },
-        ].map((t, i) => (
-          <TouchableOpacity key={t.label} style={styles.tabBtn} onPress={t.onPress}>
+          { key: "home", label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
+          { key: "stylist", label: "AI Stylist", icon: "grid", onPress: () => navigation.navigate("AIStylist") },
+          { key: "cart", label: "My Cart", icon: "shopping-cart", onPress: () => navigation.navigate("MyCart") },
+          { key: "wish", label: "Wishlist", icon: "heart", onPress: () => navigation.navigate("Wishlist") },
+          { key: "profile", label: "Profile", icon: "user", onPress: () => navigation.navigate("Profile") },
+        ].map((t) => (
+          <TouchableOpacity key={t.key} style={styles.tabBtn} onPress={t.onPress}>
             <Feather
               name={t.icon as any}
               size={22}
-              color={i === 0 ? "#000" : "#777"}
+              color={t.key === 'stylist' ? "#1E90FF" : "#777"}
             />
-            <Text style={[styles.tabLabel, { color: i === 0 ? "#000" : "#777" }]}>
+            <Text style={[styles.tabLabel, { color: t.key === 'stylist' ? "#1E90FF" : "#777" }]}>
               {t.label}
             </Text>
           </TouchableOpacity>

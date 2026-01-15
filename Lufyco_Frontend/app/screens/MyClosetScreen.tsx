@@ -17,7 +17,7 @@ import api from "../api/api";
 
 type Props = NativeStackScreenProps<RootStackParamList, "MyCloset">;
 
-const chips = ["All", "Tops", "Dresses", "Shoes", "Bottoms", "Outwear", "Accessories"];
+const chips = ["All", "Tops", "Bottoms", "Dresses", "Outerwear", "Accessories", "Shoes"];
 
 const closetItems = [
   {
@@ -88,7 +88,7 @@ const MyClosetScreen = ({ navigation }: Props) => {
       <View style={styles.searchBar}>
         <Ionicons name="search" size={18} color="#111" />
         <TextInput
-          placeholder="Search for Closet"
+          placeholder="Search for clothes..."
           style={styles.searchInput}
           value={q}
           onChangeText={setQ}

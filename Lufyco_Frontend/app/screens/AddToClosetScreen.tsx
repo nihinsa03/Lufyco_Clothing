@@ -15,6 +15,8 @@ import type { RootStackParamList } from "../navigation/AppNavigator";
 type Props = NativeStackScreenProps<RootStackParamList, "AddToCloset">;
 
 const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
+  const [processing, setProcessing] = React.useState(false);
+
   const ensurePermission = async (kind: "camera" | "gallery") => {
     if (kind === "camera") {
       const { status } = await ImagePicker.requestCameraPermissionsAsync();
@@ -23,6 +25,15 @@ const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
       const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
       return status === "granted";
     }
+  };
+
+  const handleProcess = (uri: string) => {
+    setProcessing(true);
+    // Simulate API/Processing delay
+    setTimeout(() => {
+      setProcessing(false);
+      navigation.navigate("AddToClosetPreview", { uri });
+    }, 2000);
   };
 
   const openCamera = async () => {
@@ -35,7 +46,7 @@ const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
       aspect: [4, 5],
     });
     if (!res.canceled && res.assets?.length) {
-      navigation.navigate("AddToClosetPreview", { uri: res.assets[0].uri });
+      handleProcess(res.assets[0].uri);
     }
   };
 
@@ -49,9 +60,21 @@ const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
       aspect: [4, 5],
     });
     if (!res.canceled && res.assets?.length) {
-      navigation.navigate("AddToClosetPreview", { uri: res.assets[0].uri });
+      handleProcess(res.assets[0].uri);
     }
   };
+
+  if (processing) {
+    return (
+      <SafeAreaView style={[styles.safe, { justifyContent: 'center', alignItems: 'center' }]}>
+        <Text style={{ fontSize: 20, fontWeight: '700', marginBottom: 20 }}>Processing...</Text>
+        {/* Simple loading indicator visual matching prompt requirements */}
+        <View style={{ width: 200, height: 10, backgroundColor: '#eee', borderRadius: 5 }}>
+          <View style={{ width: '50%', height: '100%', backgroundColor: '#111', borderRadius: 5 }} />
+        </View>
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -99,15 +122,15 @@ const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
       {/* Bottom tab (static visual only) */}
       <View style={styles.bottomBar}>
         {[
-          { label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
-          { label: "AI Stylist", icon: "grid", onPress: () => navigation.navigate("AISylist" as any) },
-          { label: "My Cart", icon: "shopping-cart", onPress: () => {} },
-          { label: "Wishlist", icon: "heart", onPress: () => {} },
-          { label: "Profile", icon: "user", onPress: () => {} },
-        ].map((t, i) => (
-          <TouchableOpacity key={t.label} style={styles.tabBtn} onPress={t.onPress}>
-            <Feather name={t.icon as any} size={22} color={i === 0 ? "#000" : "#777"} />
-            <Text style={[styles.tabLabel, { color: i === 0 ? "#000" : "#777" }]}>{t.label}</Text>
+          { key: "home", label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
+          { key: "stylist", label: "AI Stylist", icon: "grid", onPress: () => navigation.navigate("AIStylist") },
+          { key: "cart", label: "My Cart", icon: "shopping-cart", onPress: () => navigation.navigate("MyCart") },
+          { key: "wish", label: "Wishlist", icon: "heart", onPress: () => navigation.navigate("Wishlist") },
+          { key: "profile", label: "Profile", icon: "user", onPress: () => navigation.navigate("Profile") },
+        ].map((t) => (
+          <TouchableOpacity key={t.key} style={styles.tabBtn} onPress={t.onPress}>
+            <Feather name={t.icon as any} size={22} color={t.key === 'stylist' ? "#1E90FF" : "#777"} />
+            <Text style={[styles.tabLabel, { color: t.key === 'stylist' ? "#1E90FF" : "#777" }]}>{t.label}</Text>
           </TouchableOpacity>
         ))}
       </View>
