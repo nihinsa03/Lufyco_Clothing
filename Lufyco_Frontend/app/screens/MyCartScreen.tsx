@@ -38,10 +38,7 @@ const MyCartScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleCheckout = () => {
-    // In real app, navigate to Checkout or process payment
-    Alert.alert("Checkout", `Processing payment of $${total.toFixed(2)}`, [
-      { text: "OK", onPress: clearCart }
-    ]);
+    navigation.navigate("CheckoutShipping");
   };
 
   if (items.length === 0) {

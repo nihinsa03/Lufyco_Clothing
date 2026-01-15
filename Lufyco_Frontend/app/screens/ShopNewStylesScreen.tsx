@@ -12,43 +12,28 @@ import {
 import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
+import { useShopStore } from "../store/useShopStore";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ShopNewStyles">;
 
-type StyleItem = {
-  id: string;
-  title: string;
-  subtitle: string;
-  image: any;
-};
-
-const DATA: StyleItem[] = [
-  {
-    id: "watch",
-    title: "Brown Leather Watch",
-    subtitle: "Complements casual style",
-    image: require("../../assets/images/categories/men/watches.jpg"),
-  },
-  {
-    id: "perfume",
-    title: "Black Night Perfume",
-    subtitle: "Complements casual style",
-    image: require("../../assets/images/categories/men/perfume.jpg"),
-  },
-];
-
 const ShopNewStylesScreen: React.FC<Props> = ({ navigation }) => {
+  const { products } = useShopStore();
   const [query, setQuery] = useState("");
 
   const list = useMemo(() => {
+    // Filter for new arrivals
+    let data = products.filter(p => p.isNewArrival);
+
     const q = query.trim().toLowerCase();
-    if (!q) return DATA;
-    return DATA.filter(
-      (i) =>
-        i.title.toLowerCase().includes(q) ||
-        i.subtitle.toLowerCase().includes(q)
-    );
-  }, [query]);
+    if (q) {
+      data = data.filter(
+        (i) =>
+          i.title.toLowerCase().includes(q) ||
+          (i.description && i.description.toLowerCase().includes(q))
+      );
+    }
+    return data;
+  }, [products, query]);
 
   // IMPORTANT: Use the exact route name from your RootStackParamList.
   // Your type error shows the route is spelled "AISylist".
@@ -85,24 +70,27 @@ const ShopNewStylesScreen: React.FC<Props> = ({ navigation }) => {
         contentContainerStyle={{ paddingBottom: 140, paddingHorizontal: 16 }}
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         renderItem={({ item }) => (
-          <View style={styles.card}>
+          <TouchableOpacity
+            style={styles.card}
+            onPress={() => navigation.navigate("ProductDetails", { id: item.id, product: item })}
+          >
             <View style={styles.row}>
-              <Image source={item.image} style={styles.thumb} />
+              <Image
+                source={item.images && item.images[0] ? (typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]) : require("../../assets/images/clothing.png")}
+                style={styles.thumb}
+              />
               <View style={{ flex: 1, marginRight: 10 }}>
                 <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.subtitle}>{item.subtitle}</Text>
+                <Text style={styles.subtitle}>${item.price?.toFixed(2)}</Text>
               </View>
 
-              <TouchableOpacity
-                onPress={() => { }}
+              <View
                 style={styles.cartBtn}
-                accessibilityRole="button"
-                accessibilityLabel={`Add ${item.title} to cart`}
               >
-                <Feather name="shopping-cart" size={20} color="#fff" />
-              </TouchableOpacity>
+                <Feather name="chevron-right" size={20} color="#fff" />
+              </View>
             </View>
-          </View>
+          </TouchableOpacity>
         )}
         ListEmptyComponent={
           <Text style={styles.empty}>No items match “{query}”.</Text>

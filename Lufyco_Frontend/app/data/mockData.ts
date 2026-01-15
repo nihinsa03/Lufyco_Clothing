@@ -26,6 +26,8 @@ export interface Product {
     discountPercent?: number;
 }
 
+import { MOCK_PRODUCTS } from './mockProducts';
+
 export const mockCategories: Category[] = [
     { id: 'c1', name: 'Men', image: require('../../assets/images/categories/men/shirts.png') }, // Assumes exists or will fallback
     { id: 'c2', name: 'Women', image: require('../../assets/images/categories/women/dresses.jpg') },
@@ -35,9 +37,32 @@ export const mockCategories: Category[] = [
     // Add more as needed
 ];
 
+// Helper to map category name to ID
+const getCatId = (name: string) => {
+    const cat = mockCategories.find(c => c.name === name);
+    return cat ? cat.id : 'c1';
+};
+
+// Transform MOCK_PRODUCTS to match local Product interface
+const transformedNewProducts: Product[] = MOCK_PRODUCTS.map(p => ({
+    id: p._id,
+    title: p.name,
+    price: p.price,
+    rating: 4.5,
+    reviews: p.reviewsCount || 0,
+    images: [p.image], // Wrap single image string in array
+    categoryId: getCatId(p.category || 'Men'),
+    tags: [p.category || '', p.subCategory || '', p.type || ''].filter(Boolean),
+    colors: p.colors || [],
+    sizes: p.sizes || [],
+    isNewArrival: true, // Mark all as new for visibility
+    description: p.description
+}));
+
 export const mockProducts: Product[] = [
+    ...transformedNewProducts,
     {
-        id: 'p1',
+        id: 'old_p1',
         title: 'Classic White Shirt',
         price: 29.99,
         rating: 4.5,
