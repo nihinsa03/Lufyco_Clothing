@@ -4,7 +4,7 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import api from "../api/api";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 // Type the navigation prop
 type SignupScreenNavigationProp = StackNavigationProp<RootStackParamList, "Signup">;

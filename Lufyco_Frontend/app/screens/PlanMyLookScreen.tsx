@@ -21,13 +21,14 @@ type Props = NativeStackScreenProps<RootStackParamList, "PlanMyLook">;
 
 const moods = [
   { key: "Happy", label: "Happy", emoji: "😊" },
+  { key: "Chill", label: "Chill", emoji: "😌" },
   { key: "Confident", label: "Confident", emoji: "😎" },
-  { key: "Sad", label: "Sad", emoji: "☹️" },
-  { key: "Tired", label: "Tired", emoji: "😐" },
-  { key: "Excited", label: "Excited", emoji: "😁" },
+  { key: "Trendy", label: "Trendy", emoji: "✨" },
+  { key: "Edgy", label: "Edgy", emoji: "🎸" },
+  { key: "Elegant", label: "Elegant", emoji: "🍸" },
 ];
 
-const occasions = ["Casual", "Office", "Party", "Date", "Wedding"] as const;
+const occasions = ["Casual", "Office", "Party", "Date", "Wedding", "Gym"] as const;
 const timeNeeds = ["Now", "Future"] as const;
 
 const formatDateTime = (d: Dayjs) => d.format("DD MMM YYYY | hh:mm A");
@@ -126,6 +127,7 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
           <SectionTitle>How are you feeling today ?</SectionTitle>
 
           {/* 2 rows (3 columns then 2 columns) to match UI */}
+          {/* 2 rows with 3 columns each */}
           <View style={styles.moodRow}>
             {moods.slice(0, 3).map((m) => (
               <MoodTile
@@ -138,21 +140,15 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
             ))}
           </View>
           <View style={styles.moodRow}>
-            <MoodTile
-              key={moods[3].key}
-              emoji={moods[3].emoji}
-              label={moods[3].label}
-              selected={mood === moods[3].key}
-              onPress={() => setMood(moods[3].key)}
-            />
-            <MoodTile
-              key={moods[4].key}
-              emoji={moods[4].emoji}
-              label={moods[4].label}
-              selected={mood === moods[4].key}
-              onPress={() => setMood(moods[4].key)}
-            />
-            <View style={{ width: "30%" }} />
+            {moods.slice(3, 6).map((m) => (
+              <MoodTile
+                key={m.key}
+                emoji={m.emoji}
+                label={m.label}
+                selected={mood === m.key}
+                onPress={() => setMood(m.key)}
+              />
+            ))}
           </View>
         </View>
 

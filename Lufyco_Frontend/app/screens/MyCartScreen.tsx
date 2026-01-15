@@ -13,6 +13,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useCart } from "../context/CartContext";
 import VoucherCodeSheet from "@/components/VoucherCodeSheet";
+import api from "../api/api";
 
 
 type Props = NativeStackScreenProps<RootStackParamList, "MyCart">;
@@ -31,6 +32,35 @@ const MyCartScreen: React.FC<Props> = ({ navigation }) => {
 
   const total = useMemo(() => Math.max(0, subtotal - discountAmount) + shipping, [subtotal, discountAmount, shipping]);
 
+  const handleCheckout = async () => {
+    if (items.length === 0) return;
+
+    try {
+      const orderData = {
+        orderItems: items.map(i => ({
+          name: i.title,
+          qty: i.qty,
+          image: typeof i.image === 'string' ? i.image : 'placeholder',
+          price: i.price,
+          product: i.id.length === 24 ? i.id : undefined // only if valid mongo id
+        })),
+        itemsPrice: subtotal,
+        shippingPrice: shipping,
+        totalPrice: total,
+        paymentMethod: 'COD', // default
+        shippingAddress: { address: '123 Fake St', city: 'Demo City' } // default for now
+      };
+
+      await api.post('/orders', orderData);
+      alert('Order placed successfully!');
+      // clear(); // create clear() in Context if not exists, but for now we just verify it works
+      navigation.navigate("Home");
+    } catch (e) {
+      console.error(e);
+      alert('Checkout failed');
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       {/* Header */}
@@ -48,80 +78,76 @@ const MyCartScreen: React.FC<Props> = ({ navigation }) => {
 
       {/* Items */}
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 140 }}>
-        {items.map((i) => (
-          <View key={i.id} style={styles.itemRow}>
-            <Image source={i.image} style={styles.thumb} />
-
-            <View style={{ flex: 1, marginHorizontal: 12 }}>
-              <Text style={styles.itemTitle} numberOfLines={2}>{i.title}</Text>
-
-              <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
-                <Text style={styles.price}>{money(i.price)}</Text>
-                {i.compareAtPrice ? (
-                  <Text style={styles.compare}>{money(i.compareAtPrice)}</Text>
-                ) : null}
+        {items.length === 0 ? (
+          <View style={{ marginTop: 50, alignItems: 'center' }}>
+            <Feather name="shopping-cart" size={48} color="#ddd" />
+            <Text style={{ marginTop: 10, color: "#888" }}>Your cart is empty</Text>
+          </View>
+        ) : (
+          items.map((i) => (
+            <View key={i.id} style={styles.itemRow}>
+              <Image source={i.image} style={styles.thumb} />
+              <View style={{ flex: 1, marginHorizontal: 12 }}>
+                <Text style={styles.itemTitle} numberOfLines={2}>{i.title}</Text>
+                <View style={{ flexDirection: "row", alignItems: "center", marginTop: 4 }}>
+                  <Text style={styles.price}>{money(i.price)}</Text>
+                  {i.compareAtPrice ? (
+                    <Text style={styles.compare}>{money(i.compareAtPrice)}</Text>
+                  ) : null}
+                </View>
+                {i.size ? <Text style={styles.meta}>Size : {i.size}</Text> : null}
+                <View style={styles.qtyRow}>
+                  <TouchableOpacity style={styles.qtyBtn} onPress={() => dec(i.id)}>
+                    <Text style={styles.qtyBtnText}>−</Text>
+                  </TouchableOpacity>
+                  <Text style={styles.qty}>{i.qty}</Text>
+                  <TouchableOpacity style={styles.qtyBtn} onPress={() => inc(i.id)}>
+                    <Text style={styles.qtyBtnText}>+</Text>
+                  </TouchableOpacity>
+                </View>
               </View>
-
-              {i.size ? <Text style={styles.meta}>Size : {i.size}</Text> : null}
-
-              {/* qty controls */}
-              <View style={styles.qtyRow}>
-                <TouchableOpacity style={styles.qtyBtn} onPress={() => dec(i.id)}>
-                  <Text style={styles.qtyBtnText}>−</Text>
+              <View style={{ alignItems: "flex-end" }}>
+                <TouchableOpacity onPress={() => toggle(i.id)} style={styles.checkBtn}>
+                  <Feather name={i.selected ? "check-circle" : "circle"} size={22} color={i.selected ? "#10B981" : "#9CA3AF"} />
                 </TouchableOpacity>
-                <Text style={styles.qty}>{i.qty}</Text>
-                <TouchableOpacity style={styles.qtyBtn} onPress={() => inc(i.id)}>
-                  <Text style={styles.qtyBtnText}>+</Text>
+                <TouchableOpacity onPress={() => remove(i.id)} style={styles.trashBtn}>
+                  <Feather name="trash-2" size={20} color="#EF4444" />
                 </TouchableOpacity>
               </View>
             </View>
+          ))
+        )}
 
-            {/* Right column: select & delete */}
-            <View style={{ alignItems: "flex-end" }}>
-              <TouchableOpacity onPress={() => toggle(i.id)} style={styles.checkBtn}>
-                <Feather name={i.selected ? "check-circle" : "circle"} size={22} color={i.selected ? "#10B981" : "#9CA3AF"} />
-              </TouchableOpacity>
-
-              <TouchableOpacity onPress={() => remove(i.id)} style={styles.trashBtn}>
-                <Feather name="trash-2" size={20} color="#EF4444" />
-              </TouchableOpacity>
-            </View>
-          </View>
-        ))}
-
-        {/* Summary */}
-        <View style={styles.summaryCard}>
-          <Text style={styles.summaryTitle}>Order Info</Text>
-
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Subtotal</Text>
-            <Text style={styles.summaryValue}>{money(subtotal)}</Text>
-          </View>
-
-          {discountAmount > 0 ? (
+        {items.length > 0 && (
+          <View style={styles.summaryCard}>
+            <Text style={styles.summaryTitle}>Order Info</Text>
             <View style={styles.summaryRow}>
-              <Text style={[styles.summaryLabel, { color: "#10B981" }]}>
-                Discount {voucherCode ? `(${voucherCode})` : ""}
-              </Text>
-              <Text style={[styles.summaryValue, { color: "#10B981" }]}>− {money(discountAmount)}</Text>
+              <Text style={styles.summaryLabel}>Subtotal</Text>
+              <Text style={styles.summaryValue}>{money(subtotal)}</Text>
             </View>
-          ) : null}
-
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Shipping Cost</Text>
-            <Text style={styles.summaryValue}>{money(shipping)}</Text>
+            {discountAmount > 0 ? (
+              <View style={styles.summaryRow}>
+                <Text style={[styles.summaryLabel, { color: "#10B981" }]}>
+                  Discount {voucherCode ? `(${voucherCode})` : ""}
+                </Text>
+                <Text style={[styles.summaryValue, { color: "#10B981" }]}>− {money(discountAmount)}</Text>
+              </View>
+            ) : null}
+            <View style={styles.summaryRow}>
+              <Text style={styles.summaryLabel}>Shipping Cost</Text>
+              <Text style={styles.summaryValue}>{money(shipping)}</Text>
+            </View>
+            <View style={[styles.summaryRow, { marginTop: 6 }]}>
+              <Text style={styles.totalLabel}>Total</Text>
+              <Text style={styles.totalValue}>{money(total)}</Text>
+            </View>
           </View>
-
-          <View style={[styles.summaryRow, { marginTop: 6 }]}>
-            <Text style={styles.totalLabel}>Total</Text>
-            <Text style={styles.totalValue}>{money(total)}</Text>
-          </View>
-        </View>
+        )}
       </ScrollView>
 
       {/* Checkout button */}
       <View style={styles.bottomBar}>
-        <TouchableOpacity style={styles.checkoutBtn}>
+        <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout}>
           <Text style={styles.checkoutText}>Checkout ({items.length})</Text>
         </TouchableOpacity>
       </View>

@@ -29,7 +29,11 @@ import WomenTopsScreen from "../screens/WomenTopsScreen";
 import WomenTopDetailsScreen from "../screens/WomenTopDetailsScreen";
 import MyCartScreen from "../screens/MyCartScreen";
 import ProductListingScreen from "../screens/ProductListingScreen";
-
+import ProductDetailsScreen from "../screens/ProductDetailsScreen";
+import WishlistScreen from "../screens/WishlistScreen";
+import ProfileScreen from "../screens/ProfileScreen";
+import OrderHistoryScreen from "../screens/OrderHistoryScreen";
+import ChangePasswordScreen from "../screens/ChangePasswordScreen";
 
 
 export type RootStackParamList = {
@@ -46,6 +50,9 @@ export type RootStackParamList = {
   PasswordResetSuccess: undefined;
   Home: undefined;
   Categories: undefined; // ✅ Updated to PascalCase
+  Profile: undefined;
+  OrderHistory: undefined;
+  ChangePassword: undefined;
   MensWear: undefined;
   MenCasualShirts: undefined;
   AIStylist: undefined;
@@ -114,6 +121,11 @@ export default function AppNavigator() {
       <Stack.Screen name="ProductListing" component={ProductListingScreen} />
       <Stack.Screen name="WomenTops" component={WomenTopsScreen} />
       <Stack.Screen name="WomenTopDetails" component={WomenTopDetailsScreen} />
+      <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
+      <Stack.Screen name="Wishlist" component={WishlistScreen} />
+      <Stack.Screen name="Profile" component={ProfileScreen} />
+      <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
+      <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
       <Stack.Screen name="MyCart" component={MyCartScreen} />
 
 

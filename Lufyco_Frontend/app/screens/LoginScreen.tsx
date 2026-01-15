@@ -4,13 +4,15 @@ import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import api from "../api/api";
-import AsyncStorage from '@react-native-async-storage/async-storage';
+// import AsyncStorage ... (removed direct usage)
+import { useAuth } from "../context/AuthContext";
 
 // Type the navigation prop
 type LoginScreenNavigationProp = StackNavigationProp<RootStackParamList, "Login">;
 
 const LoginScreen = () => {
   const navigation = useNavigation<LoginScreenNavigationProp>();
+  const { login } = useAuth(); // <--- Use AuthContext
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -25,15 +27,15 @@ const LoginScreen = () => {
       setLoading(true);
       const { data } = await api.post('/users/login', { email, password });
 
-      // Save user session
-      await AsyncStorage.setItem('userInfo', JSON.stringify(data));
+      // Use AuthContext login
+      await login(data);
 
       if (Platform.OS === 'web') {
         alert("Welcome back!");
-        navigation.navigate("Home");
+        navigation.reset({ index: 0, routes: [{ name: "Home" }] }); // Reset stack
       } else {
         Alert.alert("Success", "Welcome back!", [
-          { text: "OK", onPress: () => navigation.navigate("Home") }
+          { text: "OK", onPress: () => navigation.reset({ index: 0, routes: [{ name: "Home" }] }) }
         ]);
       }
     } catch (error: any) {

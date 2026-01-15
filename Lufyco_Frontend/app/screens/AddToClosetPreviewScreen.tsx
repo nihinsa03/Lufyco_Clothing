@@ -10,11 +10,33 @@ import {
 import { Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
+import api from "../api/api";
 
 type Props = NativeStackScreenProps<RootStackParamList, "AddToClosetPreview">;
 
 const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const { uri } = route.params;
+
+  const handleSave = async () => {
+    try {
+      // In a real app, upload image to a cloud storage (Cloudinary/S3) and get URL.
+      // For this demo, we'll just send the local URI (it won't persist across devices but works for demo).
+      // Or if using base64.
+
+      const payload = {
+        name: "New Upload",
+        category: "Tops", // Defaulting for now
+        image: uri,
+      };
+
+      await api.post("/closet", payload);
+      alert("Added to closet!");
+      navigation.navigate("MyCloset");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to save.");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -33,19 +55,16 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
           <View style={styles.btnRow}>
             <TouchableOpacity
               style={styles.blackBtn}
-              onPress={() => {
-                // TODO: save to closet here, then navigate as you need
-                navigation.navigate("MyCloset");
-              }}
+              onPress={handleSave}
             >
-              <Text style={styles.blackBtnText}>Processed</Text>
+              <Text style={styles.blackBtnText}>Add to Closet</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.blackBtn}
               onPress={() => navigation.replace("AddToCloset")}
             >
-              <Text style={styles.blackBtnText}>Re try</Text>
+              <Text style={styles.blackBtnText}>Retake</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -56,9 +75,9 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         {[
           { label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
           { label: "AI Stylist", icon: "grid", onPress: () => navigation.navigate("AISylist" as any) },
-          { label: "My Cart", icon: "shopping-cart", onPress: () => {} },
-          { label: "Wishlist", icon: "heart", onPress: () => {} },
-          { label: "Profile", icon: "user", onPress: () => {} },
+          { label: "My Cart", icon: "shopping-cart", onPress: () => { } },
+          { label: "Wishlist", icon: "heart", onPress: () => { } },
+          { label: "Profile", icon: "user", onPress: () => { } },
         ].map((t, i) => (
           <TouchableOpacity key={t.label} style={styles.tabBtn} onPress={t.onPress}>
             <Feather name={t.icon as any} size={22} color={i === 0 ? "#000" : "#777"} />

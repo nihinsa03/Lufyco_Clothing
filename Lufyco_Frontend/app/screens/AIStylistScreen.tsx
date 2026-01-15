@@ -1,4 +1,5 @@
 import React from "react";
+import { useAuth } from "../context/AuthContext";
 import {
   View,
   Text,
@@ -18,7 +19,7 @@ type RootStackParamList = {
   MyCloset: undefined;
   PlanMyLook: undefined;
   ShopNewStyles: undefined;
-  UpcomingEvents: undefined;   
+  UpcomingEvents: undefined;
   // Optional future routes:
   MyCart?: undefined;
   Wishlist?: undefined;
@@ -28,15 +29,27 @@ type RootStackParamList = {
 type Props = NativeStackScreenProps<RootStackParamList, "AIStylist">;
 
 const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
+  const { user } = useAuth(); // <--- Get real user
+
+  // Mock upcoming look data
+  const upcomingLook = {
+    title: "Office Meeting",
+    date: "Fri, Aug 8",
+    items: [
+      { id: '1', name: "Blue Shirt", image: require("../../assets/images/shirt.png") },
+      { id: '2', name: "Casual Shoe", image: require("../../assets/images/shoe.png") }
+    ]
+  };
+
   return (
     <SafeAreaView style={styles.safe}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.greet}>Hello, Alex</Text>
+        <Text style={styles.greet}>Hello, {user?.name?.split(" ")[0] || "User"}</Text>
         <View style={styles.headerIcons}>
           <Feather name="bell" size={22} style={styles.hIcon} />
-          <Feather name="heart" size={22} style={styles.hIcon} />
-          <Feather name="user" size={22} style={styles.hIcon} />
+          <Feather name="heart" size={22} style={styles.hIcon} onPress={() => navigation.navigate("Wishlist")} />
+          <Feather name="user" size={22} style={styles.hIcon} onPress={() => navigation.navigate("Profile")} />
         </View>
       </View>
 
@@ -46,15 +59,14 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
           <Tile
             label="My Closet"
             icon={<Feather name="shopping-bag" size={22} color="#3B5BFF" />}
-            onPress={() => navigation.navigate("MyCloset")}   // ✅ navigate
+            onPress={() => navigation.navigate("MyCloset")}
           />
           <Tile
             label="Plan My Look"
             icon={<Ionicons name="sunny-outline" size={22} color="#FF4D4D" />}
             dim
             onPress={() => navigation.navigate("PlanMyLook")}
-            />
-
+          />
         </View>
 
         <View style={styles.tileRow}>
@@ -62,7 +74,7 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
             label="Shop New Styles"
             icon={<Feather name="briefcase" size={22} color="#1EA672" />}
             onPress={() => navigation.navigate("ShopNewStyles")}
-            />
+          />
 
           <Tile
             label="Upcoming Events"
@@ -73,11 +85,11 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
 
         {/* Upcoming looks */}
         <Text style={styles.sectionTitle}>Your Upcoming Looks</Text>
-        <View style={styles.lookCard}>
+        <TouchableOpacity style={styles.lookCard} onPress={() => navigation.navigate("UpcomingEvents")}>
           <View style={styles.lookHeader}>
             <View>
-              <Text style={styles.lookTitle}>Office Meeting</Text>
-              <Text style={styles.lookSub}>Fri, Aug 8</Text>
+              <Text style={styles.lookTitle}>{upcomingLook.title}</Text>
+              <Text style={styles.lookSub}>{upcomingLook.date}</Text>
             </View>
             <Feather name="more-horizontal" size={20} color="#999" />
           </View>
@@ -85,14 +97,9 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.separator} />
 
           <View style={styles.lookItems}>
-            <LookItem
-              image={require("../../assets/images/shirt.png")}
-              label="Blue Shirt"
-            />
-            <LookItem
-              image={require("../../assets/images/shoe.png")}
-              label="Casual Shoe"
-            />
+            {upcomingLook.items.map(item => (
+              <LookItem key={item.id} image={item.image} label={item.name} />
+            ))}
           </View>
 
           <View style={styles.separator} />
@@ -108,14 +115,14 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
               <Feather name="chevron-right" size={20} />
             </TouchableOpacity>
           </View>
-        </View>
+        </TouchableOpacity>
 
         {/* Weather */}
         <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Today’s Weather</Text>
         <View style={styles.weatherCard}>
           <Ionicons name="sunny-outline" size={28} color="#FF4D4D" />
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.weatherMain}>72 F</Text>
+            <Text style={styles.weatherMain}>72°F</Text>
             <Text style={styles.weatherSub}>Sunny</Text>
           </View>
         </View>
@@ -124,13 +131,13 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
       {/* Bottom Tab (AI Stylist active) */}
       <View style={styles.bottomBar}>
         {[
-          { label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
-          { label: "AI Stylist", icon: "grid", onPress: () => {}, active: true },
-          { label: "My Cart", icon: "shopping-cart", onPress: () => {} },
-          { label: "Wishlist", icon: "heart", onPress: () => {} },
-          { label: "Profile", icon: "user", onPress: () => {} },
+          { key: "home", label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
+          { key: "stylist", label: "AI Stylist", icon: "grid", onPress: () => { }, active: true },
+          { key: "cart", label: "My Cart", icon: "shopping-cart", onPress: () => navigation.navigate("MyCart") },
+          { key: "wish", label: "Wishlist", icon: "heart", onPress: () => navigation.navigate("Wishlist") },
+          { key: "profile", label: "Profile", icon: "user", onPress: () => navigation.navigate("Profile") },
         ].map((t) => (
-          <TouchableOpacity key={t.label} style={styles.tabBtn} onPress={t.onPress}>
+          <TouchableOpacity key={t.key} style={styles.tabBtn} onPress={t.onPress}>
             <Feather name={t.icon as any} size={22} color={t.active ? "#1E90FF" : "#777"} />
             <Text style={[styles.tabLabel, { color: t.active ? "#1E90FF" : "#777" }]}>{t.label}</Text>
           </TouchableOpacity>

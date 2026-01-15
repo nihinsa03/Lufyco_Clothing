@@ -205,7 +205,12 @@ const HomeScreen = ({ navigation }: Props) => {
             const handlePress = () => {
               if (tab.key === "stylist") return navigation.navigate("AIStylist");
               if (tab.key === "cart") return navigation.navigate("MyCart");
+              if (tab.key === "wish") return navigation.navigate("Wishlist");
               if (tab.key === "home") return;
+              // Profile -> Login for now if not authenticated, or Profile scren
+              if (tab.key === "profile") {
+                navigation.navigate("Profile");
+              }
             };
             const IconComp = tab.type === "ion" ? Ionicons : Feather;
 

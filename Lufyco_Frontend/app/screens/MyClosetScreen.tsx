@@ -1,5 +1,5 @@
 // screens/MyClosetScreen.tsx
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   SafeAreaView,
   View,
@@ -13,6 +13,7 @@ import {
 import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
+import api from "../api/api";
 
 type Props = NativeStackScreenProps<RootStackParamList, "MyCloset">;
 
@@ -28,14 +29,49 @@ const closetItems = [
 ];
 
 const MyClosetScreen = ({ navigation }: Props) => {
+  const [items, setItems] = useState<any[]>([]);
   const [active, setActive] = useState("All");
   const [q, setQ] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const filtered = closetItems.filter(
-    (i) =>
-      (active === "All" || i.category.toLowerCase() === active.toLowerCase()) &&
-      i.name.toLowerCase().includes(q.toLowerCase())
-  );
+  // Fetch items from backend
+  const fetchCloset = async () => {
+    setLoading(true);
+    try {
+      // In a real app, retrieve userId from storage
+      // const userId = await AsyncStorage.getItem('userId');
+      const params: any = {};
+      if (active !== "All") params.category = active;
+      if (q) params.search = q;
+
+      const res = await api.get("/closet", { params });
+      setItems(res.data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchCloset();
+  }, [active, q]);
+
+  // Refresh when navigating back to this screen (e.g. after adding item)
+  useEffect(() => {
+    const unsub = navigation.addListener('focus', fetchCloset);
+    return unsub;
+  }, [navigation]);
+
+  const handleDelete = async (id: string) => {
+    try {
+      await api.delete(`/closet/${id}`);
+      fetchCloset(); // refresh
+    } catch (e) {
+      console.error(e);
+      alert("Failed to delete item");
+    }
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -60,7 +96,7 @@ const MyClosetScreen = ({ navigation }: Props) => {
         />
       </View>
 
-      {/* Chips — compact, pill style, wraps to multiple lines */}
+      {/* Chips */}
       <View style={styles.chipsWrap}>
         {chips.map((c) => {
           const selected = c === active;
@@ -78,10 +114,14 @@ const MyClosetScreen = ({ navigation }: Props) => {
 
       {/* Items */}
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}>
-        {filtered.map((item) => (
-          <View key={item.id} style={styles.itemCard}>
+        {items.map((item) => (
+          <View key={item._id} style={styles.itemCard}>
             <View style={styles.itemRow}>
-              <Image source={item.image} style={styles.itemImage} />
+              {/* Handle image source: if http, uri; else placeholder */}
+              <Image
+                source={item.image && item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png")}
+                style={styles.itemImage}
+              />
               <View style={{ flex: 1, marginLeft: 14 }}>
                 <Text style={styles.itemTitle}>{item.name}</Text>
                 <Text style={styles.itemSub}>{item.category}</Text>
@@ -94,7 +134,7 @@ const MyClosetScreen = ({ navigation }: Props) => {
               <TouchableOpacity style={styles.actionBtn}>
                 <Feather name="edit-2" size={18} />
               </TouchableOpacity>
-              <TouchableOpacity style={[styles.actionBtn, { marginLeft: 12 }]}>
+              <TouchableOpacity style={[styles.actionBtn, { marginLeft: 12 }]} onPress={() => handleDelete(item._id)}>
                 <Feather name="trash-2" size={18} />
               </TouchableOpacity>
             </View>
@@ -104,14 +144,14 @@ const MyClosetScreen = ({ navigation }: Props) => {
 
       {/* Floating Add Button */}
       <TouchableOpacity
-    style={styles.fab}
-    activeOpacity={0.85}
-    onPress={() => navigation.navigate("AddToCloset")}
-  >
-    <View style={styles.fabInner}>
-      <Feather name="plus" size={26} color="#fff" />
-    </View>
-  </TouchableOpacity>
+        style={styles.fab}
+        activeOpacity={0.85}
+        onPress={() => navigation.navigate("AddToCloset")}
+      >
+        <View style={styles.fabInner}>
+          <Feather name="plus" size={26} color="#fff" />
+        </View>
+      </TouchableOpacity>
     </SafeAreaView>
   );
 };

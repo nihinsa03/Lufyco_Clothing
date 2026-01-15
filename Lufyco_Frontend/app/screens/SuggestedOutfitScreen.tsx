@@ -25,8 +25,66 @@ const moodEmoji: Record<string, string> = {
   Excited: "😁",
 };
 
+import api from "../api/api";
+import { ClothingItem } from "../models";
+
+// ... (keep props and emoji map)
+
 const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
   const { mood, weather, occasion } = route.params;
+  const [closetItems, setClosetItems] = React.useState<ClothingItem[]>([]);
+  const [generatedOutfit, setGeneratedOutfit] = React.useState<ClothingItem[]>([]);
+  const [loading, setLoading] = React.useState(true);
+  const [retry, setRetry] = React.useState(0);
+
+  React.useEffect(() => {
+    fetchCloset();
+  }, []);
+
+  const fetchCloset = async () => {
+    try {
+      const { data } = await api.get('/closet'); // Assuming this returns ClothingItem[]
+      setClosetItems(data);
+      setLoading(false);
+    } catch (e) {
+      console.error(e);
+      setLoading(false);
+      // Fallback mock params if empty
+      // ...
+    }
+  };
+
+  React.useEffect(() => {
+    if (closetItems.length > 0) {
+      generateLook();
+    }
+  }, [closetItems, retry]);
+
+  const generateLook = () => {
+    // Simple logic: Pick 1 Top, 1 Bottom, 1 Shoe
+    // Filter by rules if possible.
+    const tops = closetItems.filter(i => i.category === 'Tops');
+    const bottoms = closetItems.filter(i => i.category === 'Bottoms');
+    const shoes = closetItems.filter(i => i.category === 'Shoes');
+
+    // Random selection
+    const random = (arr: any[]) => arr[Math.floor(Math.random() * arr.length)];
+
+    const outfit = [];
+    if (tops.length) outfit.push(random(tops));
+    if (bottoms.length) outfit.push(random(bottoms));
+    if (shoes.length) outfit.push(random(shoes));
+
+    // If we don't have enough items, maybe pick generic ones or just show what we have
+    setGeneratedOutfit(outfit);
+  };
+
+  const handleSave = () => {
+    // In a real app, POST /api/outfits
+    // Here we simulate saving and going back
+    alert("Outfit Saved!");
+    navigation.navigate("AIStylist");
+  };
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -52,20 +110,19 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
         <Text style={styles.sectionTitle}>Your Suggested Outfit</Text>
         <View style={styles.outfitCard}>
           <View style={styles.outfitRow}>
-            <View style={styles.outfitItem}>
-              <Image
-                source={require("../../assets/images/shirt.png")}
-                style={styles.outfitImg}
-              />
-              <Text style={styles.outfitLabel}>Blue Shirt</Text>
-            </View>
-            <View style={styles.outfitItem}>
-              <Image
-                source={require("../../assets/images/shoe.png")}
-                style={styles.outfitImg}
-              />
-              <Text style={styles.outfitLabel}>Casual Shoe</Text>
-            </View>
+            {generatedOutfit.length === 0 ? (
+              <Text style={{ padding: 20 }}>No items found in closet to match this.</Text>
+            ) : (
+              generatedOutfit.map((item, idx) => (
+                <View key={idx} style={styles.outfitItem}>
+                  <Image
+                    source={item.imageUri && item.imageUri.startsWith('http') ? { uri: item.imageUri } : require("../../assets/images/clothing.png")}
+                    style={styles.outfitImg}
+                  />
+                  <Text style={styles.outfitLabel}>{item.name}</Text>
+                </View>
+              ))
+            )}
           </View>
         </View>
 
@@ -108,10 +165,10 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Actions */}
         <View style={styles.actionsRow}>
-          <TouchableOpacity style={[styles.actionBtn, styles.actionGhost]}>
+          <TouchableOpacity style={[styles.actionBtn, styles.actionGhost]} onPress={() => setRetry(r => r + 1)}>
             <Text style={[styles.actionText, { color: "#111" }]}>Try Again</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBtn, styles.actionPrimary]}>
+          <TouchableOpacity style={[styles.actionBtn, styles.actionPrimary]} onPress={handleSave}>
             <Text style={[styles.actionText, { color: "#fff" }]}>Save This Look</Text>
           </TouchableOpacity>
         </View>
