@@ -15,28 +15,37 @@ export const AuthHeader = ({ title, subtitle }: { title: string, subtitle?: stri
 // Text Field
 export const AuthInput = ({
     label, value, onChangeText, placeholder, secureTextEntry, icon, rightIcon, onRightIconPress, keyboardType
-}: any) => (
-    <View style={styles.inputContainer}>
-        {label && <Text style={styles.label}>{label}</Text>}
-        <View style={styles.inputBox}>
-            {icon && <Feather name={icon} size={20} color="#666" style={{ marginRight: 10 }} />}
-            <TextInput
-                style={styles.input}
-                value={value}
-                onChangeText={onChangeText}
-                placeholder={placeholder}
-                placeholderTextColor="#999"
-                secureTextEntry={secureTextEntry}
-                keyboardType={keyboardType}
-            />
-            {rightIcon && (
-                <TouchableOpacity onPress={onRightIconPress}>
-                    <Feather name={rightIcon} size={20} color="#666" />
-                </TouchableOpacity>
-            )}
+}: any) => {
+    const [isFocused, setIsFocused] = React.useState(false);
+
+    return (
+        <View style={styles.inputContainer}>
+            {label && <Text style={styles.label}>{label}</Text>}
+            <View style={[
+                styles.inputBox,
+                isFocused && { borderColor: '#4A90E2', backgroundColor: '#FFF' } // Blue highlight color
+            ]}>
+                {icon && <Feather name={icon} size={20} color={isFocused ? "#4A90E2" : "#666"} style={{ marginRight: 10 }} />}
+                <TextInput
+                    style={[styles.input, { outlineStyle: 'none' } as any]} // Remove web outline
+                    value={value}
+                    onChangeText={onChangeText}
+                    placeholder={placeholder}
+                    placeholderTextColor="#999"
+                    secureTextEntry={secureTextEntry}
+                    keyboardType={keyboardType}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                />
+                {rightIcon && (
+                    <TouchableOpacity onPress={onRightIconPress}>
+                        <Feather name={rightIcon} size={20} color="#666" />
+                    </TouchableOpacity>
+                )}
+            </View>
         </View>
-    </View>
-);
+    );
+};
 
 // Buttons
 export const PrimaryButton = ({ title, onPress, loading, disabled }: any) => (

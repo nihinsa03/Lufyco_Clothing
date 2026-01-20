@@ -23,7 +23,7 @@ const slides = [
     },
     {
         id: '3',
-        image: require('../../../assets/images/onboarding3.png'),
+        image: require('../../../assets/images/onboarding_new_2.png'),
         title: 'Safe and secure\npayments',
         subtitle: 'Quick and secure checkout process for all your orders.'
     }
