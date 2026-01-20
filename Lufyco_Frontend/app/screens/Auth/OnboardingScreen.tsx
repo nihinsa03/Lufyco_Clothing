@@ -17,7 +17,7 @@ const slides = [
     },
     {
         id: '2',
-        image: require('../../../assets/images/onboarding2.png'),
+        image: require('../../../assets/images/onboarding_new.png'),
         title: 'Unlock exclusive offers\nand discounts',
         subtitle: 'Get access to limited-time deals and special promotions.'
     },
