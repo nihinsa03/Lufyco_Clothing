@@ -27,7 +27,8 @@ const SignupScreen = ({ navigation }: Props) => {
 
     const success = await signup({ name, email, password });
     if (success) {
-      navigation.navigate('EmailVerification', { email });
+      // User created successfully, redirect to login
+      navigation.navigate('Login');
     }
   };
 

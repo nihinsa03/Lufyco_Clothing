@@ -25,6 +25,10 @@ const LoginScreen = ({ navigation }: Props) => {
         index: 0,
         routes: [{ name: 'Main' }],
       });
+    } else {
+      // Show error from store
+      const { error } = useAuthStore.getState();
+      Alert.alert("Login Failed", error || "Invalid credentials");
     }
   };
 
