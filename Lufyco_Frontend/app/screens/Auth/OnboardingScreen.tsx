@@ -41,6 +41,7 @@ const OnboardingScreen = ({ navigation }: Props) => {
     const handleNext = () => {
         if (currentIndex < slides.length - 1) {
             flatListRef.current?.scrollToIndex({ index: currentIndex + 1 });
+            setCurrentIndex(currentIndex + 1);
         } else {
             finishOnboarding();
         }
