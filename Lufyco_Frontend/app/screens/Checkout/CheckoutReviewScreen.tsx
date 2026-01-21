@@ -11,6 +11,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import api from "../../api/api"; // Import API
 import { useCartStore } from "../../store/useCartStore";
 import { useCheckoutStore } from "../../store/useCheckoutStore";
 import { useOrdersStore, Order } from "../../store/useOrdersStore";
@@ -31,31 +32,69 @@ const CheckoutReviewScreen = () => {
 
     const [deliveryType, setDeliveryType] = useState<'standard' | 'express'>('standard');
 
-    const onPlaceOrder = () => {
+    const [loading, setLoading] = useState(false);
+
+    const onPlaceOrder = async () => {
         if (!shippingAddress || !paymentMethod) {
             Alert.alert("Error", "Missing shipping or payment info.");
             return;
         }
 
-        const newOrder: Order = {
-            id: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
-            date: new Date().toISOString(),
-            status: 'Processing',
-            items: [...items], // Clone items
-            address: shippingAddress,
-            payment: paymentMethod,
-            subtotal,
-            shipping: shippingCost,
-            discount: 0,
-            total
-        };
+        setLoading(true);
 
-        addOrder(newOrder);
-        clearCart();
-        navigation.reset({
-            index: 0,
-            routes: [{ name: 'OrderSuccess' }],
-        });
+        try {
+            // Map cart items to backend schema
+            const orderItems = items.map(i => ({
+                name: i.title,
+                qty: i.qty,
+                image: typeof i.image === 'string' ? i.image : "https://placeholder.com/img", // Handle local images better in real app
+                price: i.price,
+                product: i.id
+            }));
+
+            const payload = {
+                orderItems,
+                shippingAddress: {
+                    address: shippingAddress.addressLine,
+                    city: shippingAddress.city,
+                    postalCode: shippingAddress.postalCode,
+                    country: shippingAddress.country
+                },
+                paymentMethod: paymentMethod.method,
+                itemsPrice: subtotal,
+                taxPrice: 0,
+                shippingPrice: shippingCost,
+                totalPrice: total
+            };
+
+            const { data } = await api.post('/orders', payload);
+
+            // Add to local store if needed (optional if we fetch from backend)
+            addOrder({
+                id: data._id,
+                date: data.createdAt,
+                status: 'Processing',
+                items: items, // Keep local structure for display if needed
+                address: shippingAddress,
+                payment: paymentMethod,
+                subtotal,
+                shipping: shippingCost,
+                discount: 0,
+                total
+            });
+
+            clearCart();
+            navigation.reset({
+                index: 0,
+                routes: [{ name: 'OrderSuccess' }],
+            });
+
+        } catch (error: any) {
+            console.error("Order Place Error", error);
+            Alert.alert("Order Failed", error.response?.data?.message || "Something went wrong");
+        } finally {
+            setLoading(false);
+        }
     };
 
     return (
@@ -172,8 +211,8 @@ const CheckoutReviewScreen = () => {
             </ScrollView>
 
             <View style={styles.footer}>
-                <TouchableOpacity style={styles.btn} onPress={onPlaceOrder}>
-                    <Text style={styles.btnText}>Place Order</Text>
+                <TouchableOpacity style={[styles.btn, loading && { opacity: 0.7 }]} onPress={onPlaceOrder} disabled={loading}>
+                    <Text style={styles.btnText}>{loading ? "Placing Order..." : "Place Order"}</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>

@@ -7,13 +7,52 @@ import { useNavigation } from "@react-navigation/native";
 import { useOrdersStore, Order } from "../store/useOrdersStore";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
+import api from "../api/api"; // Import API
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "OrderHistory">;
 
 const OrderHistoryScreen = () => {
     const navigation = useNavigation<NavProp>();
-    const { orders } = useOrdersStore();
+    const { orders, setOrders } = useOrdersStore();
     const [tab, setTab] = useState<'ongoing' | 'completed'>('ongoing');
+    const [loading, setLoading] = useState(false);
+
+    const fetchOrders = async () => {
+        setLoading(true);
+        try {
+            const { data } = await api.get('/orders/myorders');
+            // Transform backend _id to frontend id if needed, or ensure consistency
+            // Backend Order model has _id. Frontend Order interface has id.
+            const mappedOrders = data.map((o: any) => ({
+                id: o._id,
+                date: o.createdAt,
+                status: o.isDelivered ? 'Delivered' : 'Processing', // Simple mapping
+                items: o.orderItems.map((i: any) => ({
+                    productId: i.product,
+                    title: i.name,
+                    price: i.price,
+                    qty: i.qty,
+                    image: i.image
+                })),
+                address: o.shippingAddress,
+                // Map backend paymentMethod string to frontend PaymentMethod object (simulated)
+                payment: { method: o.paymentMethod || 'card', last4: '1234' },
+                subtotal: o.itemsPrice,
+                shipping: o.shippingPrice,
+                discount: 0,
+                total: o.totalPrice
+            }));
+            setOrders(mappedOrders.reverse()); // Newest first
+        } catch (error) {
+            console.error("Failed to fetch orders", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    React.useEffect(() => {
+        fetchOrders();
+    }, []);
 
     const filteredOrders = orders.filter(o => {
         if (tab === 'ongoing') return o.status !== 'Delivered';
@@ -80,6 +119,8 @@ const OrderHistoryScreen = () => {
                 keyExtractor={i => i.id}
                 renderItem={renderItem}
                 contentContainerStyle={{ padding: 16 }}
+                refreshing={loading}
+                onRefresh={fetchOrders}
                 ListEmptyComponent={
                     <View style={styles.emptyContainer}>
                         <Image

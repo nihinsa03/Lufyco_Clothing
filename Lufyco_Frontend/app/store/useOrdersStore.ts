@@ -29,6 +29,7 @@ export interface Order {
 interface OrdersState {
     orders: Order[];
     addOrder: (order: Order) => void;
+    setOrders: (orders: Order[]) => void;
     getOrderById: (id: string) => Order | undefined;
 }
 
@@ -37,6 +38,7 @@ export const useOrdersStore = create<OrdersState>()(
         (set, get) => ({
             orders: [],
             addOrder: (order) => set((state) => ({ orders: [order, ...state.orders] })),
+            setOrders: (orders) => set({ orders }),
             getOrderById: (id) => get().orders.find((o) => o.id === id),
         }),
         {

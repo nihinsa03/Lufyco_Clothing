@@ -1,13 +1,13 @@
 const express = require('express');
 const router = express.Router();
 const Order = require('../models/Order');
+const { protect } = require('../middleware/authMiddleware');
 
 // @route   POST /api/orders
 // @desc    Create new order
-// @access  Private (Simulated with manual userId)
-router.post('/', async (req, res) => {
+// @access  Private
+router.post('/', protect, async (req, res) => {
     const {
-        user, // Assuming user ID is passed in body for now
         orderItems,
         shippingAddress,
         paymentMethod,
@@ -22,7 +22,7 @@ router.post('/', async (req, res) => {
     } else {
         try {
             const order = new Order({
-                user,
+                user: req.user._id, // Securely get user from token
                 orderItems,
                 shippingAddress,
                 paymentMethod,
@@ -43,16 +43,10 @@ router.post('/', async (req, res) => {
 
 // @route   GET /api/orders/myorders
 // @desc    Get logged in user orders
-// @access  Private (Simulated with queryString userId)
-router.get('/myorders', async (req, res) => {
-    const { userId } = req.query; // Expecting ?userId=...
-
-    if (!userId) {
-        return res.status(400).json({ message: 'User ID is required' });
-    }
-
+// @access  Private
+router.get('/myorders', protect, async (req, res) => {
     try {
-        const orders = await Order.find({ user: userId });
+        const orders = await Order.find({ user: req.user._id });
         res.json(orders);
     } catch (error) {
         res.status(500).json({ message: error.message });

@@ -25,9 +25,13 @@ const moodEmoji: Record<string, string> = {
   Excited: "😁",
 };
 
-// import api from "../api/api";
+import api from "../api/api";
 // import { ClothingItem } from "../models";
-import { MOCK_PRODUCTS } from "../data/mockProducts";
+// MOCK_PRODUCTS import removed
+import { Platform } from "react-native";
+
+// AI Backend URL
+const AI_API_URL = Platform.OS === 'android' ? 'http://10.0.2.2:8000' : 'http://localhost:8000';
 
 // ... (keep props and emoji map)
 
@@ -44,90 +48,69 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
     generateLook();
   }, [retry, mood, weather, occasion]);
 
-  const generateLook = () => {
+  const generateLook = async () => {
     setLoading(true);
+    try {
+      // 1. Fetch User's Closet from Node.js Backend
+      const closetRes = await api.get('/closet');
+      const userCloset = closetRes.data;
 
-    // 1. Filter by Occasion & Weather logic
-    let relevantItems = [...MOCK_PRODUCTS];
-
-    // Simple heuristic for weather:
-    // If 'Rain', avoid white/light shoes? Or maybe just suggest Jackets.
-    // If 'Snow', suggest Outerwear.
-    // If 'Sunny', suggest T-Shirts/Dresses.
-
-    const isCold = weather.includes("Rain") || weather.includes("Snow") || weather.includes("Fog") || weather.includes("Cloud");
-    const isHot = weather.includes("Sunny") || weather.includes("Clear");
-
-    // -- Gender assumption: For now, let's mix or pick based on a user profile if we had one.
-    // Since we don't have gender in props, let's just use all relevant items or maybe filter if we knew.
-    // For demo, let's just use all MOCK_PRODUCTS.
-
-    // 2. Pick categories based on Occasion
-    let relevantTops = relevantItems.filter(i => i.subCategory === 'Tops' || i.type === 'T-Shirt' || i.type === 'Shirt' || i.type === 'Blouse' || i.type === 'Hoodie' || i.type === 'Sweater');
-    let relevantBottoms = relevantItems.filter(i => i.subCategory === 'Bottoms' || i.type === 'Jeans' || i.type === 'Pants' || i.type === 'Skirt' || i.type === 'Shorts');
-    let relevantShoes = relevantItems.filter(i => i.category === 'Shoes');
-    let relevantOuterwear = relevantItems.filter(i => i.subCategory === 'Outerwear' || i.type === 'Jacket');
-    let relevantDresses = relevantItems.filter(i => i.subCategory === 'Dresses' || i.type === 'Dress');
-
-    // Refine by Occasion
-    if (occasion === "Office") {
-      relevantTops = relevantTops.filter(i => i.type !== 'T-Shirt' && i.type !== 'Hoodie'); // Formal-ish
-      relevantBottoms = relevantBottoms.filter(i => i.type !== 'Shorts');
-      relevantDresses = relevantDresses.filter(i => i.name.includes("Summer") === false); // Avoid beach dresses
-    } else if (occasion === "Party") {
-      // Maybe prioritize Dresses for women, cool shirts for men
-    } else if (occasion === "Gym") {
-      // ...
-    }
-
-    // Refine by Weather
-    if (isCold) {
-      // Prefer hoodies/sweaters if available, else standard tops + jacket
-      const warmTops = relevantTops.filter(i => i.type === 'Hoodie' || i.type === 'Sweater');
-      if (warmTops.length > 0) relevantTops = warmTops;
-    } else if (isHot) {
-      // Prefer T-Shirts, Shorts, Skirts
-      relevantOuterwear = []; // No jackets
-      relevantTops = relevantTops.filter(i => i.type === 'T-Shirt' || i.type === 'Blouse');
-      relevantBottoms = relevantBottoms.filter(i => i.type === 'Shorts' || i.type === 'Skirt' || i.type === 'Jeans');
-    }
-
-    // 3. Assemble Outfit
-    const outfit: any[] = [];
-    const random = (arr: any[]) => arr.length > 0 ? arr[Math.floor(Math.random() * arr.length)] : null;
-
-    // Decide structure: Dress vs Top/Bottom
-    // 50/50 chance if both valid, or logic based. 
-    // Let's just do Top/Bottom for simplicity unless it's a "Dress" occasion/preference.
-    const useDress = relevantDresses.length > 0 && Math.random() > 0.7; // 30% chance for dress if available
-
-    if (useDress) {
-      const dress = random(relevantDresses);
-      if (dress) outfit.push(dress);
-    } else {
-      const top = random(relevantTops);
-      const bottom = random(relevantBottoms);
-      if (top) outfit.push(top);
-      if (bottom) outfit.push(bottom);
-    }
-
-    // Always add shoes
-    const shoe = random(relevantShoes);
-    if (shoe) outfit.push(shoe);
-
-    // Add jacket if cold and not already picked (though our mock logic is simple)
-    if (isCold && relevantOuterwear.length > 0) {
-      const jacket = random(relevantOuterwear);
-      // Avoid duplicate types if any
-      if (jacket && !outfit.find(i => i._id === jacket._id)) {
-        outfit.push(jacket);
+      if (!userCloset || userCloset.length === 0) {
+        setGeneratedOutfit([]);
+        setLoading(false);
+        return;
       }
-    }
 
-    setTimeout(() => {
+      // 2. Prepare Request for AI Backend
+      // We need to pass the closet items to the Python backend so it can pick from them.
+      // In a real production app, the Python backend might fetch directly from DB or receive IDs.
+      // Here we send the current items array.
+
+      // Temperature heuristic from Weather string (e.g. "Sunny 25°F" or just condition)
+      // Let's assume weather string might be complex, so we passed condition.
+      // For accurate temp, we should have passed it from previous screen.
+      // Defaulting to 20°C if unknown.
+      let temp = 20;
+
+      const payload = {
+        weather: weather,
+        temperature: temp,
+        occasion: occasion.toLowerCase(),
+        mood: mood,
+        closet_items: userCloset.map((item: any) => ({
+          id: item._id,
+          name: item.name,
+          category: item.category,
+          tags: item.notes ? JSON.parse(item.notes || "[]") : []
+        }))
+      };
+
+      // 3. Call AI Backend
+      const response = await fetch(`${AI_API_URL}/recommend-outfit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) throw new Error('AI Rec Failed');
+
+      const recommendation = await response.json();
+
+      // 4. Convert Recommendation to Display Format
+      const outfit = [];
+      if (recommendation.top) outfit.push(recommendation.top);
+      if (recommendation.bottom) outfit.push(recommendation.bottom);
+      if (recommendation.shoes) outfit.push(recommendation.shoes);
+
       setGeneratedOutfit(outfit);
+
+    } catch (e) {
+      console.error("Rec Error", e);
+      // Fallback or show error
+      setGeneratedOutfit([]);
+    } finally {
       setLoading(false);
-    }, 600);
+    }
   };
 
   const handleSave = () => {
