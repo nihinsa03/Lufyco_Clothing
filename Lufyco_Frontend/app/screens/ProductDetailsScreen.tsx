@@ -76,8 +76,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             return;
         }
 
-        // DEBUG: Check values
-        Alert.alert("Debug AddToCart", `ID: ${fullProduct.id || fullProduct._id}\nSize: ${selectedSize}\nQty: ${qty}`);
+
 
         // Add to Cart
         addItemToCart({

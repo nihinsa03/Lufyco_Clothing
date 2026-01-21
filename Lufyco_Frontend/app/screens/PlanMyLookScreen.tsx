@@ -86,7 +86,7 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
   const [whenDj, setWhenDj] = useState<Dayjs>(dayjs());
   const [pickerOpen, setPickerOpen] = useState(false);
 
-  const { weather, loading, error } = useWeather();
+  const { weather, loading, error, retry } = useWeather();
 
   const isFuture = timeNeed === "Future";
 
@@ -205,13 +205,20 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
               size={26}
               color={weather?.condition === "Sunny" ? "#FF4D4D" : "#555"}
             />
-            <View style={{ marginLeft: 12 }}>
+            <View style={{ marginLeft: 12, flex: 1 }}>
               <Text style={styles.weatherMain}>
                 {loading ? "Loading..." : (weather ? `${weather.temp}°F` : "N/A")}
               </Text>
-              <Text style={styles.weatherSub}>
-                {error || (loading ? "Fetching weather..." : (weather ? weather.condition : "Unknown"))}
-              </Text>
+              <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                <Text style={styles.weatherSub}>
+                  {error || (loading ? "Fetching weather..." : (weather ? weather.condition : "Unknown"))}
+                </Text>
+                {error && (
+                  <TouchableOpacity onPress={retry} style={{ marginLeft: 8, padding: 4, backgroundColor: '#eee', borderRadius: 4 }}>
+                    <Text style={{ fontSize: 12, color: 'blue' }}>Retry</Text>
+                  </TouchableOpacity>
+                )}
+              </View>
             </View>
           </View>
         </View>

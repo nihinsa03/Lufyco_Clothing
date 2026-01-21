@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import * as Location from 'expo-location';
 
 export const useWeather = () => {
@@ -6,25 +6,29 @@ export const useWeather = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-    useEffect(() => {
-        (async () => {
-            try {
-                let { status } = await Location.requestForegroundPermissionsAsync();
-                if (status !== 'granted') {
-                    setError('Permission to access location was denied');
-                    setLoading(false);
-                    return;
-                }
-
-                let location = await Location.getCurrentPositionAsync({});
-                fetchWeather(location.coords.latitude, location.coords.longitude);
-            } catch (e) {
-                console.error("Location error:", e);
-                setError("Failed to get location");
+    const requestLocation = useCallback(async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            let { status } = await Location.requestForegroundPermissionsAsync();
+            if (status !== 'granted') {
+                setError('Location permission denied. Please enable it in settings.');
                 setLoading(false);
+                return;
             }
-        })();
+
+            let location = await Location.getCurrentPositionAsync({});
+            fetchWeather(location.coords.latitude, location.coords.longitude);
+        } catch (e) {
+            console.error("Location error:", e);
+            setError("Failed to get location");
+            setLoading(false);
+        }
     }, []);
+
+    useEffect(() => {
+        requestLocation();
+    }, [requestLocation]);
 
     const fetchWeather = async (lat: number, lon: number) => {
         try {
@@ -57,5 +61,5 @@ export const useWeather = () => {
         return "Cloudy";
     };
 
-    return { weather, loading, error };
+    return { weather, loading, error, retry: requestLocation };
 };

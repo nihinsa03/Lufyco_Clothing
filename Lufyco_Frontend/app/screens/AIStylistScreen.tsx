@@ -33,7 +33,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "AIStylist">;
 
 const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth(); // <--- Get real user
-  const { weather, loading, error } = useWeather();
+  const { weather, loading, error, retry } = useWeather();
 
   // Removed inline optional logic as it is now in useWeather hook
   // const [weather, setWeather] = useState<{ temp: number, condition: string } | null>(null);
@@ -133,13 +133,20 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
             size={28}
             color={weather?.condition === "Sunny" ? "#FF4D4D" : "#555"}
           />
-          <View style={{ marginLeft: 12 }}>
+          <View style={{ marginLeft: 12, flex: 1 }}>
             <Text style={styles.weatherMain}>
               {loading ? "Loading..." : (weather ? `${weather.temp}°F` : "N/A")}
             </Text>
-            <Text style={styles.weatherSub}>
-              {error || (loading ? "Fetching weather..." : (weather ? weather.condition : "Unknown"))}
-            </Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+              <Text style={styles.weatherSub}>
+                {error || (loading ? "Fetching weather..." : (weather ? weather.condition : "Unknown"))}
+              </Text>
+              {error && (
+                <TouchableOpacity onPress={retry} style={{ marginLeft: 8, padding: 4, backgroundColor: '#eee', borderRadius: 4 }}>
+                  <Text style={{ fontSize: 12, color: 'blue' }}>Retry</Text>
+                </TouchableOpacity>
+              )}
+            </View>
           </View>
         </View>
       </ScrollView>
