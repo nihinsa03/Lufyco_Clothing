@@ -19,7 +19,7 @@ const LoginScreen = ({ navigation }: Props) => {
       return;
     }
 
-    const success = await login({ email, password });
+    const success = await login({ email: email.trim(), password });
     if (success) {
       navigation.reset({
         index: 0,

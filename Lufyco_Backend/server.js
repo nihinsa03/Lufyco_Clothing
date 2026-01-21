@@ -9,6 +9,7 @@ const PORT = process.env.PORT || 5000;
 
 // Connect to Database
 const connectDB = require('./config/db');
+console.log('Attempting to connect to MongoDB...');
 connectDB();
 
 app.use(cors());
