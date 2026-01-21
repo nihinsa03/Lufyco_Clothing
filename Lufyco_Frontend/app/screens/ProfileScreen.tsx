@@ -21,8 +21,8 @@ type NavProp = NativeStackNavigationProp<RootStackParamList, "Profile">;
 
 const ProfileScreen = () => {
     const navigation = useNavigation<NavProp>();
-    const logout = useAuthStore((state) => state.logout);
-    const { user } = useProfileStore();
+    const { logout, user } = useAuthStore();
+    // const { user } = useProfileStore(); // Deprecated for Auth, keep for prefs if needed
 
     const menuItems = [
         {

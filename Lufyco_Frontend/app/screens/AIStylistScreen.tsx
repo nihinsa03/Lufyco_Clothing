@@ -1,5 +1,5 @@
 import React from "react";
-import { useAuth } from "../context/AuthContext";
+import { useAuthStore } from "../store/useAuthStore";
 import {
   View,
   Text,
@@ -32,7 +32,7 @@ type RootStackParamList = {
 type Props = NativeStackScreenProps<RootStackParamList, "AIStylist">;
 
 const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
-  const { user } = useAuth(); // <--- Get real user
+  const { user } = useAuthStore(); // <--- Get real user from Zustand store
   const { weather, loading, error, retry } = useWeather();
 
   // Removed inline optional logic as it is now in useWeather hook

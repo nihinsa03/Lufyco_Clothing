@@ -1,6 +1,10 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+/**
+ * @deprecated Use useAuthStore from '../store/useAuthStore' instead.
+ * This context causes state fragmentation and should be removed.
+ */
 type User = {
     _id: string;
     name: string;
