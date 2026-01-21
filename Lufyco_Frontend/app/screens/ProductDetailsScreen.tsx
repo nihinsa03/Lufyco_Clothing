@@ -84,6 +84,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             image: fullProduct.images ? fullProduct.images[0] : (fullProduct.image || ""),
             size: selectedSize || undefined,
             color: selectedColor || undefined,
+            qty: qty,
         });
 
         // Feedback

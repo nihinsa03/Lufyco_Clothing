@@ -15,7 +15,7 @@ export type CartItem = {
 
 type CartState = {
     items: CartItem[];
-    addItem: (item: Omit<CartItem, 'qty' | 'id'>) => void;
+    addItem: (item: Omit<CartItem, 'id'>) => void;
     removeItem: (id: string) => void;
     incrementQty: (id: string) => void;
     decrementQty: (id: string) => void;
@@ -26,27 +26,28 @@ type CartState = {
     getItemCount: () => number;
 };
 
-// export const useCartStore = create<CartState>()(
 //     persist(
 //         (set, get) => ({
 export const useCartStore = create<CartState>((set, get) => ({
     items: [],
 
     addItem: (item) => {
+        console.log('Adding item:', item);
         const currentItems = get().items;
         const uniqueId = `${item.productId}-${item.size || 'def'}-${item.color || 'def'}`;
+        const qtyToAdd = item.qty || 1;
 
         const existingIndex = currentItems.findIndex((i) => i.id === uniqueId);
 
         if (existingIndex >= 0) {
             // Increment quantity immutably
             const updated = currentItems.map((i, index) =>
-                index === existingIndex ? { ...i, qty: i.qty + 1 } : i
+                index === existingIndex ? { ...i, qty: i.qty + qtyToAdd } : i
             );
             set({ items: updated });
         } else {
             // Add new
-            set({ items: [...currentItems, { ...item, id: uniqueId, qty: 1 }] });
+            set({ items: [...currentItems, { ...item, id: uniqueId, qty: qtyToAdd }] });
         }
     },
 
