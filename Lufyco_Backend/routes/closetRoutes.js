@@ -1,15 +1,15 @@
 const express = require('express');
 const router = express.Router();
 const ClosetItem = require('../models/ClosetItem');
+const { protect } = require('../middleware/authMiddleware');
 
 // @route   GET /api/closet
 // @desc    Get all closet items (optionally filter by user if we passed userId in query)
-router.get('/', async (req, res) => {
+router.get('/', protect, async (req, res) => {
     try {
-        const { userId, category, search } = req.query;
-        let query = {};
+        const { category, search } = req.query;
+        let query = { user: req.user._id };
 
-        if (userId) query.user = userId;
         if (category && category !== 'All') query.category = category;
         if (search) query.name = { $regex: search, $options: 'i' };
 
@@ -22,12 +22,12 @@ router.get('/', async (req, res) => {
 
 // @route   POST /api/closet
 // @desc    Add item to closet
-router.post('/', async (req, res) => {
-    const { userId, name, category, image, notes } = req.body;
+router.post('/', protect, async (req, res) => {
+    const { name, category, image, notes } = req.body;
 
     try {
         const newItem = new ClosetItem({
-            user: userId, // might be null/undefined if not enforcing auth
+            user: req.user._id,
             name,
             category,
             image,
@@ -43,7 +43,7 @@ router.post('/', async (req, res) => {
 
 // @route   DELETE /api/closet/:id
 // @desc    Delete closet item
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', protect, async (req, res) => {
     try {
         const item = await ClosetItem.findById(req.params.id);
         if (!item) return res.status(404).json({ message: 'Item not found' });

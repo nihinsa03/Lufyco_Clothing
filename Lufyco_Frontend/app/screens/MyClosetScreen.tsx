@@ -19,14 +19,8 @@ type Props = NativeStackScreenProps<RootStackParamList, "MyCloset">;
 
 const chips = ["All", "Tops", "Bottoms", "Dresses", "Outerwear", "Accessories", "Shoes"];
 
-const closetItems = [
-  {
-    id: "1",
-    name: "Blue Shirt",
-    category: "Outwear",
-    image: require("../../assets/images/men/casual/shirts.jpg"),
-  },
-];
+// closetItems removed
+
 
 const MyClosetScreen = ({ navigation }: Props) => {
   const [items, setItems] = useState<any[]>([]);
@@ -114,6 +108,13 @@ const MyClosetScreen = ({ navigation }: Props) => {
 
       {/* Items */}
       <ScrollView contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 120 }}>
+        {!loading && items.length === 0 && (
+          <View style={{ alignItems: 'center', marginTop: 50 }}>
+            <Feather name="layers" size={48} color="#ccc" />
+            <Text style={{ marginTop: 12, color: '#666', fontSize: 16 }}>Your closet is empty.</Text>
+            <Text style={{ marginTop: 4, color: '#999', fontSize: 14 }}>Tap + to add your new styles!</Text>
+          </View>
+        )}
         {items.map((item) => (
           <View key={item._id} style={styles.itemCard}>
             <View style={styles.itemRow}>

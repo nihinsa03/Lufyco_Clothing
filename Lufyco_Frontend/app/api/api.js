@@ -12,4 +12,33 @@ const api = axios.create({
     },
 });
 
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+// Add a request interceptor to attach token
+api.interceptors.request.use(
+    async (config) => {
+        // Try getting token from storage (Zustand persists it, but we can also grab it if we know the key)
+        // Zustand persist key: 'auth-storage' -> state -> token
+        // Usually simpler to just check if we have a raw token stored, but with Zustand persist it's inside JSON.
+        // Let's try to parse it.
+        try {
+            const jsonValue = await AsyncStorage.getItem('auth-storage');
+            if (jsonValue != null) {
+                const data = JSON.parse(jsonValue);
+                const token = data?.state?.token;
+                if (token) {
+                    config.headers.Authorization = `Bearer ${token}`;
+                }
+            }
+        } catch (error) {
+            // Ignore error
+        }
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
+
+
 export default api;

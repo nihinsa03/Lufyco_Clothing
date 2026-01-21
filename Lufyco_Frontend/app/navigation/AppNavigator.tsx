@@ -45,6 +45,7 @@ import WishlistScreen from "../screens/WishlistScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import OrderHistoryScreen from "../screens/OrderHistoryScreen";
 import ChangePasswordScreen from "../screens/ChangePasswordScreen";
+import ImageUploadScreen from "../screens/ImageUploadScreen";
 
 // Checkout Flow
 import CheckoutShippingScreen from "../screens/Checkout/CheckoutShippingScreen";
@@ -123,6 +124,7 @@ export type RootStackParamList = {
     product?: any;
   };
   CategoryProducts: undefined;
+  ImageUpload: undefined; // New FR-02 Route
   Search: undefined;
   Filter: undefined;
   Sale: undefined;
@@ -203,6 +205,7 @@ export default function AppNavigator() {
           <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
           <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+          <Stack.Screen name="ImageUpload" component={ImageUploadScreen} />
 
           {/* Checkout Flow */}
           <Stack.Screen name="CheckoutShipping" component={CheckoutShippingScreen} />

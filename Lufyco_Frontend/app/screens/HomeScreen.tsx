@@ -48,7 +48,9 @@ const HomeScreen = ({ navigation }: Props) => {
         <TouchableOpacity style={styles.searchBox} onPress={() => navigation.navigate("Search")}>
           <Ionicons name="search" size={20} />
           <Text style={styles.searchInput}>Search for brands and products</Text>
-          <Feather name="camera" size={20} />
+          <TouchableOpacity onPress={() => navigation.navigate("ImageUpload" as any)}>
+            <Feather name="camera" size={20} />
+          </TouchableOpacity>
           <Feather name="mic" size={20} style={{ marginLeft: 10 }} />
         </TouchableOpacity>
 
