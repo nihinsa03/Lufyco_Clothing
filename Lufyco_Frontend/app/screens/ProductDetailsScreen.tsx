@@ -239,7 +239,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 <TouchableOpacity style={styles.wishBtn} onPress={handleWishlist}>
                     <Ionicons name={isWishlisted ? "heart" : "heart-outline"} size={26} color={isWishlisted ? "red" : "#111"} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buyBtn}>
+                <TouchableOpacity style={styles.buyBtn} onPress={() => Alert.alert("Coming Soon", "Checkout flow not connected yet.")}>
                     <Text style={[styles.btnText, { color: '#111' }]}>Buy Now</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.addBtn} onPress={handleAddToCart}>
@@ -334,7 +334,8 @@ const styles = StyleSheet.create({
         backgroundColor: '#fff', padding: 20, paddingBottom: 30,
         borderTopWidth: 1, borderColor: '#F3F4F6',
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, elevation: 10
+        shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, elevation: 10,
+        zIndex: 100, // Ensure it sits on top of ScrollView
     },
     wishBtn: {
         width: 56, height: 56, borderRadius: 18,
