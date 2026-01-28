@@ -1,105 +1,120 @@
 # Lufyco Clothing Application
 
-A full-stack e-commerce mobile application built with React Native (Expo) and Node.js.
+A full-stack e-commerce mobile application built with React Native (Expo), Node.js, and Python (AI).
 
 ## 🚀 Features
 
-*   **User Authentication**: Secure Login & Signup (JWT/AsyncStorage).
-*   **Product Catalog**: Rich product listing with categories (Men, Women, Kids, Shoes, Accessories) using **Mock Data** for instant feedback.
-*   **AI Stylist**: Weather-based outfit recommendations and "Plan My Look" feature.
-*   **Shopping Cart**: Fully functional cart with size/color selection (powered by **Zustand**).
-*   **Checkout Flow**: Complete simulation: Cart -> Shipping -> Payment -> Review -> Order Success.
-*   **Order Management**: Place orders and track status.
-*   **Modern UI**: Sleek, responsive design for iOS, Android, and Web.
+*   **User Authentication**: Secure Login & Signup.
+*   **Product Catalog**: Browsable products with categories (Men, Women, Kids, etc.).
+*   **AI Stylist**: Weather-based outfit recommendations and image tagging (Powered by **Python/FastAPI**).
+*   **Shopping Cart**: Fully functional cart with size/color selection.
+*   **Checkout Flow**: Simulation of Cart -> Shipping -> Payment -> Order Success.
+*   **Order Management**: Place and track orders.
+*   **Modern UI**: Built with React Native and Expo.
 
 ## 🛠 Tech Stack
 
 ### Frontend
-*   **Framework**: [React Native](https://reactnative.dev/) with [Expo](https://expo.dev/)
-*   **Navigation**: React Navigation (Stack & Tabs)
-*   **State Management**: [Zustand](https://github.com/pmndrs/zustand) (Cart, Products, Auth)
-*   **Styling**: StyleSheet / Custom UI Components
-*   **Data**: Local Mock Data (for Products) + Axios (for Auth/User)
+*   **React Native** (Expo)
+*   **Zustand** (State Management)
+*   **Axios** (API Requests)
 
-### Backend
-*   **Runtime**: [Node.js](https://nodejs.org/)
-*   **Framework**: [Express.js](https://expressjs.com/)
-*   **Database**: [MongoDB Atlas](https://www.mongodb.com/atlas/database)
-*   **ODM**: Mongoose
+### Backend (Main)
+*   **Node.js** with **Express**
+*   **MongoDB** (Database) with Mongoose
+
+### AI Service
+*   **Python**
+*   **FastAPI**
+*   **TensorFlow / Keras** (Image analysis models)
 
 ---
 
-## 🏁 Getting Started
+## 🏁 How to Run the Project
 
-To run this project, you will need to open **two separate terminals**.
+To run this application completely, you need to open **THREE separate terminal windows** and run the services in parallel.
 
 ### Prerequisites
-
-*   [Node.js](https://nodejs.org/) (v18 or higher recommended)
+*   [Node.js](https://nodejs.org/) (v18+)
+*   [Python](https://www.python.org/) (v3.9+)
 *   [Git](https://git-scm.com/)
-*   [Expo Go](https://expo.dev/client) app on your mobile device (for physical device testing)
+*   [MongoDB Atlas](https://www.mongodb.com/atlas) Account (or local MongoDB)
 
-### 1. Start the Backend Server
-*The backend handles Auth and User data. Product browsing currently works with mock data even if backend is off.*
+---
 
-```powershell
-cd Lufyco_Backend
-npm install  # Install dependencies (only first time)
-npm start
-```
-*You should see "Server is running on port 5000" and "MongoDB Connected".*
+### Terminal 1: Node.js Backend
 
-### 2. Start the Frontend Application
+1.  Navigate to the backend folder:
+    ```bash
+    cd Lufyco_Backend
+    ```
+2.  Install dependencies (first time only):
+    ```bash
+    npm install
+    ```
+3.  **Configuration**:
+    *   Create a file named `.env` in this folder.
+    *   Copy the contents from `.env.example` into `.env`.
+    *   Add your MongoDB connection string to `MONGO_URI`.
+    ```env
+    PORT=5000
+    MONGO_URI=mongodb+srv://<username>:<password>@cluster...
+    ```
+4.  Start the server:
+    ```bash
+    npm run dev
+    ```
+    *You should see: "Server is running on port 5000" and "MongoDB Connected".*
 
-The frontend connects to the backend at `http://localhost:5000` but falls back to mock data for products.
+---
 
-```powershell
-cd Lufyco_Frontend
-npm install  # Install dependencies (only first time)
-```
+### Terminal 2: AI Backend (Python)
 
-**Option A: Run on Web**
-```powershell
-npm run web
-```
-*The app should open in your default browser at `http://localhost:8081`.*
+1.  Navigate to the AI folder:
+    ```bash
+    cd Lufyco_AI_Backend
+    ```
+2.  Install Python dependencies (first time only):
+    ```bash
+    pip install -r requirements.txt
+    ```
+3.  Start the AI service:
+    ```bash
+    python main.py
+    ```
+    *You should see: "Uvicorn running on http://0.0.0.0:8000".*
 
-**Option B: Run on Mobile (iOS/Android)**
-```powershell
-npm start
-```
-*Scan the QR code with the Expo Go app on your phone, or press `a` for Android Emulator / `i` for iOS Simulator.*
+---
+
+### Terminal 3: Frontend (Mobile App)
+
+1.  Navigate to the frontend folder:
+    ```bash
+    cd Lufyco_Frontend
+    ```
+2.  Install dependencies (first time only):
+    ```bash
+    npm install
+    ```
+3.  Start the Expo app:
+    ```bash
+    npx expo start
+    ```
+4.  **How to View**:
+    *   **Mobile**: Scan the QR code with the **Expo Go** app (iOS/Android).
+    *   **Emulator**: Press `a` (Android) or `i` (iOS).
+    *   **Web**: Press `w` to run in a browser.
 
 ---
 
 ## 🔑 Test Credentials
 
-You can use this pre-created user to log in, or sign up for a new account in the app.
-
 *   **Email**: `test@example.com`
 *   **Password**: `password123`
-
----
-
-## 📡 API Endpoints
-
-Base URL: `http://localhost:5000/api`
-
-### Users
-*   `POST /users/register` - Register a new user
-*   `POST /users/login` - Authenticate user
-
-### Products (Mock Data)
-*   User interface uses local `MOCK_PRODUCTS` for speed and reliability during development.
-
-### Orders
-*   `POST /orders` - Create a new order
-*   `GET /orders/myorders` - Get logged-in user's orders
+*(Or Register a new account in the app)*
 
 ## 📂 Project Structure
 
-*   **/Lufyco_Backend**: Server code, API routes, Models.
-*   **/Lufyco_Frontend**: React Native App.
-    *   `/app/screens`: All application screens (Home, Cart, Checkout, etc.).
-    *   `/app/store`: Zustand stores (`useCartStore`, `useShopStore`, etc.).
-    *   `/app/data`: Mock data files.
+*   **/Lufyco_Backend**: Handles Users, Orders, and Database.
+*   **/Lufyco_AI_Backend**: Handles Image Analysis and Recommendations.
+*   **/Lufyco_Frontend**: The Mobile Application UI.
