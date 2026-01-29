@@ -74,10 +74,12 @@ cd Lufyco_Clothing
 1.  **Backend Termnial**:
     - Open Command Prompt or PowerShell.
     - `cd Lufyco_Backend`
+    - `npm install` (Only first time)
     - `npm run dev`
 2.  **Frontend Terminal**:
     - Open a new Command Prompt or PowerShell window.
     - `cd Lufyco_Frontend`
+    - `npm install` (Only first time)
     - `npx expo start`
     - Press `w` to run in Web Browser, or scan the QR code with the Expo Go app on Android.
 
@@ -86,10 +88,12 @@ cd Lufyco_Clothing
 1.  **Backend Terminal**:
     - Open Terminal.
     - `cd Lufyco_Backend`
+    - `npm install` (Only first time)
     - `npm run dev`
 2.  **Frontend Terminal**:
     - Open a new Terminal tab/window.
     - `cd Lufyco_Frontend`
+    - `npm install` (Only first time)
     - `npx expo start`
     - Press `i` to run in iOS Simulator (requires Xcode), `w` for Web, or scan the QR code with the Expo Go app.
 
