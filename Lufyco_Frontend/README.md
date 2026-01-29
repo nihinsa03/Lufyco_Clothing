@@ -1,50 +1,54 @@
-# Welcome to your Expo app 👋
+# Lufyco_Clothing - Frontend
 
 This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
 
-## Get started
+## Prerequisites
+- [Node.js](https://nodejs.org/)
+- [Expo CLI](https://docs.expo.dev/get-started/installation/)
 
-1. Install dependencies
+## Installation & Setup
 
+> **IMPORTANT**: If you are moving this project between operating systems (e.g., Mac to Windows), you **MUST** delete the `node_modules` folder and `package-lock.json` file before installing dependencies.
+
+### Windows (PowerShell)
+1. Navigate to the frontend directory:
+   ```powershell
+   cd Lufyco_Frontend
+   ```
+2. Check for `node_modules` or `.expo` folders from other OSs and delete them if present.
+3. Install dependencies:
+   ```powershell
+   npm install
+   ```
+
+### Mac OS / Linux (Terminal)
+1. Navigate to the frontend directory:
+   ```bash
+   cd Lufyco_Frontend
+   ```
+2. Install dependencies:
    ```bash
    npm install
    ```
 
-2. Start the app
+## Running the App
 
-   ```bash
-    npx expo start
-   ```
+Start the Expo development server:
+```bash
+npx expo start
+```
 
-In the output, you'll find options to open the app in a
-
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
+In the output, you'll find options to open the app in a:
+- [Development build](https://docs.expo.dev/develop/development-builds/introduction/)
 - [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
 - [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
 - [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Troubleshooting
 
-## Get a fresh project
-
-When you're ready, run:
-
-```bash
-npm run reset-project
-```
-
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
-
-## Learn more
-
-To learn more about developing your project with Expo, look at the following resources:
-
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
-
-## Join the community
-
-Join our community of developers creating universal apps.
-
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+### "Cannot find module 'react'"
+This error often occurs when moving `node_modules` from Mac to Windows. To fix:
+1. Delete `node_modules` folder.
+2. Delete `.expo` folder.
+3. Delete `package-lock.json`.
+4. Run `npm install`.
