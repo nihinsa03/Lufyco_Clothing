@@ -43,7 +43,7 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        if (email === 'user' && password === 'user') {
+        if (email === 'User' && password === 'User') {
             return res.json({
                 _id: 'dummy_user_id',
                 name: 'Dummy User',
