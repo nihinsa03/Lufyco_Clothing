@@ -1,120 +1,102 @@
 # Lufyco Clothing Application
 
-A full-stack e-commerce mobile application built with React Native (Expo), Node.js, and Python (AI).
+This repository contains the source code for the Lufyco Clothing application, including the Backend (Node.js/Express) and Frontend (Expo/React Native).
 
-## 🚀 Features
+## Project Structure
 
-*   **User Authentication**: Secure Login & Signup.
-*   **Product Catalog**: Browsable products with categories (Men, Women, Kids, etc.).
-*   **AI Stylist**: Weather-based outfit recommendations and image tagging (Powered by **Python/FastAPI**).
-*   **Shopping Cart**: Fully functional cart with size/color selection.
-*   **Checkout Flow**: Simulation of Cart -> Shipping -> Payment -> Order Success.
-*   **Order Management**: Place and track orders.
-*   **Modern UI**: Built with React Native and Expo.
-
-## 🛠 Tech Stack
-
-### Frontend
-*   **React Native** (Expo)
-*   **Zustand** (State Management)
-*   **Axios** (API Requests)
-
-### Backend (Main)
-*   **Node.js** with **Express**
-*   **MongoDB** (Database) with Mongoose
-
-### AI Service
-*   **Python**
-*   **FastAPI**
-*   **TensorFlow / Keras** (Image analysis models)
+- **Lufyco_Backend**: Node.js & Express server connecting to MongoDB.
+- **Lufyco_Frontend**: React Native application using Expo.
 
 ---
 
-## 🏁 How to Run the Project
+## Prerequisites
 
-To run this application completely, you need to open **THREE separate terminal windows** and run the services in parallel.
+Before running the application, ensure you have the following installed:
 
-### Prerequisites
-*   [Node.js](https://nodejs.org/) (v18+)
-*   [Python](https://www.python.org/) (v3.9+)
-*   [Git](https://git-scm.com/)
-*   [MongoDB Atlas](https://www.mongodb.com/atlas) Account (or local MongoDB)
+1.  **Node.js**: [Download & Install Node.js](https://nodejs.org/) (LTS version recommended).
+2.  **Git**: [Download Git](https://git-scm.com/).
+3.  **MongoDB**: Ensure you have a MongoDB connection string (local or Atlas).
 
 ---
 
-### Terminal 1: Node.js Backend
+## Setup Instructions
 
-1.  Navigate to the backend folder:
+### 1. Clone the Repository
+
+```bash
+git clone <repository-url>
+cd Lufyco_Clothing
+```
+
+### 2. Backend Setup
+
+1.  Navigate to the backend directory:
     ```bash
     cd Lufyco_Backend
     ```
-2.  Install dependencies (first time only):
+2.  Install dependencies:
     ```bash
     npm install
     ```
-3.  **Configuration**:
-    *   Create a file named `.env` in this folder.
-    *   Copy the contents from `.env.example` into `.env`.
-    *   Add your MongoDB connection string to `MONGO_URI`.
+3.  Create a `.env` file in the `Lufyco_Backend` directory with your Mongo URI and other secrets:
     ```env
+    MONGO_URI=your_mongodb_connection_string
     PORT=5000
-    MONGO_URI=mongodb+srv://<username>:<password>@cluster...
+    JWT_SECRET=your_jwt_secret
     ```
-4.  Start the server:
+4.  Start the backend server:
     ```bash
     npm run dev
     ```
-    *You should see: "Server is running on port 5000" and "MongoDB Connected".*
+    *The server normally runs on `http://localhost:5000`.*
 
----
+### 3. Frontend Setup
 
-### Terminal 2: AI Backend (Python)
-
-1.  Navigate to the AI folder:
-    ```bash
-    cd Lufyco_AI_Backend
-    ```
-2.  Install Python dependencies (first time only):
-    ```bash
-    pip install -r requirements.txt
-    ```
-3.  Start the AI service:
-    ```bash
-    python main.py
-    ```
-    *You should see: "Uvicorn running on http://0.0.0.0:8000".*
-
----
-
-### Terminal 3: Frontend (Mobile App)
-
-1.  Navigate to the frontend folder:
+1.  Open a new terminal and navigate to the frontend directory:
     ```bash
     cd Lufyco_Frontend
     ```
-2.  Install dependencies (first time only):
+2.  Install dependencies:
     ```bash
     npm install
     ```
-3.  Start the Expo app:
+3.  Start the Expo development server:
     ```bash
     npx expo start
     ```
-4.  **How to View**:
-    *   **Mobile**: Scan the QR code with the **Expo Go** app (iOS/Android).
-    *   **Emulator**: Press `a` (Android) or `i` (iOS).
-    *   **Web**: Press `w` to run in a browser.
 
 ---
 
-## 🔑 Test Credentials
+## Running the Application
 
-*   **Email**: `test@example.com`
-*   **Password**: `password123`
-*(Or Register a new account in the app)*
+### For Windows Users
 
-## 📂 Project Structure
+1.  **Backend Termnial**:
+    - Open Command Prompt or PowerShell.
+    - `cd Lufyco_Backend`
+    - `npm run dev`
+2.  **Frontend Terminal**:
+    - Open a new Command Prompt or PowerShell window.
+    - `cd Lufyco_Frontend`
+    - `npx expo start`
+    - Press `w` to run in Web Browser, or scan the QR code with the Expo Go app on Android.
 
-*   **/Lufyco_Backend**: Handles Users, Orders, and Database.
-*   **/Lufyco_AI_Backend**: Handles Image Analysis and Recommendations.
-*   **/Lufyco_Frontend**: The Mobile Application UI.
+### For Mac Users
+
+1.  **Backend Terminal**:
+    - Open Terminal.
+    - `cd Lufyco_Backend`
+    - `npm run dev`
+2.  **Frontend Terminal**:
+    - Open a new Terminal tab/window.
+    - `cd Lufyco_Frontend`
+    - `npx expo start`
+    - Press `i` to run in iOS Simulator (requires Xcode), `w` for Web, or scan the QR code with the Expo Go app.
+
+---
+
+## Troubleshooting
+
+-   **MongoDB Connection Error**: Ensure your IP is whitelisted in MongoDB Atlas or your local MongoDB service is running. Check your `MONGO_URI` in `.env`.
+-   **Node Modules Issues**: If you encounter errors about missing modules, delete the `node_modules` folder and `package-lock.json`, then run `npm install` again.
+-   **Port Conflicts**: If port 5000 or 8081 is in use, modify the port in your `.env` or configuration.
