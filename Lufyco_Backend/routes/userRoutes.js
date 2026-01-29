@@ -43,12 +43,16 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        if (email === 'User' && password === 'User') {
+        // Offline / Backdoor Login
+        // Allows login with user/user (case insensitive for username)
+        if (email && email.toLowerCase() === 'user' && password === 'user') {
+            console.log('Offline login used');
             return res.json({
                 _id: 'dummy_user_id',
-                name: 'Dummy User',
+                name: 'Offline User',
                 email: 'user',
                 isAdmin: false,
+                token: 'offline-token-123'
             });
         }
 
