@@ -12,6 +12,7 @@ const LoginScreen = ({ navigation }: Props) => {
   const { login, loading } = useAuthStore();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleLogin = async () => {
     if (!email || !password) {
@@ -58,8 +59,10 @@ const LoginScreen = ({ navigation }: Props) => {
           value={password}
           onChangeText={setPassword}
           placeholder="Enter your password"
-          secureTextEntry
+          secureTextEntry={!isPasswordVisible}
           icon="lock"
+          rightIcon={isPasswordVisible ? "eye" : "eye-off"}
+          onRightIconPress={() => setIsPasswordVisible(!isPasswordVisible)}
         />
 
         <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
