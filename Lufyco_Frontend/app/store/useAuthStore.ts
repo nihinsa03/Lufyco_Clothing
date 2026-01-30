@@ -59,7 +59,9 @@ export const useAuthStore = create<AuthState>()(
                     set({ user: mockUser });
                     return true;
                 } catch (e: any) {
-                    set({ error: e.response?.data?.message || "Signup Failed" });
+                    const msg = e.response?.data?.message || "Signup Failed";
+                    console.error("Signup Store Error:", msg, e);
+                    set({ error: msg });
                     return false;
                 } finally {
                     set({ loading: false });
@@ -89,7 +91,9 @@ export const useAuthStore = create<AuthState>()(
                     set({ user: appUser, token: userData.token || 'mock_token', isAuthenticated: true });
                     return true;
                 } catch (e: any) {
-                    set({ error: e.response?.data?.message || "Login Failed" });
+                    const msg = e.response?.data?.message || "Login Failed";
+                    console.error("Login Store Error:", msg, e);
+                    set({ error: msg });
                     return false;
                 } finally {
                     set({ loading: false });
