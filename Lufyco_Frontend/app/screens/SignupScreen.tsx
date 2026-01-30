@@ -14,6 +14,8 @@ const SignupScreen = ({ navigation }: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+  const [isConfirmPasswordVisible, setIsConfirmPasswordVisible] = useState(false);
 
   const handleSignup = async () => {
     if (!name || !email || !password || !confirmPassword) {
@@ -63,8 +65,10 @@ const SignupScreen = ({ navigation }: Props) => {
           value={password}
           onChangeText={setPassword}
           placeholder="Enter your password"
-          secureTextEntry
+          secureTextEntry={!isPasswordVisible}
           icon="lock"
+          rightIcon={isPasswordVisible ? "eye" : "eye-off"}
+          onRightIconPress={() => setIsPasswordVisible(!isPasswordVisible)}
         />
 
         <AuthInput
@@ -72,8 +76,10 @@ const SignupScreen = ({ navigation }: Props) => {
           value={confirmPassword}
           onChangeText={setConfirmPassword}
           placeholder="Confirm your password"
-          secureTextEntry
+          secureTextEntry={!isConfirmPasswordVisible}
           icon="lock"
+          rightIcon={isConfirmPasswordVisible ? "eye" : "eye-off"}
+          onRightIconPress={() => setIsConfirmPasswordVisible(!isConfirmPasswordVisible)}
         />
 
         <PrimaryButton
