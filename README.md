@@ -41,14 +41,14 @@ cd Lufyco_Clothing
 3.  Create a `.env` file in the `Lufyco_Backend` directory with your Mongo URI and other secrets:
     ```env
     MONGO_URI=your_mongodb_connection_string
-    PORT=5000
+    PORT=5001
     JWT_SECRET=your_jwt_secret
     ```
 4.  Start the backend server:
     ```bash
     npm run dev
     ```
-    *The server normally runs on `http://localhost:5000`.*
+    *The server normally runs on `http://localhost:5001`.*
 
 ### 3. Frontend Setup
 
@@ -103,4 +103,4 @@ cd Lufyco_Clothing
 
 -   **MongoDB Connection Error**: Ensure your IP is whitelisted in MongoDB Atlas or your local MongoDB service is running. Check your `MONGO_URI` in `.env`.
 -   **Node Modules Issues**: If you encounter errors about missing modules, delete the `node_modules` folder and `package-lock.json`, then run `npm install` again.
--   **Port Conflicts**: If port 5000 or 8081 is in use, modify the port in your `.env` or configuration.
+-   **Port Conflicts**: If port 5001 or 8081 is in use, modify the port in your `.env` or configuration.
