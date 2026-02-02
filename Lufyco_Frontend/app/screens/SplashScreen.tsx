@@ -26,13 +26,12 @@ const SplashScreen = ({ navigation }: Props) => {
 
   return (
     <ImageBackground
-      source={require('../../assets/images/splash-bg.png')}
+      source={require('../../assets/images/first_screen.png')}
       style={styles.container}
     >
       <View style={styles.overlay} />
       <View style={styles.content}>
-        <Text style={styles.title}>Fashion</Text>
-        <Text style={styles.subtitle}>Explore the new world of clothing</Text>
+
 
         <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('Onboarding')}>
           <Text style={styles.btnText}>Get Started</Text>

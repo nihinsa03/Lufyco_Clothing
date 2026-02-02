@@ -11,19 +11,19 @@ const { width, height } = Dimensions.get('window');
 const slides = [
     {
         id: '1',
-        image: require('../../../assets/images/onboarding1.png'), // Placeholder, need real assets or use uploaded
+        image: require('../../../assets/images/1.png'), // Updated image
         title: 'Explore a wide range\nof Clothing Products',
         subtitle: 'Find the best outfits for every occasion.'
     },
     {
         id: '2',
-        image: require('../../../assets/images/onboarding_new.png'),
+        image: require('../../../assets/images/2.png'),
         title: 'Unlock exclusive offers\nand discounts',
         subtitle: 'Get access to limited-time deals and special promotions.'
     },
     {
         id: '3',
-        image: require('../../../assets/images/onboarding_new_2.png'),
+        image: require('../../../assets/images/3.png'),
         title: 'Safe and secure\npayments',
         subtitle: 'Quick and secure checkout process for all your orders.'
     }
@@ -81,19 +81,6 @@ const OnboardingScreen = ({ navigation }: Props) => {
 
             {/* Pagination & Controls */}
             <View style={styles.bottomContainer}>
-                {/* Pagination Dots */}
-                <View style={styles.pagination}>
-                    {slides.map((_, index) => (
-                        <View
-                            key={index}
-                            style={[
-                                styles.dot,
-                                currentIndex === index ? styles.activeDot : styles.inactiveDot
-                            ]}
-                        />
-                    ))}
-                </View>
-
                 {/* Buttons */}
                 <View style={styles.buttonsContainer}>
                     <TouchableOpacity style={styles.nextButton} onPress={handleNext}>
@@ -108,6 +95,19 @@ const OnboardingScreen = ({ navigation }: Props) => {
                         </TouchableOpacity>
                     )}
                 </View>
+
+                {/* Pagination Dots */}
+                <View style={styles.pagination}>
+                    {slides.map((_, index) => (
+                        <View
+                            key={index}
+                            style={[
+                                styles.dot,
+                                currentIndex === index ? styles.activeDot : styles.inactiveDot
+                            ]}
+                        />
+                    ))}
+                </View>
             </View>
         </SafeAreaView>
     );
@@ -121,8 +121,8 @@ const styles = StyleSheet.create({
     title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', color: '#000', marginBottom: 15 },
     subtitle: { fontSize: 14, textAlign: 'center', color: '#666', lineHeight: 22 },
 
-    bottomContainer: { position: 'absolute', bottom: 50, left: 0, right: 0, alignItems: 'center' },
-    pagination: { flexDirection: 'row', marginBottom: 30 },
+    bottomContainer: { position: 'absolute', bottom: 30, left: 0, right: 0, alignItems: 'center' },
+    pagination: { flexDirection: 'row', marginTop: 20 },
     dot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 4 },
     activeDot: { backgroundColor: '#000', width: 24 },
     inactiveDot: { backgroundColor: '#CCC' },
