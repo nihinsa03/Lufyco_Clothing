@@ -168,15 +168,15 @@ const styles = StyleSheet.create({
     },
     slide: {
         width,
-        height: height * 0.6,
+        height: height * 0.65,
         justifyContent: 'center',
         alignItems: 'center',
-        paddingTop: 60
+        paddingTop: 80
     },
     image: {
-        width: width * 0.88,
-        height: '85%',
-        borderRadius: 24
+        width: width * 0.5,
+        height: height * 0.5,
+        borderRadius: 16
     },
 
     bottomCard: {
@@ -185,35 +185,35 @@ const styles = StyleSheet.create({
         left: 0,
         right: 0,
         backgroundColor: '#fff',
-        borderTopLeftRadius: 32,
-        borderTopRightRadius: 32,
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
         paddingHorizontal: 24,
-        paddingTop: 28,
-        paddingBottom: 32,
+        paddingTop: 20,
+        paddingBottom: 28,
         shadowColor: '#000',
-        shadowOffset: { width: 0, height: -4 },
-        shadowOpacity: 0.08,
-        shadowRadius: 12,
-        elevation: 12
+        shadowOffset: { width: 0, height: -2 },
+        shadowOpacity: 0.05,
+        shadowRadius: 8,
+        elevation: 8
     },
     textContainer: {
         alignItems: 'center',
-        marginBottom: 24
+        marginBottom: 20
     },
     title: {
-        fontSize: 22,
+        fontSize: 20,
         fontWeight: 'bold',
         textAlign: 'center',
         color: '#000',
-        marginBottom: 10,
-        lineHeight: 28
+        marginBottom: 12,
+        lineHeight: 26
     },
     subtitle: {
-        fontSize: 13,
+        fontSize: 12,
         textAlign: 'center',
         color: '#666',
-        lineHeight: 19,
-        paddingHorizontal: 5
+        lineHeight: 18,
+        paddingHorizontal: 10
     },
 
     buttonsContainer: {
