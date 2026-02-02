@@ -16,7 +16,7 @@ const CategoryProductsScreen = () => {
     const renderItem = ({ item }: { item: Product }) => (
         <TouchableOpacity
             style={styles.card}
-            onPress={() => navigation.navigate('ProductDetails', { id: item.id })}
+            onPress={() => navigation.navigate("ProductDetails", { id: item.id, product: item })}
         >
             <View style={styles.imageContainer}>
                 <Image
@@ -29,18 +29,19 @@ const CategoryProductsScreen = () => {
                 </TouchableOpacity>
             </View>
 
-            <View style={styles.colorRow}>
-                {item.colors.slice(0, 3).map((c, i) => (
-                    <View key={i} style={[styles.dot, { backgroundColor: c }]} />
-                ))}
-                {item.colors.length > 3 && <Text style={styles.plusText}>+</Text>}
-            </View>
+            <View style={styles.productInfo}>
+                <View style={styles.colorRow}>
+                    {item.colors.slice(0, 3).map((c, i) => (
+                        <View key={i} style={[styles.dot, { backgroundColor: c }]} />
+                    ))}
+                    <Text style={styles.plusText}>All Colors</Text>
+                </View>
 
-            <Text numberOfLines={1} style={styles.title}>{item.title}</Text>
+                <Text numberOfLines={1} style={styles.title}>{item.title}</Text>
 
-            <View style={styles.priceRow}>
-                <Text style={styles.price}>${item.price.toFixed(2)}</Text>
-                {item.oldPrice && <Text style={styles.oldPrice}>${item.oldPrice.toFixed(2)}</Text>}
+                <View style={styles.priceRow}>
+                    <Text style={styles.price}>LKR {item.price.toFixed(2)}</Text>
+                </View>
             </View>
         </TouchableOpacity>
     );
@@ -92,23 +93,23 @@ const styles = StyleSheet.create({
     headerIcons: { flexDirection: 'row' },
     center: { alignItems: 'center', marginTop: 50 },
 
-    card: { width: COLUMN_WIDTH, marginBottom: 20 },
-    imageContainer: { position: 'relative', marginBottom: 10 },
-    image: { width: '100%', height: 200, borderRadius: 10, backgroundColor: '#f9f9f9' },
+    card: { width: COLUMN_WIDTH, marginBottom: 25 },
+    imageContainer: { position: 'relative', marginBottom: 10, borderRadius: 12, overflow: 'hidden' },
+    image: { width: '100%', height: 200, backgroundColor: '#f9f9f9' },
     favIcon: {
-        position: 'absolute', top: 10, right: 10, backgroundColor: '#fff',
+        position: 'absolute', top: 10, right: 10, backgroundColor: 'rgba(255,255,255,0.8)',
         width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center',
-        shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 3, elevation: 2
     },
 
-    colorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
-    dot: { width: 10, height: 10, borderRadius: 5, marginRight: 5, borderWidth: 1, borderColor: '#eee' },
-    plusText: { fontSize: 10, color: '#888' },
+    productInfo: { paddingHorizontal: 4 },
+    colorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+    dot: { width: 10, height: 10, borderRadius: 5, marginRight: 4, borderWidth: 1, borderColor: '#fff' },
+    plusText: { fontSize: 10, color: '#666', marginLeft: 4 },
 
-    title: { fontSize: 14, fontWeight: '600', marginBottom: 4, color: '#000' },
+    title: { fontSize: 13, fontWeight: '500', marginBottom: 4, color: '#333' },
     priceRow: { flexDirection: 'row', alignItems: 'center' },
-    price: { fontSize: 14, fontWeight: 'bold', color: '#000', marginRight: 8 },
-    oldPrice: { fontSize: 12, color: '#999', textDecorationLine: 'line-through' }
+    price: { fontSize: 13, fontWeight: 'bold', color: '#000' },
+    oldPrice: { fontSize: 11, color: '#999', textDecorationLine: 'line-through', marginLeft: 6 }
 });
 
 export default CategoryProductsScreen;
