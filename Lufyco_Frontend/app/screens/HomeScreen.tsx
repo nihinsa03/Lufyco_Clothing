@@ -15,13 +15,13 @@ type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 const HomeScreen = ({ navigation }: Props) => {
   const { products, categories, setFilter } = useShopStore();
+  const [activeTab, setActiveTab] = useState("Fashion");
 
   // Filter for Latest Products (New Arrivals)
   const latestProducts = products.filter(p => p.isNewArrival).slice(0, 4);
 
   const handleCategoryPress = (catId: string) => {
     setFilter({ categoryId: catId });
-    // navigation.navigate("Main", { screen: "Categories" } as any); 
     navigation.navigate("CategoryProducts");
   };
 
@@ -36,43 +36,77 @@ const HomeScreen = ({ navigation }: Props) => {
         <View style={styles.header}>
           <Text style={styles.logo}>Fashion</Text>
           <View style={styles.headerIcons}>
-            <Feather name="bell" size={22} style={styles.icon} />
-            <Feather name="heart" size={22} style={styles.icon} />
-            <TouchableOpacity onPress={() => navigation.navigate("Main", { screen: "Profile" } as any)}>
-              <Feather name="user" size={22} style={styles.icon} />
+            <TouchableOpacity style={styles.iconBtn}><Feather name="bell" size={24} color="#000" /></TouchableOpacity>
+            <TouchableOpacity style={styles.iconBtn}><Feather name="heart" size={24} color="#000" /></TouchableOpacity>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate("Main", { screen: "Profile" } as any)}>
+              <Feather name="user" size={24} color="#000" />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Search */}
         <TouchableOpacity style={styles.searchBox} onPress={() => navigation.navigate("Search")}>
-          <Ionicons name="search" size={20} />
+          <Ionicons name="search-outline" size={20} color="#666" />
           <Text style={styles.searchInput}>Search for brands and products</Text>
-          <Feather name="camera" size={20} />
-          <Feather name="mic" size={20} style={{ marginLeft: 10 }} />
+          <View style={styles.searchRightIcons}>
+            <Feather name="camera" size={20} color="#666" style={{ marginRight: 15 }} />
+            <Feather name="mic" size={20} color="#666" />
+          </View>
         </TouchableOpacity>
 
         {/* Content */}
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 150 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
 
-          {/* Categories Chips */}
-          <ScrollView horizontal showsHorizontalScrollIndicator={false} style={styles.categories}>
-            <TouchableOpacity style={styles.chipActive} onPress={() => setFilter({ categoryId: undefined })}>
-              <Text style={styles.chipTextActive}>All</Text>
+          {/* Tabs */}
+          <View style={styles.tabContainer}>
+            <View style={styles.tabsWrapper}>
+              <TouchableOpacity
+                style={[styles.tab, activeTab === "Fashion" && styles.activeTab]}
+                onPress={() => setActiveTab("Fashion")}
+              >
+                <Text style={[styles.tabText, activeTab === "Fashion" && styles.activeTabText]}>Fashion</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.tab, activeTab === "Beauty" && styles.activeTab]}
+                onPress={() => setActiveTab("Beauty")}
+              >
+                <Text style={[styles.tabText, activeTab === "Beauty" && styles.activeTabText]}>Beauty</Text>
+              </TouchableOpacity>
+            </View>
+            <TouchableOpacity style={styles.gridIcon}>
+              <Ionicons name="grid-outline" size={20} color="#000" />
             </TouchableOpacity>
+          </View>
+
+          {/* Categories Grid */}
+          <View style={styles.categoriesGrid}>
             {categories.map((item, index) => (
-              <TouchableOpacity key={index} style={styles.chipInactive} onPress={() => handleCategoryPress(item.id)}>
-                <Text style={styles.chipTextInactive}>{item.name}</Text>
+              <TouchableOpacity key={index} style={styles.categoryItem} onPress={() => handleCategoryPress(item.id)}>
+                <View style={styles.categoryImageContainer}>
+                  <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
+                </View>
+                <Text style={styles.categoryName}>{item.name}</Text>
               </TouchableOpacity>
             ))}
-          </ScrollView>
+          </View>
 
           {/* Banner */}
           <View style={styles.bannerContainer}>
-            <Image source={require("../../assets/images/banner.png")} style={styles.banner} resizeMode="cover" />
+            <Image source={require("../../assets/images/categories/men/watches.jpg")} style={styles.banner} resizeMode="cover" />
             <View style={styles.bannerOverlay}>
-              <Text style={styles.bannerText}>Exclusive Sales</Text>
-              <Text style={styles.bannerSubText}>UP TO 50% OFF</Text>
+              <View style={styles.discountTag}>
+                <Text style={styles.discountText}>30% OFF</Text>
+              </View>
+              <Text style={styles.bannerTitle}>On Watches</Text>
+              <Text style={styles.bannerSubtitle}>Exclusive Sales</Text>
+            </View>
+            {/* Pagination Dots */}
+            <View style={styles.paginationDots}>
+              <View style={[styles.dot, styles.activeDot]} />
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+              <View style={styles.dot} />
+              <View style={styles.dot} />
             </View>
           </View>
 
@@ -90,20 +124,26 @@ const HomeScreen = ({ navigation }: Props) => {
             columnWrapperStyle={{ justifyContent: "space-between" }}
             renderItem={({ item }) => (
               <TouchableOpacity style={styles.productCard} onPress={() => handleProductPress(item)}>
-                <Image
-                  source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}
-                  style={styles.productImage}
-                />
-                <TouchableOpacity style={styles.wishlistIcon}>
-                  <Feather name="heart" size={18} color="#000" />
-                </TouchableOpacity>
-                <View style={styles.colorRow}>
-                  {item.colors.slice(0, 3).map((color: string, idx: number) => (
-                    <View key={idx} style={[styles.colorDot, { backgroundColor: color }]} />
-                  ))}
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}
+                    style={styles.productImage}
+                  />
+                  <TouchableOpacity style={styles.wishlistBtn}>
+                    <Feather name="heart" size={16} color="#000" />
+                  </TouchableOpacity>
                 </View>
-                <Text numberOfLines={1} style={styles.productName}>{item.title}</Text>
-                <Text style={styles.productPrice}>${item.price}</Text>
+
+                <View style={styles.productInfo}>
+                  <View style={styles.cardColorRow}>
+                    <View style={[styles.colorCircle, { backgroundColor: '#000' }]} />
+                    <View style={[styles.colorCircle, { backgroundColor: '#2ba' }]} />
+                    <View style={[styles.colorCircle, { backgroundColor: '#0f0' }]} />
+                    <Text style={styles.moreColors}>All 5 Colors</Text>
+                  </View>
+                  <Text numberOfLines={1} style={styles.productName}>{item.title}</Text>
+                  <Text style={styles.productPrice}>LKR {item.price * 300}.00</Text>
+                </View>
               </TouchableOpacity>
             )}
           />
@@ -116,41 +156,67 @@ const HomeScreen = ({ navigation }: Props) => {
 
 const styles = StyleSheet.create({
   safeArea: { flex: 1, backgroundColor: "#fff" },
-  container: { flex: 1, paddingHorizontal: 15 },
-  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10, marginBottom: 10 },
-  logo: { fontSize: 24, fontWeight: "bold" },
-  headerIcons: { flexDirection: "row" },
-  icon: { marginHorizontal: 8 },
+  container: { flex: 1, paddingHorizontal: 16 },
+  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10, marginBottom: 15 },
+  logo: { fontSize: 26, fontWeight: "800", color: '#000' },
+  headerIcons: { flexDirection: "row", alignItems: 'center' },
+  iconBtn: { marginLeft: 15 },
 
   searchBox: {
-    flexDirection: "row", alignItems: "center", backgroundColor: "#f1f1f1",
-    borderRadius: 10, paddingHorizontal: 10, paddingVertical: 12, marginBottom: 15,
+    flexDirection: "row", alignItems: "center", backgroundColor: "#F5F5F5",
+    borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, marginBottom: 20,
   },
-  searchInput: { flex: 1, marginLeft: 10, color: "#999" },
+  searchInput: { flex: 1, marginLeft: 10, fontSize: 14, color: "#666" },
+  searchRightIcons: { flexDirection: 'row', alignItems: 'center' },
 
-  categories: { marginBottom: 20 },
-  chipActive: { backgroundColor: "#000", paddingVertical: 8, paddingHorizontal: 20, borderRadius: 20, marginRight: 10 },
-  chipInactive: { backgroundColor: "#f3f3f3", paddingVertical: 8, paddingHorizontal: 20, borderRadius: 20, marginRight: 10 },
-  chipTextActive: { color: "#fff", fontWeight: "bold" },
-  chipTextInactive: { color: "#000", fontWeight: "bold" },
+  tabContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+  tabsWrapper: { flexDirection: 'row' },
+  tab: {
+    paddingVertical: 8, paddingHorizontal: 24, borderRadius: 25,
+    borderWidth: 1, borderColor: '#eee', marginRight: 10, backgroundColor: '#fff'
+  },
+  activeTab: { backgroundColor: '#000', borderColor: '#000' },
+  tabText: { fontSize: 14, fontWeight: '600', color: '#000' },
+  activeTabText: { color: '#fff' },
+  gridIcon: { padding: 8 },
 
-  bannerContainer: { marginBottom: 20, borderRadius: 10, overflow: 'hidden' },
-  banner: { width: "100%", height: 160 },
-  bannerOverlay: { position: 'absolute', bottom: 20, left: 20 },
-  bannerText: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
-  bannerSubText: { color: '#fff', fontSize: 14, fontWeight: '600', marginTop: 5 },
+  categoriesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 25 },
+  categoryItem: { width: '15%', alignItems: 'center', marginBottom: 15 },
+  categoryImageContainer: {
+    width: 50, height: 50, borderRadius: 12, overflow: 'hidden', marginBottom: 5, backgroundColor: '#f9f9f9',
+    justifyContent: 'center', alignItems: 'center'
+  },
+  categoryImage: { width: '100%', height: '100%' },
+  categoryName: { fontSize: 10, fontWeight: '600', textAlign: 'center', color: '#333' },
 
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 10 },
-  sectionTitle: { fontSize: 18, fontWeight: "bold" },
-  seeAll: { color: "#666", fontSize: 13 },
+  bannerContainer: { height: 180, borderRadius: 20, overflow: 'hidden', marginBottom: 25, position: 'relative' },
+  banner: { width: "100%", height: "100%" },
+  bannerOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 20, justifyContent: 'center' },
+  discountTag: { backgroundColor: '#111', alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, marginBottom: 5 },
+  discountText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
+  bannerTitle: { color: '#fff', fontSize: 14, fontWeight: '500', opacity: 0.9 },
+  bannerSubtitle: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
+  paginationDots: { position: 'absolute', bottom: 15, right: 20, flexDirection: 'row' },
+  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)', marginHorizontal: 3 },
+  activeDot: { backgroundColor: '#3b82f6' }, // Blue active dot to match image
 
-  productCard: { backgroundColor: "#fff", width: screenWidth / 2 - 25, borderRadius: 10, marginBottom: 20 },
-  productImage: { width: "100%", height: 180, borderRadius: 10, marginBottom: 10, backgroundColor: "#f9f9f9" },
-  wishlistIcon: { position: "absolute", top: 10, right: 10, backgroundColor: "#fff", padding: 6, borderRadius: 20 },
-  colorRow: { flexDirection: "row", alignItems: "center", marginBottom: 5 },
-  colorDot: { width: 10, height: 10, borderRadius: 5, marginRight: 5, borderWidth: 1, borderColor: "#eee" },
-  productName: { fontSize: 14, fontWeight: "600", marginBottom: 4, color: "#333" },
-  productPrice: { fontSize: 14, fontWeight: "bold", color: "#111" },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 },
+  sectionTitle: { fontSize: 18, fontWeight: "bold", color: '#000' },
+  seeAll: { color: "#2DD4BF", fontSize: 12, fontWeight: '600' }, // Teal color matching image
+
+  productCard: { backgroundColor: "#fff", width: (screenWidth - 48) / 2, marginBottom: 20 },
+  imageWrapper: {
+    width: '100%', aspectRatio: 1, backgroundColor: "#E5E7EB", borderRadius: 16, marginBottom: 10,
+    overflow: 'hidden', position: 'relative'
+  },
+  productImage: { width: "100%", height: "100%" },
+  wishlistBtn: { position: "absolute", top: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.2)', padding: 6, borderRadius: 20 },
+  productInfo: { paddingHorizontal: 4 },
+  cardColorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
+  colorCircle: { width: 10, height: 10, borderRadius: 5, marginRight: -3, borderWidth: 1, borderColor: '#fff' },
+  moreColors: { fontSize: 9, color: '#666', marginLeft: 8, textDecorationLine: 'underline' },
+  productName: { fontSize: 13, fontWeight: "500", marginBottom: 4, color: "#333" },
+  productPrice: { fontSize: 13, fontWeight: "bold", color: "#000" },
 });
 
 export default HomeScreen;

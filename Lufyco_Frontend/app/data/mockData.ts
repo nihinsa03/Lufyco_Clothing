@@ -29,12 +29,18 @@ export interface Product {
 import { MOCK_PRODUCTS } from './mockProducts';
 
 export const mockCategories: Category[] = [
-    { id: 'c1', name: 'Men', image: require('../../assets/images/categories/men/shirts.png') }, // Assumes exists or will fallback
-    { id: 'c2', name: 'Women', image: require('../../assets/images/categories/women/dresses.jpg') },
-    { id: 'c3', name: 'Kids', image: { uri: 'https://via.placeholder.com/100?text=Kids' } },
-    { id: 'c4', name: 'Shoes', image: require('../../assets/images/categories/men/sports-shoes.jpg') },
-    { id: 'c5', name: 'Accessories', image: require('../../assets/images/categories/men/watches.jpg') },
-    // Add more as needed
+    { id: 'cat_shirts', name: 'Shirts', image: require('../../assets/images/categories/men/shirts.png') },
+    { id: 'cat_jeans', name: 'Jeans', image: require('../../assets/images/categories/men/jeans.jpg') },
+    { id: 'cat_tshirts', name: 'Tshirts', image: require('../../assets/images/categories/men/tshirts.jpg') },
+    { id: 'cat_casual_shoes', name: 'Casual Shoes', image: require('../../assets/images/categories/men/casual-shoes.jpg') },
+    { id: 'cat_sweater', name: 'Sweater', image: require('../../assets/images/categories/men/sweater.jpg') },
+    { id: 'cat_sports_shoes', name: 'Sports Shoes', image: require('../../assets/images/categories/men/sports-shoes.jpg') },
+    { id: 'cat_dresses', name: 'Dresses', image: require('../../assets/images/categories/women/dresses.jpg') },
+    { id: 'cat_tops', name: 'Tops', image: require('../../assets/images/categories/women/tops.jpg') },
+    { id: 'cat_trousers', name: 'Trousers', image: require('../../assets/images/categories/men/trousers.jpg') },
+    { id: 'cat_heels', name: 'Heels', image: require('../../assets/images/categories/women/heels.jpg') },
+    { id: 'cat_jackets', name: 'Jackets', image: require('../../assets/images/categories/men/jackets.jpg') },
+    { id: 'cat_kurtas', name: 'Kurtas', image: require('../../assets/images/categories/women/kurtas.jpg') },
 ];
 
 // Helper to map category name to ID
