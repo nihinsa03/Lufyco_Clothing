@@ -21,8 +21,10 @@ type NavProp = NativeStackNavigationProp<RootStackParamList, "Profile">;
 
 const ProfileScreen = () => {
     const navigation = useNavigation<NavProp>();
-    const logout = useAuthStore((state) => state.logout);
-    const { user } = useProfileStore();
+    const { logout, user } = useAuthStore();
+    // Keep useProfileStore for address/payment if needed, or remove if unused. 
+    // It seems menuItems navigate to screens that likely use ProfileStore. 
+    // For now, removing 'user' destructuring from useProfileStore to avoid naming conflict.
 
     const menuItems = [
         {
@@ -60,7 +62,7 @@ const ProfileScreen = () => {
                 <View style={styles.userCard}>
                     <Image source={require("../../assets/images/clothing.png")} style={styles.avatar} />
                     <View style={{ marginLeft: 16, flex: 1 }}>
-                        <Text style={styles.userName}>{user?.email || "guest@example.com"}</Text>
+                        <Text style={styles.userName}>{user?.name || user?.email?.split('@')[0] || "Guest"}</Text>
                         <Text style={styles.userEmail}>{user?.email || "guest@example.com"}</Text>
                     </View>
                     <TouchableOpacity style={styles.editBtn}>
