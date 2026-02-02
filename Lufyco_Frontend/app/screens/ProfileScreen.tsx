@@ -60,7 +60,7 @@ const ProfileScreen = () => {
                 <View style={styles.userCard}>
                     <Image source={require("../../assets/images/clothing.png")} style={styles.avatar} />
                     <View style={{ marginLeft: 16, flex: 1 }}>
-                        <Text style={styles.userName}>{user?.name || "Guest User"}</Text>
+                        <Text style={styles.userName}>{user?.email || "guest@example.com"}</Text>
                         <Text style={styles.userEmail}>{user?.email || "guest@example.com"}</Text>
                     </View>
                     <TouchableOpacity style={styles.editBtn}>

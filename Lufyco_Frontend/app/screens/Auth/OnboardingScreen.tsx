@@ -12,15 +12,15 @@ const { width, height } = Dimensions.get('window');
 const slides = [
     {
         id: '1',
-        image: require('../../../assets/images/1.png'), // Updated image
+        image: require('../../../assets/images/1.png'),
         title: 'Explore a wide range\nof Clothing Products',
-        subtitle: 'Find the best outfits for every occasion.'
+        subtitle: 'Explore a wide range of clothing products at your fingertips. Fashion offers an extensive collection to suit your needs.'
     },
     {
         id: '2',
         image: require('../../../assets/images/2.png'),
         title: 'Unlock exclusive offers\nand discounts',
-        subtitle: 'Get access to limited-time deals and special promotions.'
+        subtitle: 'Get access to limited-time deals and special promotions available only to our valued customers.'
     },
     {
         id: '3',
@@ -86,7 +86,6 @@ const OnboardingScreen = ({ navigation }: Props) => {
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(item) => item.id}
-                scrollEnabled={false}
                 onMomentumScrollEnd={(e) => {
                     const index = Math.round(e.nativeEvent.contentOffset.x / width);
                     setCurrentIndex(index);
