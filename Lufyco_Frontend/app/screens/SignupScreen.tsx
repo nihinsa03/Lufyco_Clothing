@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, ScrollView, SafeAreaView, Alert } from 'react-native';
-import { AuthHeader, AuthInput, PrimaryButton, SocialRow } from '../components/AuthComponents';
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
 
@@ -34,64 +34,77 @@ const SignupScreen = ({ navigation }: Props) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+        <Text style={styles.brandName}>Fashion</Text>
+
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.backArrow}>←</Text>
+          <Ionicons name="arrow-back" size={24} color="#000" />
         </TouchableOpacity>
 
-        <AuthHeader title="Create your account" />
-
-        <AuthInput
-          label="Full Name"
-          value={name}
-          onChangeText={setName}
-          placeholder="Enter your full name"
-          icon="user"
-        />
-
-        <AuthInput
-          label="Email Address"
-          value={email}
-          onChangeText={setEmail}
-          placeholder="Enter your email"
-          icon="mail"
-          keyboardType="email-address"
-        />
-
-        <AuthInput
-          label="Password"
-          value={password}
-          onChangeText={setPassword}
-          placeholder="Enter your password"
-          secureTextEntry
-          icon="lock"
-        />
-
-        <AuthInput
-          label="Confirm Password"
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-          placeholder="Confirm your password"
-          secureTextEntry
-          icon="lock"
-        />
-
-        <PrimaryButton
-          title="Sign Up"
-          onPress={handleSignup}
-          loading={loading}
-        />
-
-        <Text style={styles.orText}>or continue with</Text>
-
-        <SocialRow />
-
-        <View style={styles.footer}>
-          <Text style={styles.footerText}>Already have an account? </Text>
-          <TouchableOpacity onPress={() => navigation.navigate('Login')}>
-            <Text style={styles.link}>Sign in</Text>
-          </TouchableOpacity>
+        <View style={styles.headerContainer}>
+          <Text style={styles.title}>Create your account</Text>
+          <Text style={styles.subtitle}>Make your life More Smarter</Text>
         </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Full Name</Text>
+          <TextInput
+            style={styles.input}
+            value={name}
+            onChangeText={setName}
+            placeholder="Enter your full name"
+            placeholderTextColor="#999"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Email Address</Text>
+          <TextInput
+            style={styles.input}
+            value={email}
+            onChangeText={setEmail}
+            placeholder="Enter your email"
+            placeholderTextColor="#999"
+            keyboardType="email-address"
+            autoCapitalize="none"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Password</Text>
+          <TextInput
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Enter your password"
+            placeholderTextColor="#999"
+            secureTextEntry
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Confirm Password</Text>
+          <TextInput
+            style={styles.input}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Confirm your password"
+            placeholderTextColor="#999"
+            secureTextEntry
+          />
+        </View>
+
+        <TouchableOpacity
+          style={styles.signUpButton}
+          onPress={handleSignup}
+          disabled={loading}
+        >
+          {loading ? (
+            <ActivityIndicator color="#fff" />
+          ) : (
+            <Text style={styles.signUpButtonText}>Sign Up</Text>
+          )}
+        </TouchableOpacity>
 
       </ScrollView>
     </SafeAreaView>
@@ -99,14 +112,61 @@ const SignupScreen = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#fff' },
-  container: { padding: 24, paddingBottom: 50 },
-  backBtn: { marginBottom: 20 },
-  backArrow: { fontSize: 24, fontWeight: 'bold' },
-  orText: { textAlign: 'center', marginVertical: 20, color: '#666' },
-  footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 30 },
-  footerText: { color: '#666' },
-  link: { color: '#000', fontWeight: 'bold' }
+  safeArea: {
+    flex: 1,
+    backgroundColor: '#fff'
+  },
+  container: {
+    padding: 24,
+    paddingTop: 60,
+    flexGrow: 1
+  },
+  backBtn: {
+    marginBottom: 40,
+    width: 40,
+    height: 40,
+    alignItems: 'center',
+    justifyContent: 'center'
+  },
+  title: {
+    fontSize: 32,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 40
+  },
+  inputContainer: {
+    marginBottom: 20
+  },
+  label: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#000',
+    marginBottom: 8
+  },
+  input: {
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#E5E5E5',
+    borderRadius: 12,
+    paddingHorizontal: 16,
+    paddingVertical: 14,
+    fontSize: 15,
+    color: '#000'
+  },
+  signUpButton: {
+    backgroundColor: '#000',
+    borderRadius: 50,
+    paddingVertical: 18,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: 20,
+    marginBottom: 40
+  },
+  signUpButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600'
+  }
 });
 
 export default SignupScreen;
