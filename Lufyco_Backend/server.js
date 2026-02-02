@@ -36,6 +36,22 @@ app.get('/', (req, res) => {
     res.send('Lufyco Clothing Backend is running!');
 });
 
+app.use((err, req, res, next) => {
+    console.error("Global Server Error:", err.stack);
+    res.status(500).json({
+        message: 'Internal Server Error',
+        error: process.env.NODE_ENV === 'production' ? {} : err.message
+    });
+});
+
+app.use((err, req, res, next) => {
+    console.error("Global Server Error:", err.stack);
+    res.status(500).json({
+        message: 'Internal Server Error',
+        error: process.env.NODE_ENV === 'production' ? {} : err.message
+    });
+});
+
 app.listen(PORT, () => {
     console.log(`Server is running on port ${PORT}`);
 });
