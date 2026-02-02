@@ -118,21 +118,37 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 24,
-    paddingTop: 60,
+    paddingTop: 20,
     flexGrow: 1
   },
+  brandName: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: '#000',
+    marginBottom: 20
+  },
   backBtn: {
-    marginBottom: 40,
+    marginBottom: 30,
     width: 40,
     height: 40,
     alignItems: 'center',
     justifyContent: 'center'
   },
+  headerContainer: {
+    marginBottom: 32,
+    alignItems: 'center'
+  },
   title: {
-    fontSize: 32,
+    fontSize: 24,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 40
+    textAlign: 'center',
+    marginBottom: 8
+  },
+  subtitle: {
+    fontSize: 13,
+    color: '#666',
+    textAlign: 'center'
   },
   inputContainer: {
     marginBottom: 20
