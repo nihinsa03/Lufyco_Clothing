@@ -68,7 +68,7 @@ const OnboardingScreen = ({ navigation }: Props) => {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
+        <View style={styles.container}>
             <StatusBar barStyle="dark-content" />
 
             {/* Header / Back Button */}
@@ -86,6 +86,7 @@ const OnboardingScreen = ({ navigation }: Props) => {
                 pagingEnabled
                 showsHorizontalScrollIndicator={false}
                 keyExtractor={(item) => item.id}
+                scrollEnabled={false}
                 onMomentumScrollEnd={(e) => {
                     const index = Math.round(e.nativeEvent.contentOffset.x / width);
                     setCurrentIndex(index);
@@ -93,16 +94,18 @@ const OnboardingScreen = ({ navigation }: Props) => {
                 renderItem={({ item }) => (
                     <View style={styles.slide}>
                         <Image source={item.image} style={styles.image} resizeMode="cover" />
-                        <View style={styles.textContainer}>
-                            <Text style={styles.title}>{item.title}</Text>
-                            <Text style={styles.subtitle}>{item.subtitle}</Text>
-                        </View>
                     </View>
                 )}
             />
 
-            {/* Pagination & Controls */}
-            <View style={styles.bottomContainer}>
+            {/* Bottom Card with Text and Controls */}
+            <View style={styles.bottomCard}>
+                {/* Text Content */}
+                <View style={styles.textContainer}>
+                    <Text style={styles.title}>{slides[currentIndex].title}</Text>
+                    <Text style={styles.subtitle}>{slides[currentIndex].subtitle}</Text>
+                </View>
+
                 {/* Buttons */}
                 <View style={styles.buttonsContainer}>
                     {currentIndex === slides.length - 1 ? (
@@ -141,37 +144,159 @@ const OnboardingScreen = ({ navigation }: Props) => {
                     ))}
                 </View>
             </View>
-        </SafeAreaView>
+        </View>
     );
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' },
-    header: { paddingHorizontal: 20, paddingTop: 10, paddingBottom: 10 },
-    backButton: { padding: 5 },
-    slide: { width, alignItems: 'center' },
-    image: { width: width * 0.9, height: height * 0.5, borderRadius: 20, marginTop: 10, backgroundColor: '#f0f0f0' },
-    textContainer: { marginTop: 40, alignItems: 'center', paddingHorizontal: 30 },
-    title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', color: '#000', marginBottom: 15 },
-    subtitle: { fontSize: 14, textAlign: 'center', color: '#666', lineHeight: 22 },
+    container: { flex: 1, backgroundColor: '#f8f8f8' },
+    header: {
+        position: 'absolute',
+        top: 40,
+        left: 0,
+        right: 0,
+        zIndex: 10,
+        paddingHorizontal: 20
+    },
+    backButton: {
+        padding: 8,
+        backgroundColor: 'rgba(255,255,255,0.9)',
+        borderRadius: 20,
+        width: 40,
+        height: 40,
+        alignItems: 'center',
+        justifyContent: 'center'
+    },
+    slide: {
+        width,
+        height: height * 0.6,
+        justifyContent: 'center',
+        alignItems: 'center',
+        paddingTop: 60
+    },
+    image: {
+        width: width * 0.88,
+        height: '85%',
+        borderRadius: 24
+    },
 
-    bottomContainer: { position: 'absolute', bottom: 30, left: 0, right: 0, alignItems: 'center' },
-    pagination: { flexDirection: 'row', marginTop: 20 },
-    dot: { width: 8, height: 8, borderRadius: 4, marginHorizontal: 4 },
-    activeDot: { backgroundColor: '#000', width: 24 },
-    inactiveDot: { backgroundColor: '#CCC' },
+    bottomCard: {
+        position: 'absolute',
+        bottom: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#fff',
+        borderTopLeftRadius: 32,
+        borderTopRightRadius: 32,
+        paddingHorizontal: 24,
+        paddingTop: 28,
+        paddingBottom: 32,
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: -4 },
+        shadowOpacity: 0.08,
+        shadowRadius: 12,
+        elevation: 12
+    },
+    textContainer: {
+        alignItems: 'center',
+        marginBottom: 24
+    },
+    title: {
+        fontSize: 22,
+        fontWeight: 'bold',
+        textAlign: 'center',
+        color: '#000',
+        marginBottom: 10,
+        lineHeight: 28
+    },
+    subtitle: {
+        fontSize: 13,
+        textAlign: 'center',
+        color: '#666',
+        lineHeight: 19,
+        paddingHorizontal: 5
+    },
 
-    buttonsContainer: { alignItems: 'center', width: '100%', paddingHorizontal: 30 },
-    nextButton: { backgroundColor: '#000', width: '100%', paddingVertical: 16, borderRadius: 30, alignItems: 'center', marginBottom: 15 },
-    nextButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' },
-    skipButton: { padding: 10 },
-    skipText: { color: '#888', fontSize: 14 },
+    buttonsContainer: {
+        width: '100%',
+        marginBottom: 16
+    },
+    nextButton: {
+        backgroundColor: '#000',
+        width: '100%',
+        paddingVertical: 16,
+        borderRadius: 30,
+        alignItems: 'center',
+        marginBottom: 12
+    },
+    nextButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600'
+    },
+    skipButton: {
+        padding: 8,
+        alignItems: 'center'
+    },
+    skipText: {
+        color: '#888',
+        fontSize: 14
+    },
 
-    doubleButtonContainer: { flexDirection: 'row', justifyContent: 'space-between', width: '100%' },
-    loginButton: { flex: 1, backgroundColor: '#fff', borderWidth: 1, borderColor: '#eee', paddingVertical: 16, borderRadius: 30, alignItems: 'center', marginRight: 10 },
-    loginButtonText: { color: '#000', fontSize: 16, fontWeight: 'bold' },
-    getStartedButton: { flex: 1, backgroundColor: '#000', paddingVertical: 16, borderRadius: 30, flexDirection: 'row', justifyContent: 'center', alignItems: 'center', marginLeft: 10 },
-    getStartedButtonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
+    doubleButtonContainer: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+        width: '100%'
+    },
+    loginButton: {
+        flex: 1,
+        backgroundColor: '#fff',
+        borderWidth: 2,
+        borderColor: '#e5e5e5',
+        paddingVertical: 16,
+        borderRadius: 30,
+        alignItems: 'center',
+        marginRight: 8
+    },
+    loginButtonText: {
+        color: '#000',
+        fontSize: 16,
+        fontWeight: '600'
+    },
+    getStartedButton: {
+        flex: 1,
+        backgroundColor: '#000',
+        paddingVertical: 16,
+        borderRadius: 30,
+        flexDirection: 'row',
+        justifyContent: 'center',
+        alignItems: 'center',
+        marginLeft: 8
+    },
+    getStartedButtonText: {
+        color: '#fff',
+        fontSize: 16,
+        fontWeight: '600'
+    },
+
+    pagination: {
+        flexDirection: 'row',
+        justifyContent: 'center',
+        marginTop: 8
+    },
+    dot: {
+        width: 8,
+        height: 8,
+        borderRadius: 4,
+        marginHorizontal: 4
+    },
+    activeDot: {
+        backgroundColor: '#000',
+        width: 24
+    },
+    inactiveDot: {
+        backgroundColor: '#D0D0D0'
+    }
 });
 
 export default OnboardingScreen;
