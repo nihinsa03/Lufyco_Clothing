@@ -57,6 +57,41 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     // Wishlist state
     const isWishlisted = isInWishlist(fullProduct.id || fullProduct._id);
 
+    const handleBuyNow = () => {
+        // Validation
+        if ((fullProduct.sizes?.length > 0 && !selectedSize)) {
+            if (Platform.OS === 'android') {
+                ToastAndroid.show("Please select a size", ToastAndroid.SHORT);
+            } else {
+                Alert.alert("Required", "Please select a size");
+            }
+            return;
+        }
+        if ((fullProduct.colors?.length > 0 && !selectedColor)) {
+            if (Platform.OS === 'android') {
+                ToastAndroid.show("Please select a color", ToastAndroid.SHORT);
+            } else {
+                Alert.alert("Required", "Please select a color");
+            }
+            return;
+        }
+
+        // Add to Cart
+        addItemToCart({
+            productId: fullProduct.id || fullProduct._id,
+            title: fullProduct.title || fullProduct.name,
+            price: fullProduct.price,
+            image: fullProduct.images ? fullProduct.images[0] : (fullProduct.image || ""),
+            size: selectedSize || undefined,
+            color: selectedColor || undefined,
+            qty: qty,
+        });
+
+        // Navigate to Checkout
+        // @ts-ignore
+        navigation.navigate("CheckoutShipping");
+    };
+
     const handleAddToCart = () => {
         // Validation
         if ((fullProduct.sizes?.length > 0 && !selectedSize)) {
@@ -239,7 +274,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 <TouchableOpacity style={styles.wishBtn} onPress={handleWishlist}>
                     <Ionicons name={isWishlisted ? "heart" : "heart-outline"} size={26} color={isWishlisted ? "red" : "#111"} />
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.buyBtn} onPress={() => Alert.alert("Coming Soon", "Checkout flow not connected yet.")}>
+                <TouchableOpacity style={styles.buyBtn} onPress={handleBuyNow}>
                     <Text style={[styles.btnText, { color: '#111' }]}>Buy Now</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.addBtn} onPress={handleAddToCart}>
