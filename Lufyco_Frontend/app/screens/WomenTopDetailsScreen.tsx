@@ -60,6 +60,23 @@ const WomenTopDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
     showToast();
   };
 
+  const onBuyNow = () => {
+    addItem(
+      {
+        id: id ?? "women-top-1",
+        title,
+        price,
+        compareAtPrice,
+        image: image ?? require("../../assets/images/categories/women/tops.jpg"),
+        color: activeColor,
+        size: "M",
+      },
+      qty
+    );
+    // @ts-ignore
+    navigation.navigate("CheckoutShipping");
+  };
+
   const starRow = useMemo(
     () =>
       Array.from({ length: 5 }, (_, i) => (
@@ -91,8 +108,8 @@ const WomenTopDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
           </TouchableOpacity>
         </View>
         <View style={styles.pager}>
-          {[0,1,2,3,4].map(i => (
-            <View key={i} style={[styles.dot, i===2 && styles.dotActive]} />
+          {[0, 1, 2, 3, 4].map(i => (
+            <View key={i} style={[styles.dot, i === 2 && styles.dotActive]} />
           ))}
         </View>
       </View>
@@ -177,7 +194,7 @@ const WomenTopDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 
       {/* footer buttons */}
       <View style={styles.footer}>
-        <TouchableOpacity style={styles.buyNow} onPress={() => {}}>
+        <TouchableOpacity style={styles.buyNow} onPress={onBuyNow}>
           <Text style={styles.buyText}>Buy Now</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.addCart} onPress={onAddToCart}>
