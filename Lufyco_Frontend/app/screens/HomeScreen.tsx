@@ -22,19 +22,61 @@ const HomeScreen = ({ navigation }: Props) => {
   const { data: apiProducts, loading, error, get } = useApi<any[]>();
   const [latestProducts, setLatestProducts] = useState<any[]>([]);
 
+  // Dummy Data to match screenshot
+  const DUMMY_PRODUCTS = [
+    {
+      id: 'd1',
+      title: 'Nike air jordan retro fashion',
+      price: 120, // 120 * 300 = 36000
+      colors: ['#000', '#2ecc71', '#3498db', '#f1c40f', '#e74c3c'],
+      images: [require('../../assets/images/clothing.png')], // Placeholder
+      rating: 4.8
+    },
+    {
+      id: 'd2',
+      title: 'Classic new black glasses',
+      price: 11.67, // ~3500
+      colors: ['#000', '#bdc3c7', '#7f8c8d', '#2c3e50', '#8e44ad', '#2980b9', '#c0392b'], // 7 colors
+      images: [require('../../assets/images/clothing.png')],
+      rating: 4.5
+    },
+    {
+      id: 'd3',
+      title: 'Navy Blue shirt',
+      price: 10.67, // ~3200
+      colors: ['#001F54', '#3498db', '#e74c3c'],
+      images: [require('../../assets/images/clothing.png')],
+      rating: 4.7
+    },
+    {
+      id: 'd4',
+      title: 'Brown box Luxury Bag',
+      price: 18.34, // ~5500
+      colors: ['#8B4513'],
+      images: [require('../../assets/images/clothing.png')],
+      rating: 4.9
+    },
+  ];
+
   useEffect(() => {
     fetchLatestProducts();
   }, []);
 
   const fetchLatestProducts = async () => {
-    // Determine query based on tab or other logic if needed
-    // For now, just fetch all products and filter locally for 'Latest' 
-    // real app would use /products?sort=newest
-    const data = await get('/products');
-    if (data) {
-      // Filter for 'isNewArrival' and limit to 4
-      const newArrivals = data.filter((p: any) => p.isNewArrival || p.isNew).slice(0, 4);
-      setLatestProducts(newArrivals.length > 0 ? newArrivals : data.slice(0, 4));
+    // Attempt fetch, fallback to dummy
+    try {
+      const data = await get('/products', undefined, { autoAlert: false });
+      if (data && Array.isArray(data) && data.length > 0) {
+        const newArrivals = data.filter((p: any) => p.isNewArrival || p.isNew).slice(0, 4);
+        setLatestProducts(newArrivals.length > 0 ? newArrivals : data.slice(0, 4));
+      } else {
+        // Fallback to dummy data if API returns empty or fails (data is null)
+        console.log("Using dummy data for Home Screen");
+        setLatestProducts(DUMMY_PRODUCTS);
+      }
+    } catch (e) {
+      console.log("API Error, using dummy data");
+      setLatestProducts(DUMMY_PRODUCTS);
     }
   };
 
@@ -138,13 +180,6 @@ const HomeScreen = ({ navigation }: Props) => {
             <View style={{ height: 200, justifyContent: 'center', alignItems: 'center' }}>
               <ActivityIndicator size="large" color="#000" />
             </View>
-          ) : error ? (
-            <View style={{ height: 200, justifyContent: 'center', alignItems: 'center' }}>
-              <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>
-              <TouchableOpacity onPress={fetchLatestProducts} style={{ padding: 10, backgroundColor: '#eee', borderRadius: 8 }}>
-                <Text>Retry</Text>
-              </TouchableOpacity>
-            </View>
           ) : (
             <FlatList
               data={latestProducts}
@@ -152,7 +187,16 @@ const HomeScreen = ({ navigation }: Props) => {
               scrollEnabled={false}
               keyExtractor={(item) => item.id}
               columnWrapperStyle={{ justifyContent: "space-between" }}
-              ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>No new products found.</Text>}
+              ListEmptyComponent={
+                error ? (
+                  <View style={{ height: 100, justifyContent: 'center', alignItems: 'center' }}>
+                    <Text style={{ color: 'red', marginBottom: 5 }}>{error}</Text>
+                    <TouchableOpacity onPress={fetchLatestProducts}><Text style={{ textDecorationLine: 'underline' }}>Retry</Text></TouchableOpacity>
+                  </View>
+                ) : (
+                  <Text style={{ textAlign: 'center', marginTop: 20 }}>No products found.</Text>
+                )
+              }
               renderItem={({ item }) => (
                 <TouchableOpacity style={styles.productCard} onPress={() => handleProductPress(item)}>
                   <View style={styles.imageWrapper}>
@@ -176,7 +220,9 @@ const HomeScreen = ({ navigation }: Props) => {
                           {item.colors.slice(0, 3).map((color: string, index: number) => (
                             <View key={index} style={[styles.colorCircle, { backgroundColor: color.toLowerCase() }]} />
                           ))}
-                          <Text style={styles.moreColors}>All {item.colors.length} Colors</Text>
+                          {item.colors.length > 3 && (
+                            <Text style={styles.moreColors}>All {item.colors.length} Colors</Text>
+                          )}
                         </>
                       ) : (
                         <Text style={[styles.moreColors, { marginLeft: 0, textDecorationLine: 'none' }]}>{item.colors?.length ? "1 Color" : "No colors"}</Text>

@@ -8,9 +8,9 @@ import { useAuthStore } from '../store/useAuthStore';
 // For Android Emulator, http://10.0.2.2:5001/api works.
 // For iOS Simulator, http://localhost:5001/api works.
 
-// Detected LAN IP: 10.10.47.99
-const SERVER_IP = '10.10.47.99';
-const BASE_URL = `http://${SERVER_IP}:5001/api`;
+// Using Localtunnel to bypass local network/firewall issues
+// URL generated: https://ten-clubs-travel.loca.lt
+const BASE_URL = 'https://ten-clubs-travel.loca.lt/api';
 
 // Create Axios Instance
 const apiClient = axios.create({
@@ -18,6 +18,7 @@ const apiClient = axios.create({
     timeout: 10000, // 10s timeout
     headers: {
         'Content-Type': 'application/json',
+        'Bypass-Tunnel-Reminder': 'true',
     },
 });
 
