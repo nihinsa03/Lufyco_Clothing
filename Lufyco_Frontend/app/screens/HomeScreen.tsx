@@ -165,19 +165,25 @@ const HomeScreen = ({ navigation }: Props) => {
                       style={styles.productImage}
                     />
                     <TouchableOpacity style={styles.wishlistBtn}>
-                      <Feather name="heart" size={16} color="#000" />
+                      <Feather name="heart" size={14} color="#fff" />
                     </TouchableOpacity>
                   </View>
 
                   <View style={styles.productInfo}>
                     <View style={styles.cardColorRow}>
-                      <View style={[styles.colorCircle, { backgroundColor: '#000' }]} />
-                      <View style={[styles.colorCircle, { backgroundColor: '#2ba' }]} />
-                      <View style={[styles.colorCircle, { backgroundColor: '#0f0' }]} />
-                      <Text style={styles.moreColors}>All 5 Colors</Text>
+                      {item.colors && Array.isArray(item.colors) && item.colors.length > 0 ? (
+                        <>
+                          {item.colors.slice(0, 3).map((color: string, index: number) => (
+                            <View key={index} style={[styles.colorCircle, { backgroundColor: color.toLowerCase() }]} />
+                          ))}
+                          <Text style={styles.moreColors}>All {item.colors.length} Colors</Text>
+                        </>
+                      ) : (
+                        <Text style={[styles.moreColors, { marginLeft: 0, textDecorationLine: 'none' }]}>{item.colors?.length ? "1 Color" : "No colors"}</Text>
+                      )}
                     </View>
-                    <Text numberOfLines={1} style={styles.productName}>{item.title}</Text>
-                    <Text style={styles.productPrice}>LKR {item.price * 300}.00</Text>
+                    <Text numberOfLines={1} style={styles.productName}>{item.title || item.name}</Text>
+                    <Text style={styles.productPrice}>LKR {item.price ? (item.price * 300).toFixed(2) : '0.00'}</Text>
                   </View>
                 </TouchableOpacity>
               )}
@@ -199,19 +205,20 @@ const styles = StyleSheet.create({
   iconBtn: { marginLeft: 15 },
 
   searchBox: {
-    flexDirection: "row", alignItems: "center", backgroundColor: "#F5F5F5",
-    borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, marginBottom: 20,
+    flexDirection: "row", alignItems: "center", backgroundColor: "#fff",
+    borderRadius: 30, paddingHorizontal: 16, paddingVertical: 10, marginBottom: 20,
+    borderWidth: 1, borderColor: '#3b82f6', // Blue outline style
   },
-  searchInput: { flex: 1, marginLeft: 10, fontSize: 14, color: "#666" },
+  searchInput: { flex: 1, marginLeft: 10, fontSize: 14, color: "#333" },
   searchRightIcons: { flexDirection: 'row', alignItems: 'center' },
 
   tabContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   tabsWrapper: { flexDirection: 'row' },
   tab: {
     paddingVertical: 8, paddingHorizontal: 24, borderRadius: 25,
-    borderWidth: 1, borderColor: '#eee', marginRight: 10, backgroundColor: '#fff'
+    borderWidth: 1, borderColor: '#3b82f6', marginRight: 10, backgroundColor: '#fff'
   },
-  activeTab: { backgroundColor: '#000', borderColor: '#000' },
+  activeTab: { backgroundColor: '#001F54', borderColor: '#001F54' },
   tabText: { fontSize: 14, fontWeight: '600', color: '#000' },
   activeTabText: { color: '#fff' },
   gridIcon: { padding: 8 },
@@ -234,25 +241,30 @@ const styles = StyleSheet.create({
   bannerSubtitle: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
   paginationDots: { position: 'absolute', bottom: 15, right: 20, flexDirection: 'row' },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)', marginHorizontal: 3 },
-  activeDot: { backgroundColor: '#3b82f6' }, // Blue active dot to match image
+  activeDot: { backgroundColor: '#3b82f6' },
 
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 },
   sectionTitle: { fontSize: 18, fontWeight: "bold", color: '#000' },
-  seeAll: { color: "#2DD4BF", fontSize: 12, fontWeight: '600' }, // Teal color matching image
+  seeAll: { color: "#2DD4BF", fontSize: 12, fontWeight: '600' },
 
   productCard: { backgroundColor: "#fff", width: (screenWidth - 48) / 2, marginBottom: 20 },
   imageWrapper: {
-    width: '100%', aspectRatio: 1, backgroundColor: "#E5E7EB", borderRadius: 16, marginBottom: 10,
+    width: '100%', aspectRatio: 1, backgroundColor: "#F3F4F6", borderRadius: 16, marginBottom: 10,
     overflow: 'hidden', position: 'relative'
   },
   productImage: { width: "100%", height: "100%" },
-  wishlistBtn: { position: "absolute", top: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.2)', padding: 6, borderRadius: 20 },
+  wishlistBtn: {
+    position: "absolute", top: 10, right: 10,
+    backgroundColor: '#000', // Black circle
+    width: 28, height: 28, borderRadius: 14,
+    alignItems: 'center', justifyContent: 'center'
+  },
   productInfo: { paddingHorizontal: 4 },
   cardColorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   colorCircle: { width: 10, height: 10, borderRadius: 5, marginRight: -3, borderWidth: 1, borderColor: '#fff' },
-  moreColors: { fontSize: 9, color: '#666', marginLeft: 8, textDecorationLine: 'underline' },
-  productName: { fontSize: 13, fontWeight: "500", marginBottom: 4, color: "#333" },
-  productPrice: { fontSize: 13, fontWeight: "bold", color: "#000" },
+  moreColors: { fontSize: 10, color: '#666', marginLeft: 8 },
+  productName: { fontSize: 14, fontWeight: "600", marginBottom: 4, color: "#111" },
+  productPrice: { fontSize: 14, fontWeight: "bold", color: "#000" },
 });
 
 export default HomeScreen;
