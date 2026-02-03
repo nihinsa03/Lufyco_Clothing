@@ -130,7 +130,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                         >
                             {/* Image handling: check if it's http or require */}
                             <Image
-                                source={item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png")}
+                                source={item.image && typeof item.image === 'string' && item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png")}
                                 style={styles.image}
                             />
                             <TouchableOpacity style={styles.wishBtn}>

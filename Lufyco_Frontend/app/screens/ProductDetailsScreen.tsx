@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
     View,
     Text,
@@ -11,7 +11,8 @@ import {
     Dimensions,
     Platform,
     Animated,
-    Modal
+    Modal,
+    ActivityIndicator
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useCartStore } from "../store/useCartStore";
@@ -19,6 +20,7 @@ import { useWishlistStore } from "../store/useWishlistStore";
 import { useProductsStore } from "../store/useProductsStore";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
+import { useApi } from "../hooks/useApi"; // ADDED
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductDetails">;
 
@@ -33,8 +35,34 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     const addItemToCart = useCartStore((state) => state.addItem);
     const { toggleWishlist, isInWishlist } = useWishlistStore();
 
+    // API Hook
+    const { data: apiData, loading, error, get } = useApi<any>();
+    const [fetchedProduct, setFetchedProduct] = useState<any>(null);
+
+    // Initial derivation
+    const initialProduct = fetchedProduct || getProductById(id) || paramProduct;
+    // We prefer fetched, then store, then param.
+    // If apiData comes in, it updates fetchedProduct.
+
+    useEffect(() => {
+        if (!initialProduct || (id && !fetchedProduct)) {
+            fetchProductDetails();
+        }
+    }, [id]);
+
+    useEffect(() => {
+        if (apiData) {
+            setFetchedProduct(apiData);
+        }
+    }, [apiData]);
+
+    const fetchProductDetails = async () => {
+        await get(`/products/${id}`);
+    };
+
+    const fullProduct = fetchedProduct || initialProduct;
+
     // Local State
-    const fullProduct = getProductById(id) || paramProduct;
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [qty, setQty] = useState(1);
@@ -43,6 +71,32 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     // Animation Values
     const buttonScale = useRef(new Animated.Value(1)).current;
     const successOpacity = useRef(new Animated.Value(0)).current;
+
+    if (loading && !fullProduct) {
+        return (
+            <SafeAreaView style={styles.safe}>
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#000" />
+                </View>
+            </SafeAreaView>
+        );
+    }
+
+    if (error && !fullProduct) {
+        return (
+            <SafeAreaView style={styles.safe}>
+                <View style={{ padding: 16, alignItems: 'center', justifyContent: 'center', flex: 1 }}>
+                    <Text style={{ fontSize: 16, color: 'red', marginBottom: 10 }}>{error}</Text>
+                    <TouchableOpacity onPress={fetchProductDetails} style={{ padding: 10, backgroundColor: '#eee', borderRadius: 8 }}>
+                        <Text>Retry</Text>
+                    </TouchableOpacity>
+                    <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginTop: 20 }}>
+                        <Text style={{ color: 'blue' }}>Go Back</Text>
+                    </TouchableOpacity>
+                </View>
+            </SafeAreaView>
+        );
+    }
 
     if (!fullProduct) {
         return (

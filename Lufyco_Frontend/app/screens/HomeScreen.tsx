@@ -13,12 +13,30 @@ const screenWidth = Dimensions.get("window").width;
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
+import { useApi } from "../hooks/useApi";
+
 const HomeScreen = ({ navigation }: Props) => {
-  const { products, categories, setFilter } = useShopStore();
+  const { categories, setFilter } = useShopStore();
   const [activeTab, setActiveTab] = useState("Fashion");
 
-  // Filter for Latest Products (New Arrivals)
-  const latestProducts = products.filter(p => p.isNewArrival).slice(0, 4);
+  const { data: apiProducts, loading, error, get } = useApi<any[]>();
+  const [latestProducts, setLatestProducts] = useState<any[]>([]);
+
+  useEffect(() => {
+    fetchLatestProducts();
+  }, []);
+
+  const fetchLatestProducts = async () => {
+    // Determine query based on tab or other logic if needed
+    // For now, just fetch all products and filter locally for 'Latest' 
+    // real app would use /products?sort=newest
+    const data = await get('/products');
+    if (data) {
+      // Filter for 'isNewArrival' and limit to 4
+      const newArrivals = data.filter((p: any) => p.isNewArrival || p.isNew).slice(0, 4);
+      setLatestProducts(newArrivals.length > 0 ? newArrivals : data.slice(0, 4));
+    }
+  };
 
   const handleCategoryPress = (catId: string) => {
     setFilter({ categoryId: catId });
@@ -116,37 +134,55 @@ const HomeScreen = ({ navigation }: Props) => {
             <TouchableOpacity onPress={() => navigation.navigate("ShopNewStyles")}><Text style={styles.seeAll}>SEE ALL</Text></TouchableOpacity>
           </View>
 
-          <FlatList
-            data={latestProducts}
-            numColumns={2}
-            scrollEnabled={false}
-            keyExtractor={(item) => item.id}
-            columnWrapperStyle={{ justifyContent: "space-between" }}
-            renderItem={({ item }) => (
-              <TouchableOpacity style={styles.productCard} onPress={() => handleProductPress(item)}>
-                <View style={styles.imageWrapper}>
-                  <Image
-                    source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}
-                    style={styles.productImage}
-                  />
-                  <TouchableOpacity style={styles.wishlistBtn}>
-                    <Feather name="heart" size={16} color="#000" />
-                  </TouchableOpacity>
-                </View>
-
-                <View style={styles.productInfo}>
-                  <View style={styles.cardColorRow}>
-                    <View style={[styles.colorCircle, { backgroundColor: '#000' }]} />
-                    <View style={[styles.colorCircle, { backgroundColor: '#2ba' }]} />
-                    <View style={[styles.colorCircle, { backgroundColor: '#0f0' }]} />
-                    <Text style={styles.moreColors}>All 5 Colors</Text>
-                  </View>
-                  <Text numberOfLines={1} style={styles.productName}>{item.title}</Text>
-                  <Text style={styles.productPrice}>LKR {item.price * 300}.00</Text>
-                </View>
+          {loading ? (
+            <View style={{ height: 200, justifyContent: 'center', alignItems: 'center' }}>
+              <ActivityIndicator size="large" color="#000" />
+            </View>
+          ) : error ? (
+            <View style={{ height: 200, justifyContent: 'center', alignItems: 'center' }}>
+              <Text style={{ color: 'red', marginBottom: 10 }}>{error}</Text>
+              <TouchableOpacity onPress={fetchLatestProducts} style={{ padding: 10, backgroundColor: '#eee', borderRadius: 8 }}>
+                <Text>Retry</Text>
               </TouchableOpacity>
-            )}
-          />
+            </View>
+          ) : (
+            <FlatList
+              data={latestProducts}
+              numColumns={2}
+              scrollEnabled={false}
+              keyExtractor={(item) => item.id}
+              columnWrapperStyle={{ justifyContent: "space-between" }}
+              ListEmptyComponent={<Text style={{ textAlign: 'center', marginTop: 20 }}>No new products found.</Text>}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.productCard} onPress={() => handleProductPress(item)}>
+                  <View style={styles.imageWrapper}>
+                    <Image
+                      source={
+                        item.images && item.images.length > 0
+                          ? (typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0])
+                          : require("../../assets/images/clothing.png")
+                      }
+                      style={styles.productImage}
+                    />
+                    <TouchableOpacity style={styles.wishlistBtn}>
+                      <Feather name="heart" size={16} color="#000" />
+                    </TouchableOpacity>
+                  </View>
+
+                  <View style={styles.productInfo}>
+                    <View style={styles.cardColorRow}>
+                      <View style={[styles.colorCircle, { backgroundColor: '#000' }]} />
+                      <View style={[styles.colorCircle, { backgroundColor: '#2ba' }]} />
+                      <View style={[styles.colorCircle, { backgroundColor: '#0f0' }]} />
+                      <Text style={styles.moreColors}>All 5 Colors</Text>
+                    </View>
+                    <Text numberOfLines={1} style={styles.productName}>{item.title}</Text>
+                    <Text style={styles.productPrice}>LKR {item.price * 300}.00</Text>
+                  </View>
+                </TouchableOpacity>
+              )}
+            />
+          )}
 
         </ScrollView>
       </View>
