@@ -9,8 +9,8 @@ import { useAuthStore } from '../store/useAuthStore';
 // For iOS Simulator, http://localhost:5001/api works.
 
 // Using Localtunnel to bypass local network/firewall issues
-// URL generated: https://ten-clubs-travel.loca.lt
-const BASE_URL = 'https://ten-clubs-travel.loca.lt/api';
+// URL generated: https://rotten-eyes-serve.loca.lt
+const BASE_URL = 'https://rotten-eyes-serve.loca.lt/api';
 
 // Create Axios Instance
 const apiClient = axios.create({
