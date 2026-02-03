@@ -4,7 +4,13 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useAuthStore } from '../store/useAuthStore';
 
 // Base URL configuration
-const BASE_URL = Platform.OS === 'android' ? 'http://10.0.2.2:5001/api' : 'http://localhost:5001/api';
+// For physical device, use your machine's LAN IP (e.g., http://192.168.1.5:5001/api)
+// For Android Emulator, http://10.0.2.2:5001/api works.
+// For iOS Simulator, http://localhost:5001/api works.
+
+// Detected LAN IP: 10.10.47.99
+const SERVER_IP = '10.10.47.99';
+const BASE_URL = `http://${SERVER_IP}:5001/api`;
 
 // Create Axios Instance
 const apiClient = axios.create({
