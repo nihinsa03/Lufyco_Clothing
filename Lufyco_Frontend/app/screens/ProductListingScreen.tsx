@@ -14,11 +14,11 @@ import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import FilterSheet, { FilterKey } from "./FilterSheet";
 import SearchOverlay from "./SearchOverlay";
-import api from "../api/api";
+import api from "../api/api"; // Keep for legacy if needed, but we prefer useApi
 import { MOCK_PRODUCTS } from "../data/mockProducts";
+import { useApi } from "../hooks/useApi"; // ADDED
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductListing">;
-
 type Product = {
     _id: string;
     name: string;
@@ -50,70 +50,38 @@ const ColorDots = ({ colors }: { colors: string[] }) => {
 const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
     const { gender, category, subCategory, type, search, isSale, title } = route.params || {};
 
+    const { data: apiProducts, loading, error, get } = useApi<Product[]>();
     const [products, setProducts] = useState<Product[]>([]);
-    const [loading, setLoading] = useState(true);
 
     // UI State
     const [filterVisible, setFilterVisible] = useState(false);
     const [searchVisible, setSearchVisible] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState<FilterKey | null>("whats_new");
 
+    // Sync api data to local state if needed, or just use apiProducts
+    useEffect(() => {
+        if (apiProducts) {
+            setProducts(apiProducts);
+        }
+    }, [apiProducts]);
+
     useEffect(() => {
         fetchProducts();
     }, [selectedFilter, search]);
 
     const fetchProducts = async () => {
-        setLoading(true);
-        try {
-            // Build query string
-            const params: any = {};
-            if (gender) params.gender = gender;
-            if (category) params.category = category;
-            if (subCategory) params.subCategory = subCategory;
-            if (type) params.type = type;
-            if (search) params.search = search;
-            if (isSale) params.isSale = 'true';
-            if (selectedFilter) params.sort = selectedFilter;
+        // Build query string
+        const params: any = {};
+        if (gender) params.gender = gender;
+        if (category) params.category = category;
+        if (subCategory) params.subCategory = subCategory;
+        if (type) params.type = type;
+        if (search) params.search = search;
+        if (isSale) params.isSale = 'true';
+        if (selectedFilter) params.sort = selectedFilter;
 
-            // Use MOCK_PRODUCTS for now
-            let data = [...MOCK_PRODUCTS];
-
-            // Client-side filtering
-            if (params.gender) {
-                data = data.filter((p: Product) => p.gender === params.gender || p.gender === 'Unisex');
-            }
-            if (params.category) {
-                // For Shoes/Accessories which are main categories but also used as filter
-                data = data.filter((p: Product) => p.category === params.category || p.subCategory === params.category);
-            }
-            // Add other filters as needed... currently just showing all for simplicity if no specific match
-
-            // If the route has specific filters, try to respect them
-            if (params.category === "Shoes") {
-                data = MOCK_PRODUCTS.filter((p: Product) => p.category === "Shoes");
-            } else if (params.category === "Accessories") {
-                data = MOCK_PRODUCTS.filter((p: Product) => p.category === "Accessories");
-            } else if (params.gender === "Men") {
-                // Show Men + Shoes (Men) + Accessories (Men/Unisex)
-                data = MOCK_PRODUCTS.filter((p: Product) => p.gender === "Men" || (p.gender === "Unisex" && p.category !== "Women"));
-            } else if (params.gender === "Women") {
-                data = MOCK_PRODUCTS.filter((p: Product) => p.gender === "Women" || (p.gender === "Unisex" && p.category !== "Men"));
-            } else if (params.gender === "Kids") {
-                data = MOCK_PRODUCTS.filter((p: Product) => p.gender === "Kids" || p.category === "Kids");
-            }
-
-            // Simulate delay
-            setTimeout(() => {
-                setProducts(data);
-                setLoading(false);
-            }, 500);
-
-            // const response = await api.get("/products", { params });
-            // setProducts(response.data);
-        } catch (error) {
-            console.error("Error fetching products:", error);
-            setLoading(false);
-        }
+        // Call API
+        await get("/products", params);
     };
 
     const handleProductPress = (product: Product) => {
