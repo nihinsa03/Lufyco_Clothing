@@ -36,9 +36,9 @@ const ForgotPasswordScreen = () => {
       />
 
       {/* Send Button */}
-      <TouchableOpacity style={styles.sendButton} onPress={() => navigation.navigate("ForgotPasswordVerification")}>
+      <TouchableOpacity style={styles.sendButton} onPress={() => navigation.navigate("ForgotPasswordVerification", { email })}>
         <Text style={styles.sendButtonText}>Send</Text>
-        </TouchableOpacity>
+      </TouchableOpacity>
 
     </View>
   );
