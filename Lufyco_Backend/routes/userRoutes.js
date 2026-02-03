@@ -2,80 +2,9 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 
-/**
- * @swagger
- * /api/users/register:
- *   post:
- *     summary: Register a new user
- *     description: Create a new user account with name, email, and password. Returns user data without password.
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - email
- *               - password
- *             properties:
- *               name:
- *                 type: string
- *                 description: User's full name
- *                 example: John Doe
- *               email:
- *                 type: string
- *                 format: email
- *                 description: User's email address (must be unique)
- *                 example: john.doe@example.com
- *               password:
- *                 type: string
- *                 description: User's password (currently stored as plain text - hashing to be added)
- *                 example: mySecurePassword123
- *     responses:
- *       201:
- *         description: User successfully created
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 _id:
- *                   type: string
- *                   description: MongoDB generated user ID
- *                 name:
- *                   type: string
- *                 email:
- *                   type: string
- *                 isAdmin:
- *                   type: boolean
- *                   description: Admin privilege flag (default false)
- *             example:
- *               _id: "507f1f77bcf86cd799439011"
- *               name: "John Doe"
- *               email: "john.doe@example.com"
- *               isAdmin: false
- *       400:
- *         description: Bad request - User already exists or invalid data
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *             examples:
- *               userExists:
- *                 value:
- *                   message: "User already exists"
- *               invalidData:
- *                 value:
- *                   message: "Invalid user data"
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
+// @route   POST /api/users/register
+// @desc    Register a new user
+// @access  Public
 router.post('/register', async (req, res) => {
     const { name, email, password } = req.body;
 
@@ -108,101 +37,9 @@ router.post('/register', async (req, res) => {
     }
 });
 
-
-/**
- * @swagger
- * /api/users/login:
- *   post:
- *     summary: Authenticate user and login
- *     description: |
- *       Login with email and password. Returns user data on successful authentication.
- *       
- *       **Special Feature: Offline Login**
- *       - Use email: "user" (case insensitive)
- *       - Use password: "user" (case sensitive)
- *       - This allows development/testing without database connection
- *     tags: [Authentication]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 description: User's email address (or "user" for offline login)
- *                 example: john.doe@example.com
- *               password:
- *                 type: string
- *                 description: User's password (or "user" for offline login)
- *                 example: mySecurePassword123
- *           examples:
- *             normalLogin:
- *               summary: Normal user login
- *               value:
- *                 email: "john.doe@example.com"
- *                 password: "mySecurePassword123"
- *             offlineLogin:
- *               summary: Offline/Development login
- *               value:
- *                 email: "user"
- *                 password: "user"
- *     responses:
- *       200:
- *         description: Login successful
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 _id:
- *                   type: string
- *                   description: User ID
- *                 name:
- *                   type: string
- *                   description: User's name
- *                 email:
- *                   type: string
- *                   description: User's email
- *                 isAdmin:
- *                   type: boolean
- *                   description: Admin privilege flag
- *                 token:
- *                   type: string
- *                   description: Authentication token (only for offline login currently)
- *             examples:
- *               normalUser:
- *                 value:
- *                   _id: "507f1f77bcf86cd799439011"
- *                   name: "John Doe"
- *                   email: "john.doe@example.com"
- *                   isAdmin: false
- *               offlineUser:
- *                 value:
- *                   _id: "dummy_user_id"
- *                   name: "Offline User"
- *                   email: "user"
- *                   isAdmin: false
- *                   token: "offline-token-123"
- *       401:
- *         description: Unauthorized - Invalid credentials
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- *             example:
- *               message: "Invalid email or password"
- *       500:
- *         description: Server error
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
+// @route   POST /api/users/login
+// @desc    Auth user & get token
+// @access  Public
 router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 

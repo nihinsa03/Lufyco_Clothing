@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
     SafeAreaView,
     View,
@@ -9,13 +9,11 @@ import {
     ScrollView,
     Switch,
     Alert,
-    ActivityIndicator
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useAuthStore } from "../store/useAuthStore";
 import { useProfileStore } from "../store/useProfileStore";
-import { useApi } from "../hooks/useApi"; // ADDED
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -23,26 +21,10 @@ type NavProp = NativeStackNavigationProp<RootStackParamList, "Profile">;
 
 const ProfileScreen = () => {
     const navigation = useNavigation<NavProp>();
-    const { logout, user, loading: authLoading } = useAuthStore();
-    const { data, loading: apiLoading, error, get } = useApi();
-
-    useEffect(() => {
-        // Refresh profile on mount
-        refreshProfile();
-    }, []);
-
-    const refreshProfile = async () => {
-        // We assume /users/profile returns full user details
-        await get('/users/profile');
-        // Note: The useApi hook manages local state.
-        // If we want to update the GLOBAL store, we should do it on success.
-        // However, useAuthStore probably should handle this sync.
-        // For this task, I will primarily ensure ERROR handling is visible.
-        // useApi auto-alerts errors by default.
-    };
-
-    // Combine loading states
-    const isLoading = authLoading || apiLoading;
+    const { logout, user } = useAuthStore();
+    // Keep useProfileStore for address/payment if needed, or remove if unused. 
+    // It seems menuItems navigate to screens that likely use ProfileStore. 
+    // For now, removing 'user' destructuring from useProfileStore to avoid naming conflict.
 
     const menuItems = [
         {
@@ -73,14 +55,7 @@ const ProfileScreen = () => {
         <SafeAreaView style={styles.safe}>
             <View style={styles.header}>
                 <Text style={styles.headerTitle}>Profile</Text>
-                {isLoading && <ActivityIndicator size="small" color="#000" />}
             </View>
-
-            {error && (
-                <View style={{ backgroundColor: '#FEE2E2', padding: 10, marginHorizontal: 20, borderRadius: 8, marginBottom: 10 }}>
-                    <Text style={{ color: '#DC2626' }}>{error}</Text>
-                </View>
-            )}
 
             <ScrollView contentContainerStyle={{ padding: 20 }}>
                 {/* User Info Card */}

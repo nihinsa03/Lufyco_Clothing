@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { createJSONStorage, persist } from 'zustand/middleware';
-import apiClient from '../api/apiClient';
+import api from '../api/api';
 
 interface User {
     id: string;
@@ -26,7 +26,6 @@ interface AuthState {
     logout: () => void;
     requestPasswordReset: (email: string) => Promise<boolean>;
     resetPassword: (password: string) => Promise<boolean>;
-    clearError: () => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -40,16 +39,18 @@ export const useAuthStore = create<AuthState>()(
             error: null,
 
             completeOnboarding: () => set({ isOnboarded: true }),
-            clearError: () => set({ error: null }),
 
             signup: async (data) => {
                 set({ loading: true, error: null });
                 try {
-                    const res = await apiClient.post('/users/register', data);
-                    const userData = res.data;
+                    const res = await api.post('/users/register', data);
+                    // The backend returns user data, but we might wait for verification if implemented
+                    // For now, assume register returns user info or success
 
+                    // If backend sends OTP immediately, we just proceed.
+                    // Store email for verification step
                     const mockUser = {
-                        id: userData.id || userData._id || Math.random().toString(),
+                        id: res.data._id || Math.random().toString(),
                         name: data.name,
                         email: data.email,
                         verified: false
@@ -58,9 +59,9 @@ export const useAuthStore = create<AuthState>()(
                     set({ user: mockUser });
                     return true;
                 } catch (e: any) {
-                    // Error is already parsed by interceptor into e.message
-                    console.error("Signup Store Error:", e);
-                    set({ error: e.message || "Signup Failed" });
+                    const msg = e.response?.data?.message || "Signup Failed";
+                    console.error("Signup Store Error:", msg, e);
+                    set({ error: msg });
                     return false;
                 } finally {
                     set({ loading: false });
@@ -70,22 +71,29 @@ export const useAuthStore = create<AuthState>()(
             login: async ({ email, password }) => {
                 set({ loading: true, error: null });
                 try {
-                    const res = await apiClient.post('/users/login', { email, password });
-                    const userData = res.data;
+                    const res = await api.post('/users/login', { email, password });
 
+                    const userData = res.data;
                     const appUser = {
                         id: userData._id,
                         name: userData.name,
                         email: userData.email,
-                        verified: true,
+                        verified: true, // Assuming login succeeds only if verified or we don't track it strictly
+                        // Check if backend returns token
                         isAdmin: userData.isAdmin
                     };
 
-                    set({ user: appUser, token: userData.token, isAuthenticated: true });
+                    // Save token if backend returns it
+                    if (userData.token) {
+                        // api.defaults.headers.common['Authorization'] = `Bearer ${userData.token}`;
+                    }
+
+                    set({ user: appUser, token: userData.token || 'mock_token', isAuthenticated: true });
                     return true;
                 } catch (e: any) {
-                    console.error("Login Store Error:", e);
-                    set({ error: e.message || "Login Failed" });
+                    const msg = e.response?.data?.message || "Login Failed";
+                    console.error("Login Store Error:", msg, e);
+                    set({ error: msg });
                     return false;
                 } finally {
                     set({ loading: false });

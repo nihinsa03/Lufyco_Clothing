@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   Text,
@@ -8,10 +8,8 @@ import {
   TouchableOpacity,
   TextInput,
   FlatList,
-  ActivityIndicator
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
-import { useApi } from "../hooks/useApi"; // ADDED
 
 type Props = {
   visible: boolean;
@@ -31,20 +29,6 @@ const RECENT = [
 
 const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSearch }) => {
   const [query, setQuery] = useState("");
-  const { data: searchResults, loading, error, get } = useApi<any[]>();
-
-  // Debounce could be added, but for now we search on Submit
-  const handleSearch = async () => {
-    if (!query.trim()) return;
-    await get('/products', { search: query });
-    if (onSearch) onSearch(query);
-  };
-
-  const results = (query.trim().length > 0 && searchResults) ? searchResults : RECENT.filter((t) =>
-    query.trim().length
-      ? t.toLowerCase().includes(query.toLowerCase())
-      : true
-  );
 
   return (
     <Modal animationType="slide" presentationStyle="fullScreen" visible={visible}>
@@ -66,10 +50,8 @@ const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSear
             placeholder="Search"
             style={styles.input}
             placeholderTextColor="#8e8e93"
-            onSubmitEditing={handleSearch}
-            returnKeyType="search"
+            onSubmitEditing={() => onSearch && onSearch(query)}
           />
-          {loading && <ActivityIndicator size="small" color="#000" style={{ marginRight: 5 }} />}
           <TouchableOpacity
             onPress={onOpenFilter}
             style={[styles.iconBtn, { marginRight: 6 }]}
@@ -78,37 +60,33 @@ const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSear
           </TouchableOpacity>
         </View>
 
-        {/* Results */}
-        <Text style={styles.sectionLabel}>{loading ? "SEARCHING..." : "RESULTS"}</Text>
-
-        {error ? (
-          <Text style={{ padding: 20, color: 'red' }}>{error}</Text>
-        ) : (
-          <FlatList
-            data={results}
-            keyExtractor={(item: any) => typeof item === 'string' ? item : item._id || item.id}
-            ItemSeparatorComponent={() => (
-              <View style={{ height: 1, backgroundColor: "#F0F0F0" }} />
-            )}
-            renderItem={({ item }) => {
-              const label = typeof item === 'string' ? item : item.name || item.title;
-              return (
-                <TouchableOpacity style={styles.row} onPress={() => {
-                  setQuery(label);
-                  if (onSearch) onSearch(label);
-                }}>
-                  <Text style={styles.rowText}>{label}</Text>
-                  <Feather name="corner-right-up" size={22} color="#C4C4C6" />
-                </TouchableOpacity>
-              );
-            }}
-            ListEmptyComponent={
-              <View style={{ padding: 24 }}>
-                <Text style={{ color: "#8e8e93" }}>No results found.</Text>
-              </View>
-            }
-          />
-        )}
+        {/* Recent */}
+        <Text style={styles.sectionLabel}>RECENT SEARCH</Text>
+        <FlatList
+          data={RECENT.filter((t) =>
+            query.trim().length
+              ? t.toLowerCase().includes(query.toLowerCase())
+              : true
+          )}
+          keyExtractor={(item) => item}
+          ItemSeparatorComponent={() => (
+            <View style={{ height: 1, backgroundColor: "#F0F0F0" }} />
+          )}
+          renderItem={({ item }) => (
+            <TouchableOpacity style={styles.row} onPress={() => {
+              setQuery(item);
+              if (onSearch) onSearch(item);
+            }}>
+              <Text style={styles.rowText}>{item}</Text>
+              <Feather name="corner-right-up" size={22} color="#C4C4C6" />
+            </TouchableOpacity>
+          )}
+          ListEmptyComponent={
+            <View style={{ padding: 24 }}>
+              <Text style={{ color: "#8e8e93" }}>No recent results.</Text>
+            </View>
+          }
+        />
       </SafeAreaView>
     </Modal>
   );

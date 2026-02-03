@@ -33,20 +33,21 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
                     }
                 };
 
-                let IconComp: any = Ionicons;
-                let iconName: any = "home-outline";
+                const onLongPress = () => {
+                    navigation.emit({
+                        type: 'tabLongPress',
+                        target: route.key,
+                    });
+                };
 
-                if (route.name === 'Home') {
-                    iconName = isFocused ? "home" : "home-outline";
-                } else if (route.name === 'AIStylist') {
-                    iconName = isFocused ? "shirt" : "shirt-outline";
-                } else if (route.name === 'MyCart') {
-                    iconName = isFocused ? "cart" : "cart-outline";
-                } else if (route.name === 'Wishlist') {
-                    iconName = isFocused ? "heart" : "heart-outline";
-                } else if (route.name === 'Profile') {
-                    iconName = isFocused ? "person" : "person-outline";
-                }
+                let iconName: any = "home";
+                let IconComp: any = Feather;
+
+                if (route.name === 'Home') iconName = 'home';
+                else if (route.name === 'AIStylist') iconName = 'command'; // or 'loader', 'star'
+                else if (route.name === 'MyCart') { iconName = 'shopping-cart'; }
+                else if (route.name === 'Wishlist') iconName = 'heart';
+                else if (route.name === 'Profile') iconName = 'user';
 
                 const label = options.tabBarLabel !== undefined
                     ? options.tabBarLabel
@@ -62,22 +63,18 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
                         accessibilityLabel={options.tabBarAccessibilityLabel}
                         testID={options.tabBarTestID}
                         onPress={onPress}
+                        onLongPress={onLongPress}
                         style={styles.tabItem}
-                        activeOpacity={0.8}
                     >
-                        <View style={[styles.iconContainer, isFocused && styles.activeIconContainer]}>
-                            <IconComp
-                                name={iconName}
-                                size={22}
-                                color={isFocused ? '#fff' : '#6B7280'}
-                            />
+                        <View>
+                            <IconComp name={iconName} size={22} color={isFocused ? '#111' : '#999'} />
                             {route.name === 'MyCart' && count > 0 && (
                                 <View style={styles.badge}>
                                     <Text style={styles.badgeText}>{count}</Text>
                                 </View>
                             )}
                         </View>
-                        <Text style={[styles.label, isFocused && styles.activeLabel]}>
+                        <Text style={{ fontSize: 10, color: isFocused ? '#111' : '#999', marginTop: 4, fontWeight: isFocused ? '700' : '500' }}>
                             {label}
                         </Text>
                     </TouchableOpacity>
@@ -86,8 +83,6 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
         </View>
     );
 };
-
-// ... (Navigator part same, just change label for Cart)
 
 const BottomTabNavigator = () => {
     return (
@@ -98,7 +93,7 @@ const BottomTabNavigator = () => {
         >
             <Tab.Screen name="Home" component={HomeScreen as any} options={{ tabBarLabel: 'Home' }} />
             <Tab.Screen name="AIStylist" component={AIStylistScreen as any} options={{ tabBarLabel: 'AI Stylist' }} />
-            <Tab.Screen name="MyCart" component={MyCartScreen as any} options={{ tabBarLabel: 'My Cart' }} />
+            <Tab.Screen name="MyCart" component={MyCartScreen as any} options={{ tabBarLabel: 'Cart' }} />
             <Tab.Screen name="Wishlist" component={WishlistScreen as any} options={{ tabBarLabel: 'Wishlist' }} />
             <Tab.Screen name="Profile" component={ProfileScreen as any} options={{ tabBarLabel: 'Profile' }} />
         </Tab.Navigator>
@@ -109,49 +104,23 @@ const styles = StyleSheet.create({
     tabBar: {
         flexDirection: 'row',
         backgroundColor: '#fff',
-        height: Platform.OS === 'ios' ? 90 : 70, // Slightly taller for the nice look
-        paddingBottom: Platform.OS === 'ios' ? 25 : 10,
-        paddingTop: 10,
+        height: Platform.OS === 'ios' ? 80 : 60,
+        paddingBottom: Platform.OS === 'ios' ? 20 : 0,
         borderTopWidth: 1,
         borderColor: '#F3F4F6',
-        elevation: 10,
-        shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, shadowOffset: { width: 0, height: -4 }
+        elevation: 8,
+        shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: -2 }
     },
     tabItem: {
         flex: 1,
         alignItems: 'center',
-        justifyContent: 'flex-start', // Top align to handle active circle
-    },
-    iconContainer: {
-        width: 40,
-        height: 40,
-        borderRadius: 20,
-        alignItems: 'center',
         justifyContent: 'center',
-        marginBottom: 4,
-        backgroundColor: 'transparent',
-    },
-    activeIconContainer: {
-        backgroundColor: '#1E88E5', // Blue color from screenshot
-        transform: [{ translateY: -5 }], // Slight pop up effect
-        shadowColor: '#1E88E5', shadowOpacity: 0.4, shadowRadius: 6, shadowOffset: { width: 0, height: 4 }, elevation: 6
-    },
-    label: {
-        fontSize: 10,
-        color: '#6B7280',
-        fontWeight: '500',
-    },
-    activeLabel: {
-        color: '#111',
-        fontWeight: '700',
-        fontSize: 10,
     },
     badge: {
-        position: 'absolute', top: -2, right: -2, backgroundColor: '#EF4444',
-        minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1.5, borderColor: '#fff'
+        position: 'absolute', top: -5, right: -8, backgroundColor: '#EF4444',
+        minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2
     },
-    badgeText: { color: '#fff', fontSize: 9, fontWeight: 'bold' },
+    badgeText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
 });
 
 export default BottomTabNavigator;

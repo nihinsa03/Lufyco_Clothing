@@ -13,72 +13,12 @@ const screenWidth = Dimensions.get("window").width;
 
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
-import { useApi } from "../hooks/useApi";
-
 const HomeScreen = ({ navigation }: Props) => {
-  const { categories, setFilter } = useShopStore();
+  const { products, categories, setFilter } = useShopStore();
   const [activeTab, setActiveTab] = useState("Fashion");
 
-  const { data: apiProducts, loading, error, get } = useApi<any[]>();
-  const [latestProducts, setLatestProducts] = useState<any[]>([]);
-
-  // Dummy Data to match screenshot
-  const DUMMY_PRODUCTS = [
-    {
-      id: 'd1',
-      title: 'Nike air jordan retro fashion',
-      price: 120, // 120 * 300 = 36000
-      colors: ['#000', '#2ecc71', '#3498db', '#f1c40f', '#e74c3c'],
-      images: [require('../../assets/images/nike_shoe.png')],
-      rating: 4.8
-    },
-    {
-      id: 'd2',
-      title: 'Classic new black glasses',
-      price: 11.67, // ~3500
-      colors: ['#000', '#bdc3c7', '#7f8c8d', '#2c3e50', '#8e44ad', '#2980b9', '#c0392b'], // 7 colors
-      images: [require('../../assets/images/black_glasses.png')],
-      rating: 4.5
-    },
-    {
-      id: 'd3',
-      title: 'Navy Blue shirt',
-      price: 10.67, // ~3200
-      colors: ['#001F54', '#3498db', '#e74c3c'],
-      images: [require('../../assets/images/navy_shirt.png')],
-      rating: 4.7
-    },
-    {
-      id: 'd4',
-      title: 'Brown box Luxury Bag',
-      price: 18.34, // ~5500
-      colors: ['#8B4513'],
-      images: [require('../../assets/images/brown_bag.png')],
-      rating: 4.9
-    },
-  ];
-
-  useEffect(() => {
-    fetchLatestProducts();
-  }, []);
-
-  const fetchLatestProducts = async () => {
-    // Attempt fetch, fallback to dummy
-    try {
-      const data = await get('/products', undefined, { autoAlert: false });
-      if (data && Array.isArray(data) && data.length > 0) {
-        const newArrivals = data.filter((p: any) => p.isNewArrival || p.isNew).slice(0, 4);
-        setLatestProducts(newArrivals.length > 0 ? newArrivals : data.slice(0, 4));
-      } else {
-        // Fallback to dummy data if API returns empty or fails (data is null)
-        console.log("Using dummy data for Home Screen");
-        setLatestProducts(DUMMY_PRODUCTS);
-      }
-    } catch (e) {
-      console.log("API Error, using dummy data");
-      setLatestProducts(DUMMY_PRODUCTS);
-    }
-  };
+  // Filter for Latest Products (New Arrivals)
+  const latestProducts = products.filter(p => p.isNewArrival).slice(0, 4);
 
   const handleCategoryPress = (catId: string) => {
     setFilter({ categoryId: catId });
@@ -176,65 +116,37 @@ const HomeScreen = ({ navigation }: Props) => {
             <TouchableOpacity onPress={() => navigation.navigate("ShopNewStyles")}><Text style={styles.seeAll}>SEE ALL</Text></TouchableOpacity>
           </View>
 
-          {loading ? (
-            <View style={{ height: 200, justifyContent: 'center', alignItems: 'center' }}>
-              <ActivityIndicator size="large" color="#000" />
-            </View>
-          ) : (
-            <FlatList
-              data={latestProducts}
-              numColumns={2}
-              scrollEnabled={false}
-              keyExtractor={(item) => item.id}
-              columnWrapperStyle={{ justifyContent: "space-between" }}
-              ListEmptyComponent={
-                error ? (
-                  <View style={{ height: 100, justifyContent: 'center', alignItems: 'center' }}>
-                    <Text style={{ color: 'red', marginBottom: 5 }}>{error}</Text>
-                    <TouchableOpacity onPress={fetchLatestProducts}><Text style={{ textDecorationLine: 'underline' }}>Retry</Text></TouchableOpacity>
-                  </View>
-                ) : (
-                  <Text style={{ textAlign: 'center', marginTop: 20 }}>No products found.</Text>
-                )
-              }
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.productCard} onPress={() => handleProductPress(item)}>
-                  <View style={styles.imageWrapper}>
-                    <Image
-                      source={
-                        item.images && item.images.length > 0
-                          ? (typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0])
-                          : require("../../assets/images/clothing.png")
-                      }
-                      style={styles.productImage}
-                    />
-                    <TouchableOpacity style={styles.wishlistBtn}>
-                      <Feather name="heart" size={14} color="#fff" />
-                    </TouchableOpacity>
-                  </View>
+          <FlatList
+            data={latestProducts}
+            numColumns={2}
+            scrollEnabled={false}
+            keyExtractor={(item) => item.id}
+            columnWrapperStyle={{ justifyContent: "space-between" }}
+            renderItem={({ item }) => (
+              <TouchableOpacity style={styles.productCard} onPress={() => handleProductPress(item)}>
+                <View style={styles.imageWrapper}>
+                  <Image
+                    source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}
+                    style={styles.productImage}
+                  />
+                  <TouchableOpacity style={styles.wishlistBtn}>
+                    <Feather name="heart" size={16} color="#000" />
+                  </TouchableOpacity>
+                </View>
 
-                  <View style={styles.productInfo}>
-                    <View style={styles.cardColorRow}>
-                      {item.colors && Array.isArray(item.colors) && item.colors.length > 0 ? (
-                        <>
-                          {item.colors.slice(0, 3).map((color: string, index: number) => (
-                            <View key={index} style={[styles.colorCircle, { backgroundColor: color.toLowerCase() }]} />
-                          ))}
-                          {item.colors.length > 3 && (
-                            <Text style={styles.moreColors}>All {item.colors.length} Colors</Text>
-                          )}
-                        </>
-                      ) : (
-                        <Text style={[styles.moreColors, { marginLeft: 0, textDecorationLine: 'none' }]}>{item.colors?.length ? "1 Color" : "No colors"}</Text>
-                      )}
-                    </View>
-                    <Text numberOfLines={1} style={styles.productName}>{item.title || item.name}</Text>
-                    <Text style={styles.productPrice}>LKR {item.price ? (item.price * 300).toFixed(2) : '0.00'}</Text>
+                <View style={styles.productInfo}>
+                  <View style={styles.cardColorRow}>
+                    <View style={[styles.colorCircle, { backgroundColor: '#000' }]} />
+                    <View style={[styles.colorCircle, { backgroundColor: '#2ba' }]} />
+                    <View style={[styles.colorCircle, { backgroundColor: '#0f0' }]} />
+                    <Text style={styles.moreColors}>All 5 Colors</Text>
                   </View>
-                </TouchableOpacity>
-              )}
-            />
-          )}
+                  <Text numberOfLines={1} style={styles.productName}>{item.title}</Text>
+                  <Text style={styles.productPrice}>LKR {item.price * 300}.00</Text>
+                </View>
+              </TouchableOpacity>
+            )}
+          />
 
         </ScrollView>
       </View>
@@ -251,20 +163,19 @@ const styles = StyleSheet.create({
   iconBtn: { marginLeft: 15 },
 
   searchBox: {
-    flexDirection: "row", alignItems: "center", backgroundColor: "#fff",
-    borderRadius: 30, paddingHorizontal: 16, paddingVertical: 10, marginBottom: 20,
-    borderWidth: 1, borderColor: '#3b82f6', // Blue outline style
+    flexDirection: "row", alignItems: "center", backgroundColor: "#F5F5F5",
+    borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, marginBottom: 20,
   },
-  searchInput: { flex: 1, marginLeft: 10, fontSize: 14, color: "#333" },
+  searchInput: { flex: 1, marginLeft: 10, fontSize: 14, color: "#666" },
   searchRightIcons: { flexDirection: 'row', alignItems: 'center' },
 
   tabContainer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
   tabsWrapper: { flexDirection: 'row' },
   tab: {
     paddingVertical: 8, paddingHorizontal: 24, borderRadius: 25,
-    borderWidth: 1, borderColor: '#3b82f6', marginRight: 10, backgroundColor: '#fff'
+    borderWidth: 1, borderColor: '#eee', marginRight: 10, backgroundColor: '#fff'
   },
-  activeTab: { backgroundColor: '#001F54', borderColor: '#001F54' },
+  activeTab: { backgroundColor: '#000', borderColor: '#000' },
   tabText: { fontSize: 14, fontWeight: '600', color: '#000' },
   activeTabText: { color: '#fff' },
   gridIcon: { padding: 8 },
@@ -287,30 +198,25 @@ const styles = StyleSheet.create({
   bannerSubtitle: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
   paginationDots: { position: 'absolute', bottom: 15, right: 20, flexDirection: 'row' },
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)', marginHorizontal: 3 },
-  activeDot: { backgroundColor: '#3b82f6' },
+  activeDot: { backgroundColor: '#3b82f6' }, // Blue active dot to match image
 
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 },
   sectionTitle: { fontSize: 18, fontWeight: "bold", color: '#000' },
-  seeAll: { color: "#2DD4BF", fontSize: 12, fontWeight: '600' },
+  seeAll: { color: "#2DD4BF", fontSize: 12, fontWeight: '600' }, // Teal color matching image
 
   productCard: { backgroundColor: "#fff", width: (screenWidth - 48) / 2, marginBottom: 20 },
   imageWrapper: {
-    width: '100%', aspectRatio: 1, backgroundColor: "#F3F4F6", borderRadius: 16, marginBottom: 10,
+    width: '100%', aspectRatio: 1, backgroundColor: "#E5E7EB", borderRadius: 16, marginBottom: 10,
     overflow: 'hidden', position: 'relative'
   },
   productImage: { width: "100%", height: "100%" },
-  wishlistBtn: {
-    position: "absolute", top: 10, right: 10,
-    backgroundColor: '#000', // Black circle
-    width: 28, height: 28, borderRadius: 14,
-    alignItems: 'center', justifyContent: 'center'
-  },
+  wishlistBtn: { position: "absolute", top: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.2)', padding: 6, borderRadius: 20 },
   productInfo: { paddingHorizontal: 4 },
   cardColorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   colorCircle: { width: 10, height: 10, borderRadius: 5, marginRight: -3, borderWidth: 1, borderColor: '#fff' },
-  moreColors: { fontSize: 10, color: '#666', marginLeft: 8 },
-  productName: { fontSize: 14, fontWeight: "600", marginBottom: 4, color: "#111" },
-  productPrice: { fontSize: 14, fontWeight: "bold", color: "#000" },
+  moreColors: { fontSize: 9, color: '#666', marginLeft: 8, textDecorationLine: 'underline' },
+  productName: { fontSize: 13, fontWeight: "500", marginBottom: 4, color: "#333" },
+  productPrice: { fontSize: 13, fontWeight: "bold", color: "#000" },
 });
 
 export default HomeScreen;

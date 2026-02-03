@@ -14,8 +14,6 @@ const SignupScreen = ({ navigation }: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSignup = async () => {
     if (!name || !email || !password || !confirmPassword) {
@@ -74,36 +72,26 @@ const SignupScreen = ({ navigation }: Props) => {
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Password</Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              value={password}
-              onChangeText={setPassword}
-              placeholder="Enter your password"
-              placeholderTextColor="#999"
-              secureTextEntry={!showPassword}
-            />
-            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-              <Ionicons name={showPassword ? "eye" : "eye-off"} size={20} color="#666" />
-            </TouchableOpacity>
-          </View>
+          <TextInput
+            style={styles.input}
+            value={password}
+            onChangeText={setPassword}
+            placeholder="Enter your password"
+            placeholderTextColor="#999"
+            secureTextEntry
+          />
         </View>
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Confirm Password</Text>
-          <View style={styles.passwordContainer}>
-            <TextInput
-              style={styles.passwordInput}
-              value={confirmPassword}
-              onChangeText={setConfirmPassword}
-              placeholder="Confirm your password"
-              placeholderTextColor="#999"
-              secureTextEntry={!showConfirmPassword}
-            />
-            <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon}>
-              <Ionicons name={showConfirmPassword ? "eye" : "eye-off"} size={20} color="#666" />
-            </TouchableOpacity>
-          </View>
+          <TextInput
+            style={styles.input}
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+            placeholder="Confirm your password"
+            placeholderTextColor="#999"
+            secureTextEntry
+          />
         </View>
 
         <TouchableOpacity
@@ -117,33 +105,6 @@ const SignupScreen = ({ navigation }: Props) => {
             <Text style={styles.signUpButtonText}>Sign Up</Text>
           )}
         </TouchableOpacity>
-
-        <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.loginLink}>
-          <Text style={styles.loginLinkText}>Already have an account? <Text style={styles.loginLinkBold}>Login</Text></Text>
-        </TouchableOpacity>
-
-        <View style={styles.dividerContainer}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>OR</Text>
-          <View style={styles.dividerLine} />
-        </View>
-
-        <Text style={styles.socialText}>Sign up with Social Networks</Text>
-
-        <View style={styles.socialContainer}>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-facebook" size={32} color="#1877F2" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-instagram" size={32} color="#E4405F" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-google" size={32} color="#DB4437" />
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.socialButton}>
-            <Ionicons name="logo-tiktok" size={32} color="#000000" />
-          </TouchableOpacity>
-        </View>
 
       </ScrollView>
     </SafeAreaView>
@@ -208,24 +169,6 @@ const styles = StyleSheet.create({
     fontSize: 15,
     color: '#000'
   },
-  passwordContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#E5E5E5',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-  },
-  passwordInput: {
-    flex: 1,
-    paddingVertical: 14,
-    fontSize: 15,
-    color: '#000',
-  },
-  eyeIcon: {
-    padding: 10,
-  },
   signUpButton: {
     backgroundColor: '#000',
     borderRadius: 50,
@@ -239,63 +182,6 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600'
-  },
-  loginLink: {
-    alignItems: 'center',
-    marginBottom: 24
-  },
-  loginLinkText: {
-    fontSize: 14,
-    color: '#666'
-  },
-  loginLinkBold: {
-    color: '#000',
-    fontWeight: '600'
-  },
-  dividerContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 24
-  },
-  dividerLine: {
-    flex: 1,
-    height: 1,
-    backgroundColor: '#E5E5E5'
-  },
-  dividerText: {
-    marginHorizontal: 16,
-    fontSize: 14, // Slightly larger
-    fontWeight: 'bold', // Bold as in the image
-    color: '#000'
-  },
-  socialText: {
-    fontSize: 14,
-    color: '#000',
-    textAlign: 'center',
-    marginBottom: 20
-  },
-  socialContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    gap: 20, // using gap for spacing between items
-    marginBottom: 20
-  },
-  socialButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25, // Circular
-    backgroundColor: '#fff', // White background
-    alignItems: 'center',
-    justifyContent: 'center',
-    // Shadow for elevation
-    shadowColor: "#000",
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 3.84,
-    elevation: 5,
   }
 });
 

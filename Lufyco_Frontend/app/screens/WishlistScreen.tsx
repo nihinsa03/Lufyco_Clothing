@@ -8,13 +8,10 @@ import {
     Image,
     ScrollView,
     Modal,
-    Dimensions,
-    ActivityIndicator
+    Dimensions
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useWishlistStore } from "../store/useWishlistStore";
-import { useApi } from "../hooks/useApi"; // ADDED
-import { useEffect } from "react"; // ADDED
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -24,12 +21,6 @@ const { width, height } = Dimensions.get("window");
 const WishlistScreen: React.FC<Props> = ({ navigation }) => {
     const { items, removeFromWishlist } = useWishlistStore();
     const [deleteId, setDeleteId] = useState<string | null>(null);
-    const { loading, error, get } = useApi();
-
-    useEffect(() => {
-        // Sync wishlist with server
-        get('/wishlist');
-    }, []);
 
     const confirmDelete = () => {
         if (deleteId) {
@@ -73,19 +64,10 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
                     <Feather name="arrow-left" size={24} color="#111" />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Wishlist</Text>
-                <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                    {loading && <ActivityIndicator size="small" color="#000" style={{ marginRight: 10 }} />}
-                    <TouchableOpacity style={{ padding: 4 }}>
-                        <Feather name="more-horizontal" size={24} color="#111" />
-                    </TouchableOpacity>
-                </View>
+                <TouchableOpacity style={{ padding: 4 }}>
+                    <Feather name="more-horizontal" size={24} color="#111" />
+                </TouchableOpacity>
             </View>
-
-            {error && (
-                <View style={{ backgroundColor: '#FEE2E2', padding: 8, marginHorizontal: 16, borderRadius: 8 }}>
-                    <Text style={{ color: '#DC2626', fontSize: 12 }}>{error}</Text>
-                </View>
-            )}
 
             <ScrollView contentContainerStyle={{ padding: 16 }}>
                 {items.map((item) => (
