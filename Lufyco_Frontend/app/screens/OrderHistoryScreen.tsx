@@ -1,10 +1,11 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
-    SafeAreaView, View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Dimensions
+    SafeAreaView, View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Dimensions, ActivityIndicator
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useOrdersStore, Order } from "../store/useOrdersStore";
+import { useApi } from "../hooks/useApi"; // ADDED
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -12,10 +13,17 @@ type NavProp = NativeStackNavigationProp<RootStackParamList, "OrderHistory">;
 
 const OrderHistoryScreen = () => {
     const navigation = useNavigation<NavProp>();
-    const { orders } = useOrdersStore();
+    const { orders: storeOrders } = useOrdersStore();
+    const { data: apiOrders, loading, error, get } = useApi<Order[]>();
     const [tab, setTab] = useState<'ongoing' | 'completed'>('ongoing');
 
-    const filteredOrders = orders.filter(o => {
+    useEffect(() => {
+        get('/orders');
+    }, []);
+
+    const displayOrders = apiOrders || storeOrders;
+
+    const filteredOrders = displayOrders.filter(o => {
         if (tab === 'ongoing') return o.status !== 'Delivered';
         return o.status === 'Delivered';
     });
@@ -75,25 +83,38 @@ const OrderHistoryScreen = () => {
                 </TouchableOpacity>
             </View>
 
-            <FlatList
-                data={filteredOrders}
-                keyExtractor={i => i.id}
-                renderItem={renderItem}
-                contentContainerStyle={{ padding: 16 }}
-                ListEmptyComponent={
-                    <View style={styles.emptyContainer}>
-                        <Image
-                            source={require("../../assets/images/bag.png")}
-                            style={{ width: 100, height: 100, opacity: 0.5, marginBottom: 20 }}
-                            resizeMode="contain"
-                        />
-                        <Text style={styles.emptyTitle}>No {tab} orders</Text>
-                        <TouchableOpacity style={styles.exploreBtn} onPress={() => navigation.navigate("Home")}>
-                            <Text style={styles.exploreText}>Explore Categories</Text>
-                        </TouchableOpacity>
-                    </View>
-                }
-            />
+            {loading ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                    <ActivityIndicator size="large" color="#000" />
+                </View>
+            ) : error ? (
+                <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: 20 }}>
+                    <Text style={{ color: 'red', textAlign: 'center', marginBottom: 10 }}>{error}</Text>
+                    <TouchableOpacity onPress={() => get('/orders')} style={{ padding: 10, backgroundColor: '#eee', borderRadius: 8 }}>
+                        <Text>Retry</Text>
+                    </TouchableOpacity>
+                </View>
+            ) : (
+                <FlatList
+                    data={filteredOrders}
+                    keyExtractor={i => i.id}
+                    renderItem={renderItem}
+                    contentContainerStyle={{ padding: 16 }}
+                    ListEmptyComponent={
+                        <View style={styles.emptyContainer}>
+                            <Image
+                                source={require("../../assets/images/bag.png")}
+                                style={{ width: 100, height: 100, opacity: 0.5, marginBottom: 20 }}
+                                resizeMode="contain"
+                            />
+                            <Text style={styles.emptyTitle}>No {tab} orders</Text>
+                            <TouchableOpacity style={styles.exploreBtn} onPress={() => navigation.navigate("Home")}>
+                                <Text style={styles.exploreText}>Explore Categories</Text>
+                            </TouchableOpacity>
+                        </View>
+                    }
+                />
+            )}
         </SafeAreaView>
     );
 };
