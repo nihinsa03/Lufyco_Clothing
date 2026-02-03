@@ -106,6 +106,33 @@ const SignupScreen = ({ navigation }: Props) => {
           )}
         </TouchableOpacity>
 
+        <TouchableOpacity onPress={() => navigation.navigate('Login')} style={styles.loginLink}>
+          <Text style={styles.loginLinkText}>Already have an account? <Text style={styles.loginLinkBold}>Login</Text></Text>
+        </TouchableOpacity>
+
+        <View style={styles.dividerContainer}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>OR</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <Text style={styles.socialText}>Sign up with Social Networks</Text>
+
+        <View style={styles.socialContainer}>
+          <TouchableOpacity style={styles.socialButton}>
+            <Ionicons name="logo-facebook" size={32} color="#1877F2" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialButton}>
+            <Ionicons name="logo-instagram" size={32} color="#E4405F" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialButton}>
+            <Ionicons name="logo-google" size={32} color="#DB4437" />
+          </TouchableOpacity>
+          <TouchableOpacity style={styles.socialButton}>
+            <Ionicons name="logo-tiktok" size={32} color="#000000" />
+          </TouchableOpacity>
+        </View>
+
       </ScrollView>
     </SafeAreaView>
   );
@@ -182,6 +209,63 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: '600'
+  },
+  loginLink: {
+    alignItems: 'center',
+    marginBottom: 24
+  },
+  loginLinkText: {
+    fontSize: 14,
+    color: '#666'
+  },
+  loginLinkBold: {
+    color: '#000',
+    fontWeight: '600'
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 24
+  },
+  dividerLine: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#E5E5E5'
+  },
+  dividerText: {
+    marginHorizontal: 16,
+    fontSize: 14, // Slightly larger
+    fontWeight: 'bold', // Bold as in the image
+    color: '#000'
+  },
+  socialText: {
+    fontSize: 14,
+    color: '#000',
+    textAlign: 'center',
+    marginBottom: 20
+  },
+  socialContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20, // using gap for spacing between items
+    marginBottom: 20
+  },
+  socialButton: {
+    width: 50,
+    height: 50,
+    borderRadius: 25, // Circular
+    backgroundColor: '#fff', // White background
+    alignItems: 'center',
+    justifyContent: 'center',
+    // Shadow for elevation
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 3.84,
+    elevation: 5,
   }
 });
 
