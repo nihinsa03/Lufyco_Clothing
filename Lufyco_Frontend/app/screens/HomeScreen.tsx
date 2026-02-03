@@ -29,7 +29,7 @@ const HomeScreen = ({ navigation }: Props) => {
       title: 'Nike air jordan retro fashion',
       price: 120, // 120 * 300 = 36000
       colors: ['#000', '#2ecc71', '#3498db', '#f1c40f', '#e74c3c'],
-      images: [require('../../assets/images/clothing.png')], // Placeholder
+      images: [require('../../assets/images/nike_shoe.png')],
       rating: 4.8
     },
     {
@@ -37,7 +37,7 @@ const HomeScreen = ({ navigation }: Props) => {
       title: 'Classic new black glasses',
       price: 11.67, // ~3500
       colors: ['#000', '#bdc3c7', '#7f8c8d', '#2c3e50', '#8e44ad', '#2980b9', '#c0392b'], // 7 colors
-      images: [require('../../assets/images/clothing.png')],
+      images: [require('../../assets/images/black_glasses.png')],
       rating: 4.5
     },
     {
@@ -45,7 +45,7 @@ const HomeScreen = ({ navigation }: Props) => {
       title: 'Navy Blue shirt',
       price: 10.67, // ~3200
       colors: ['#001F54', '#3498db', '#e74c3c'],
-      images: [require('../../assets/images/clothing.png')],
+      images: [require('../../assets/images/navy_shirt.png')],
       rating: 4.7
     },
     {
@@ -53,7 +53,7 @@ const HomeScreen = ({ navigation }: Props) => {
       title: 'Brown box Luxury Bag',
       price: 18.34, // ~5500
       colors: ['#8B4513'],
-      images: [require('../../assets/images/clothing.png')],
+      images: [require('../../assets/images/brown_bag.png')],
       rating: 4.9
     },
   ];
