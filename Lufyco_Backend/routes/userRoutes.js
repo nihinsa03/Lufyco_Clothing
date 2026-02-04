@@ -27,7 +27,7 @@ const isValidEmailProvider = (email) => {
 // @desc    Register a new user and send verification email
 // @access  Public
 router.post('/register', async (req, res) => {
-    const { name, email, password } = req.body;
+    const { name, phone, email, password } = req.body;
 
     try {
         // Validate input
@@ -84,6 +84,7 @@ router.post('/register', async (req, res) => {
         // Create new user
         const user = await User.create({
             name,
+            phone,
             email,
             password, // Note: In production, hash the password with bcrypt
             isVerified: false,

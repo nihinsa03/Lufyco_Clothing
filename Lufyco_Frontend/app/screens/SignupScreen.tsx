@@ -12,6 +12,7 @@ interface Props {
 const SignupScreen = ({ navigation }: Props) => {
   const { signup, loading, error } = useAuthStore();
   const [name, setName] = useState('');
+  const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -33,8 +34,14 @@ const SignupScreen = ({ navigation }: Props) => {
 
   const handleSignup = async () => {
     // Validate all fields
-    if (!name || !email || !password || !confirmPassword) {
+    if (!name || !phone || !email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill all fields");
+      return;
+    }
+
+    // Validate phone number (basic validation)
+    if (phone.length < 10) {
+      Alert.alert("Error", "Please enter a valid phone number (minimum 10 digits)");
       return;
     }
 
@@ -58,7 +65,7 @@ const SignupScreen = ({ navigation }: Props) => {
       return;
     }
 
-    const success = await signup({ name, email, password });
+    const success = await signup({ name, phone, email, password });
 
     if (success) {
       // Navigate to verification screen with email
@@ -90,6 +97,19 @@ const SignupScreen = ({ navigation }: Props) => {
             onChangeText={setName}
             placeholder="Enter Name"
             placeholderTextColor="#999"
+          />
+        </View>
+
+        <View style={styles.inputContainer}>
+          <Text style={styles.label}>Phone Number</Text>
+          <TextInput
+            style={styles.input}
+            value={phone}
+            onChangeText={setPhone}
+            placeholder="Enter Phone Number"
+            placeholderTextColor="#999"
+            keyboardType="numeric"
+            maxLength={15}
           />
         </View>
 
