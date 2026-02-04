@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView, SafeAr
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { validateEmail } from '../utils/emailValidation';
 
 interface Props {
   navigation: StackNavigationProp<any>;
@@ -16,21 +17,48 @@ const SignupScreen = ({ navigation }: Props) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
+
+  const handleEmailBlur = () => {
+    if (email) {
+      const validation = validateEmail(email);
+      if (!validation.valid) {
+        setEmailError(validation.message || 'Invalid email');
+      } else {
+        setEmailError('');
+      }
+    }
+  };
 
   const handleSignup = async () => {
+    // Validate all fields
     if (!name || !email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill all fields");
       return;
     }
+
+    // Validate email
+    const emailValidation = validateEmail(email);
+    if (!emailValidation.valid) {
+      Alert.alert("Error", emailValidation.message || "Invalid email");
+      setEmailError(emailValidation.message || "Invalid email");
+      return;
+    }
+
     if (password !== confirmPassword) {
       Alert.alert("Error", "Passwords do not match");
       return;
     }
 
+    if (password.length < 6) {
+      Alert.alert("Error", "Password must be at least 6 characters");
+      return;
+    }
+
     const success = await signup({ name, email, password });
     if (success) {
-      // User created successfully, redirect to login
-      navigation.navigate('Login');
+      // Navigate to verification screen
+      navigation.navigate('Verification', { email });
     }
   };
 
@@ -62,14 +90,19 @@ const SignupScreen = ({ navigation }: Props) => {
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Email Address</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, emailError ? styles.inputError : {}]}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={(text) => {
+              setEmail(text);
+              if (emailError) setEmailError('');
+            }}
+            onBlur={handleEmailBlur}
             placeholder="Enter your Email Address"
             placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
           />
+          {emailError ? <Text style={styles.errorText}>{emailError}</Text> : null}
         </View>
 
         <View style={styles.inputContainer}>
@@ -207,6 +240,14 @@ const styles = StyleSheet.create({
     paddingVertical: 12,
     fontSize: 14,
     color: '#000'
+  },
+  inputError: {
+    borderColor: '#ff4444',
+  },
+  errorText: {
+    color: '#ff4444',
+    fontSize: 12,
+    marginTop: 4,
   },
   passwordContainer: {
     flexDirection: 'row',
