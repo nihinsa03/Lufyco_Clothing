@@ -20,7 +20,7 @@ const PaymentsScreen = () => {
       </TouchableOpacity>
 
       {/* Image */}
-      <Image source={require("../../assets/images/payments.png")} style={styles.image} />
+      <Image source={require("../../assets/images/3.png")} style={styles.image} />
 
       {/* Title & Subtitle */}
       <Text style={styles.title}>Safe and secure {"\n"}payments</Text>
@@ -30,9 +30,9 @@ const PaymentsScreen = () => {
 
       {/* Buttons */}
       <View style={styles.buttonContainer}>
-      <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate("Login")}>
-      <Text style={styles.loginButtonText}>Login</Text>
-      </TouchableOpacity>
+        <TouchableOpacity style={styles.loginButton} onPress={() => navigation.navigate("Login")}>
+          <Text style={styles.loginButtonText}>Login</Text>
+        </TouchableOpacity>
 
         <TouchableOpacity style={styles.getStartedButton} onPress={() => navigation.navigate("Signup")}>
           <Text style={styles.getStartedButtonText}>Get Started →</Text>
@@ -85,18 +85,23 @@ const styles = StyleSheet.create({
     color: "#777",
     textAlign: "center",
     marginTop: 10,
+    marginBottom: 30, // Added space
   },
   buttonContainer: {
     flexDirection: "row",
-    marginTop: 20,
+    marginTop: 10, // Reduced top margin
+    width: "100%", // Full width
+    justifyContent: "space-between", // Space buttons
   },
   loginButton: {
     backgroundColor: "#fff",
-    paddingVertical: 12,
-    paddingHorizontal: 20,
+    paddingVertical: 15,
     borderRadius: 10,
     borderWidth: 1,
+    borderColor: "#E0E0E0",
+    flex: 1, // Take equal space
     marginRight: 10,
+    alignItems: "center",
   },
   loginButtonText: {
     color: "#000",
@@ -105,9 +110,10 @@ const styles = StyleSheet.create({
   },
   getStartedButton: {
     backgroundColor: "#000",
-    paddingVertical: 12,
-    paddingHorizontal: 40,
+    paddingVertical: 15,
     borderRadius: 10,
+    flex: 1, // Take equal space
+    alignItems: "center",
   },
   getStartedButtonText: {
     color: "#fff",
@@ -126,7 +132,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   activeDot: {
-    backgroundColor: "#000",
+    backgroundColor: "#007BFF", // Match IntroScreen Blue
   },
 });
 

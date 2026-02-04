@@ -25,7 +25,7 @@ const IntroScreen = () => {
         <Text style={styles.buttonText}>Next</Text>
       </TouchableOpacity>
       <View style={styles.pagination}>
-      <View style={[styles.dot, styles.activeDot]} />
+        <View style={[styles.dot, styles.activeDot]} />
         <View style={styles.dot} />
         <View style={styles.dot} />
       </View>
@@ -58,13 +58,15 @@ const styles = StyleSheet.create({
     color: "#777",
     textAlign: "center",
     marginTop: 10,
+    marginBottom: 30, // Added space before button
   },
   button: {
     backgroundColor: "#000",
-    paddingVertical: 12,
-    paddingHorizontal: 40,
+    paddingVertical: 15, // Increased vertical padding
+    width: "100%", // Full width
+    alignItems: "center", // Center text
     borderRadius: 10,
-    marginTop: 20,
+    marginTop: 10,
   },
   buttonText: {
     color: "#fff",
@@ -83,7 +85,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   activeDot: {
-    backgroundColor: "#000",
+    backgroundColor: "#007BFF", // Blue color
   },
 });
 

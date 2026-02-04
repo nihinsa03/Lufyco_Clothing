@@ -12,7 +12,7 @@ const { width, height } = Dimensions.get('window');
 const slides = [
     {
         id: '1',
-        image: require('../../../assets/images/1.png'),
+        image: require('../../../assets/images/clothing.png'),
         title: 'Explore a wide range\nof Clothing Products',
         subtitle: 'Explore a wide range of clothing products at your fingertips. Fashion offers an extensive collection to suit your needs.'
     },
@@ -174,9 +174,10 @@ const styles = StyleSheet.create({
         paddingTop: 80
     },
     image: {
-        width: width * 0.5,
+        width: width * 0.8,
         height: height * 0.5,
-        borderRadius: 16
+        borderRadius: 16,
+        resizeMode: 'contain' // Changed to contain to ensure full visibility
     },
 
     bottomCard: {

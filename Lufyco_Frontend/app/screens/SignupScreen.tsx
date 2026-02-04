@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView, SafeAreaView, Alert, ActivityIndicator } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView, SafeAreaView, Alert, ActivityIndicator, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -14,6 +14,8 @@ const SignupScreen = ({ navigation }: Props) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 
   const handleSignup = async () => {
     if (!name || !email || !password || !confirmPassword) {
@@ -52,7 +54,7 @@ const SignupScreen = ({ navigation }: Props) => {
             style={styles.input}
             value={name}
             onChangeText={setName}
-            placeholder="Enter your full name"
+            placeholder="Enter Name"
             placeholderTextColor="#999"
           />
         </View>
@@ -63,7 +65,7 @@ const SignupScreen = ({ navigation }: Props) => {
             style={styles.input}
             value={email}
             onChangeText={setEmail}
-            placeholder="Enter your email"
+            placeholder="Enter your Email Address"
             placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
@@ -72,26 +74,36 @@ const SignupScreen = ({ navigation }: Props) => {
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Password</Text>
-          <TextInput
-            style={styles.input}
-            value={password}
-            onChangeText={setPassword}
-            placeholder="Enter your password"
-            placeholderTextColor="#999"
-            secureTextEntry
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              value={password}
+              onChangeText={setPassword}
+              placeholder="Enter your Password"
+              placeholderTextColor="#999"
+              secureTextEntry={!showPassword}
+            />
+            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+              <Ionicons name={showPassword ? "eye" : "eye-off"} size={20} color="#666" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Confirm Password</Text>
-          <TextInput
-            style={styles.input}
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-            placeholder="Confirm your password"
-            placeholderTextColor="#999"
-            secureTextEntry
-          />
+          <View style={styles.passwordContainer}>
+            <TextInput
+              style={styles.passwordInput}
+              value={confirmPassword}
+              onChangeText={setConfirmPassword}
+              placeholder="Confirm your Password"
+              placeholderTextColor="#999"
+              secureTextEntry={!showConfirmPassword}
+            />
+            <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon}>
+              <Ionicons name={showConfirmPassword ? "eye" : "eye-off"} size={20} color="#666" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <TouchableOpacity
@@ -106,6 +118,36 @@ const SignupScreen = ({ navigation }: Props) => {
           )}
         </TouchableOpacity>
 
+        <View style={styles.footerContainer}>
+          <Text style={styles.footerText}>
+            Already have an account? <Text style={{ fontWeight: 'bold' }} onPress={() => navigation.navigate('Login')}>Login</Text>
+          </Text>
+        </View>
+
+        <View style={styles.orContainer}>
+          <View style={styles.divider} />
+          <Text style={styles.orText}>OR</Text>
+          <View style={styles.divider} />
+        </View>
+
+        <View style={{ alignItems: 'center' }}>
+          <Text style={styles.socialLoginText}>Sign up with Social Networks</Text>
+          <View style={styles.socialIconsContainer}>
+            <TouchableOpacity>
+              <Image source={require('../../assets/images/facebook.png')} style={styles.socialIcon} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Image source={require('../../assets/images/instagram.png')} style={styles.socialIcon} />
+            </TouchableOpacity>
+            <TouchableOpacity>
+              <Image source={require('../../assets/images/googlec.png')} style={styles.socialIcon} />
+            </TouchableOpacity>
+            {/* Assuming tiktok/twitter icon based on other assets or similar placeholder */}
+            <TouchableOpacity>
+              <Image source={require('../../assets/images/tiktok.png')} style={styles.socialIcon} />
+            </TouchableOpacity>
+          </View>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -118,70 +160,126 @@ const styles = StyleSheet.create({
   },
   container: {
     padding: 24,
-    paddingTop: 20,
+    paddingTop: 10,
     flexGrow: 1
   },
   brandName: {
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#000',
-    marginBottom: 20
+    marginBottom: 5,
+    marginTop: 10
   },
   backBtn: {
-    marginBottom: 30,
-    width: 40,
-    height: 40,
-    alignItems: 'center',
-    justifyContent: 'center'
+    marginBottom: 20,
   },
   headerContainer: {
-    marginBottom: 32,
+    marginBottom: 25,
     alignItems: 'center'
   },
   title: {
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: 'bold',
     color: '#000',
     textAlign: 'center',
     marginBottom: 8
   },
   subtitle: {
-    fontSize: 13,
+    fontSize: 12,
     color: '#666',
     textAlign: 'center'
   },
   inputContainer: {
-    marginBottom: 20
+    marginBottom: 16
   },
   label: {
-    fontSize: 15,
-    fontWeight: '600',
-    color: '#000',
-    marginBottom: 8
+    fontSize: 14,
+    fontWeight: '500',
+    color: '#333',
+    marginBottom: 6
   },
   input: {
     backgroundColor: '#fff',
     borderWidth: 1,
-    borderColor: '#E5E5E5',
+    borderColor: '#7dd3fc', // Light blue
     borderRadius: 12,
     paddingHorizontal: 16,
-    paddingVertical: 14,
-    fontSize: 15,
+    paddingVertical: 12,
+    fontSize: 14,
     color: '#000'
   },
+  passwordContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fff',
+    borderWidth: 1,
+    borderColor: '#7dd3fc', // Light blue matching input
+    borderRadius: 12,
+    paddingHorizontal: 16,
+  },
+  passwordInput: {
+    flex: 1,
+    paddingVertical: 12,
+    fontSize: 14,
+    color: '#000'
+  },
+  eyeIcon: {
+    padding: 4
+  },
   signUpButton: {
-    backgroundColor: '#000',
-    borderRadius: 50,
-    paddingVertical: 18,
+    backgroundColor: '#0c0c0c',
+    borderRadius: 30,
+    paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: 20,
-    marginBottom: 40
+    marginTop: 10,
+    marginBottom: 20,
+    marginHorizontal: 30 // Make button narrower as per design
   },
   signUpButtonText: {
     color: '#fff',
-    fontSize: 16,
+    fontSize: 14,
     fontWeight: '600'
+  },
+  footerContainer: {
+    alignItems: 'center',
+    marginBottom: 20
+  },
+  footerText: {
+    fontSize: 13,
+    color: '#000'
+  },
+  orContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: 15,
+    paddingHorizontal: 30
+  },
+  divider: {
+    flex: 1,
+    height: 1,
+    backgroundColor: '#ccc'
+  },
+  orText: {
+    marginHorizontal: 10,
+    fontSize: 14,
+    fontWeight: 'bold',
+    color: '#000'
+  },
+  socialLoginText: {
+    fontSize: 13,
+    color: '#333',
+    marginBottom: 15
+  },
+  socialIconsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    gap: 20
+  },
+  socialIcon: {
+    width: 32,
+    height: 32,
+    resizeMode: 'contain'
   }
 });
 

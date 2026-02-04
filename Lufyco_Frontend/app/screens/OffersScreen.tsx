@@ -14,31 +14,24 @@ const OffersScreen = () => {
 
   return (
     <View style={styles.container}>
-      {/* Back Button */}
+      {/* Back Button - Optional if you want to keep it consistent with Intro, usually page 2 implies back is possible, but if 'like first one' means exactly, maybe remove? keeping for UX */}
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
         <Text style={styles.backText}>←</Text>
       </TouchableOpacity>
 
-      {/* Image */}
-      <Image source={require("../../assets/images/offers.png")} style={styles.image} />
-
-      {/* Title & Subtitle */}
+      <Image source={require("../../assets/images/2.png")} style={styles.image} />
       <Text style={styles.title}>Unlock exclusive offers {"\n"}and discounts</Text>
       <Text style={styles.subtitle}>
         Get access to limited-time deals and special promotions available only to our valued customers.
       </Text>
-
       {/* Next Button to Navigate to Payments Screen */}
       <TouchableOpacity style={styles.button} onPress={() => navigation.navigate("Payments")}>
         <Text style={styles.buttonText}>Next</Text>
       </TouchableOpacity>
-
-      {/* Pagination Dots */}
       <View style={styles.pagination}>
         <View style={styles.dot} />
         <View style={[styles.dot, styles.activeDot]} />
         <View style={styles.dot} />
-       
       </View>
     </View>
   );
@@ -76,16 +69,18 @@ const styles = StyleSheet.create({
   },
   subtitle: {
     fontSize: 14,
-    color: "#777",
+    color: "#777", // Matched Intro
     textAlign: "center",
     marginTop: 10,
+    marginBottom: 30, // Matched Intro
   },
   button: {
     backgroundColor: "#000",
-    paddingVertical: 12,
-    paddingHorizontal: 40,
+    paddingVertical: 15, // Matched Intro
+    width: "100%", // Matched Intro
+    alignItems: "center", // Matched Intro
     borderRadius: 10,
-    marginTop: 20,
+    marginTop: 10,
   },
   buttonText: {
     color: "#fff",
@@ -104,7 +99,7 @@ const styles = StyleSheet.create({
     marginHorizontal: 5,
   },
   activeDot: {
-    backgroundColor: "#000",
+    backgroundColor: "#007BFF", // Matched Intro (Blue)
   },
 });
 
