@@ -1,25 +1,33 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
-import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../navigation/AppNavigator"; // Import RootStackParamList
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, ActivityIndicator } from "react-native";
+import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import { useAuthStore } from "../store/useAuthStore";
 
 const { width } = Dimensions.get("window");
 
-// Type the navigation prop
-type ForgotPasswordVerificationScreenNavigationProp = StackNavigationProp<RootStackParamList, "ForgotPasswordVerification">;
+type RouteParams = {
+  ForgotPasswordVerification: {
+    email: string;
+  };
+};
 
 const ForgotPasswordVerificationScreen = () => {
-  const navigation = useNavigation<ForgotPasswordVerificationScreenNavigationProp>();
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+  const navigation = useNavigation<any>();
+  const route = useRoute<RouteProp<RouteParams, 'ForgotPasswordVerification'>>();
+  const { verifyResetOTP, requestPasswordReset, loading } = useAuthStore();
+
+  const email = route.params?.email || '';
+  const [otp, setOtp] = useState<string[]>(["", "", "", ""]);  // 4-digit OTP
+  const [resending, setResending] = useState(false);
 
   const handleKeyPress = (value: string) => {
-    const newOtp = [...otp];
+    let newOtp = [...otp];
 
     if (value === "C") {
-      setOtp(["", "", "", "", "", ""]);
+      setOtp(["", "", "", ""]); // Clear all fields
     } else if (value === "<-") {
-      const lastFilledIndex = newOtp.lastIndexOf(newOtp.find((num) => num !== "") || "");
+      const lastFilledIndex = newOtp.reduce((lastIdx, num, idx) => num !== "" ? idx : lastIdx, -1);
       if (lastFilledIndex >= 0) {
         newOtp[lastFilledIndex] = "";
         setOtp(newOtp);
@@ -33,11 +41,45 @@ const ForgotPasswordVerificationScreen = () => {
     }
   };
 
+  const handleProceed = async () => {
+    const otpString = otp.join("");
+
+    if (otpString.length !== 4) {
+      Alert.alert("Error", "Please enter the complete 4-digit verification code");
+      return;
+    }
+
+    const success = await verifyResetOTP(email, otpString);
+
+    if (success) {
+      // Navigate to reset password screen, passing email and OTP for final verification
+      navigation.navigate('ResetPassword', { email, otp: otpString });
+    } else {
+      Alert.alert("Verification Failed", "Invalid or expired verification code. Please try again.");
+    }
+  };
+
+  const handleResendCode = async () => {
+    setResending(true);
+    const success = await requestPasswordReset(email);
+    setResending(false);
+
+    if (success) {
+      setOtp(["", "", "", ""]); // Clear OTP fields
+      Alert.alert("Success", "A new 4-digit verification code has been sent to your email.");
+    } else {
+      Alert.alert("Error", "Failed to resend verification code. Please try again.");
+    }
+  };
+
+  const isOtpComplete = !otp.includes("");
+
   return (
     <View style={styles.container}>
       {/* Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backText}>←   Forgot Password</Text>
+        <Ionicons name="arrow-back" size={24} color="#000" />
+        <Text style={styles.backText}>  Forgot Password</Text>
       </TouchableOpacity>
 
       {/* Step Indicator */}
@@ -45,7 +87,9 @@ const ForgotPasswordVerificationScreen = () => {
 
       {/* Title */}
       <Text style={styles.title}>Email Verification</Text>
-      <Text style={styles.subtitle}>Enter the 6-digit verification code sent to your email address.</Text>
+      <Text style={styles.subtitle}>
+        Enter the 4-digit verification code sent to your email address.
+      </Text>
 
       {/* OTP Input Boxes */}
       <View style={styles.otpContainer}>
@@ -62,20 +106,36 @@ const ForgotPasswordVerificationScreen = () => {
       </View>
 
       {/* Resend Code */}
-      <TouchableOpacity>
-        <Text style={styles.resendCode}>Resend Code</Text>
+      <TouchableOpacity onPress={handleResendCode} disabled={resending}>
+        {resending ? (
+          <ActivityIndicator size="small" color="#3b82f6" style={{ marginBottom: 20 }} />
+        ) : (
+          <Text style={styles.resendCode}>Resend Code</Text>
+        )}
       </TouchableOpacity>
 
       {/* Proceed Button */}
-      <TouchableOpacity style={styles.proceedButton} onPress={() => navigation.navigate("ResetPassword")}>
-    <Text style={styles.proceedButtonText}>Proceed</Text>
-        </TouchableOpacity>
-
+      <TouchableOpacity
+        style={[styles.proceedButton, !isOtpComplete && styles.proceedButtonDisabled]}
+        onPress={handleProceed}
+        disabled={!isOtpComplete || loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.proceedButtonText}>Proceed</Text>
+        )}
+      </TouchableOpacity>
 
       {/* Numeric Keypad */}
       <View style={styles.keypad}>
         {["1", "2", "3", "4", "5", "6", "7", "8", "9", "<-", "0", "C"].map((key) => (
-          <TouchableOpacity key={key} style={styles.key} onPress={() => handleKeyPress(key)}>
+          <TouchableOpacity
+            key={key}
+            style={styles.key}
+            onPress={() => handleKeyPress(key)}
+            activeOpacity={0.7}
+          >
             <Text style={styles.keyText}>{key}</Text>
           </TouchableOpacity>
         ))}
@@ -89,15 +149,18 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "#fff",
     alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
   },
   backButton: {
     alignSelf: "flex-start",
     marginTop: 60,
+    flexDirection: "row",
+    alignItems: "center",
   },
   backText: {
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "600",
+    color: "#000",
   },
   stepIndicator: {
     alignSelf: "flex-end",
@@ -106,66 +169,80 @@ const styles = StyleSheet.create({
     marginTop: -20,
   },
   title: {
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "bold",
-    textAlign: "center",
     marginTop: 20,
+    color: "#000",
   },
   subtitle: {
     fontSize: 14,
-    color: "#777",
+    color: "#666",
     textAlign: "center",
-    marginBottom: 20,
+    marginTop: 8,
+    marginBottom: 40,
+    lineHeight: 20,
   },
   otpContainer: {
     flexDirection: "row",
-    marginBottom: 10,
+    marginBottom: 15,
+    gap: 12,
   },
   otpBox: {
     borderWidth: 2,
-    borderColor: "#ccc",
-    width: 40,
-    height: 40,
+    borderColor: "#e5e7eb",
+    width: 55,
+    height: 60,
     textAlign: "center",
-    fontSize: 18,
-    marginHorizontal: 5,
-    borderRadius: 5,
+    fontSize: 24,
+    fontWeight: "600",
+    borderRadius: 8,
+    backgroundColor: "#f9fafb",
   },
   activeOtpBox: {
-    borderColor: "#007BFF",
+    borderColor: "#3b82f6",
+    backgroundColor: "#fff",
   },
   resendCode: {
-    color: "#007BFF",
+    color: "#3b82f6",
     marginBottom: 20,
+    fontSize: 14,
+    fontWeight: "500",
   },
   proceedButton: {
     backgroundColor: "#000",
-    padding: 15,
-    borderRadius: 10,
+    padding: 16,
+    borderRadius: 25,
     width: "100%",
     alignItems: "center",
-    marginBottom: 20,
+    marginBottom: 25,
+  },
+  proceedButtonDisabled: {
+    backgroundColor: "#9ca3af",
   },
   proceedButtonText: {
     color: "#fff",
     fontSize: 16,
+    fontWeight: "600",
   },
   keypad: {
     flexDirection: "row",
     flexWrap: "wrap",
     justifyContent: "center",
+    width: "100%",
   },
   key: {
-    width: width / 4,
-    padding: 15,
+    width: width / 3.5,
+    padding: 18,
     alignItems: "center",
     marginBottom: 10,
-    backgroundColor: "#f2f8f3",
-    borderRadius: 5,
+    marginHorizontal: 3,
+    backgroundColor: "#f3f4f6",
+    borderRadius: 8,
   },
   keyText: {
-    fontSize: 18,
-    fontWeight: "bold",
+    fontSize: 20,
+    fontWeight: "600",
+    color: "#000",
   },
 });
 

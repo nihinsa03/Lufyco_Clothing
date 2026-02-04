@@ -22,6 +22,8 @@ interface AuthState {
     completeOnboarding: () => void;
     signup: (data: any) => Promise<boolean>;
     login: (data: any) => Promise<boolean>;
+    verifyEmail: (email: string, otp: string) => Promise<boolean>;
+    resendOTP: (email: string) => Promise<boolean>;
     verifyOtp: (otp: string) => Promise<boolean>;
     logout: () => void;
     requestPasswordReset: (email: string) => Promise<boolean>;
@@ -44,27 +46,17 @@ export const useAuthStore = create<AuthState>()(
                 set({ loading: true, error: null });
                 try {
                     const res = await api.post('/users/register', data);
-                    // The backend returns user data, but we might wait for verification if implemented
-                    // For now, assume register returns user info or success
+                    // Backend sends verification email and returns requiresVerification: true
+                    console.log('Signup response:', res.data);
 
-                    // If backend sends OTP immediately, we just proceed.
-                    // Store email for verification step
-                    const mockUser = {
-                        id: res.data._id || Math.random().toString(),
-                        name: data.name,
-                        email: data.email,
-                        verified: false
-                    };
-
-                    set({ user: mockUser });
+                    // Don't auto-login, user needs to verify email first
+                    set({ loading: false });
                     return true;
                 } catch (e: any) {
                     const msg = e.response?.data?.message || "Signup Failed";
                     console.error("Signup Store Error:", msg, e);
-                    set({ error: msg });
+                    set({ error: msg, loading: false });
                     return false;
-                } finally {
-                    set({ loading: false });
                 }
             },
 
@@ -100,37 +92,40 @@ export const useAuthStore = create<AuthState>()(
                 }
             },
 
+            verifyEmail: async (email, otp) => {
+                set({ loading: true, error: null });
+                try {
+                    const res = await api.post('/users/verify-email', { email, otp });
+                    console.log('Verification response:', res.data);
+                    set({ loading: false });
+                    return true;
+                } catch (e: any) {
+                    const msg = e.response?.data?.message || "Verification Failed";
+                    console.error("Verify Email Store Error:", msg, e);
+                    set({ error: msg, loading: false });
+                    return false;
+                }
+            },
+
+            resendOTP: async (email) => {
+                set({ loading: true, error: null });
+                try {
+                    const res = await api.post('/users/resend-otp', { email });
+                    console.log('Resend OTP response:', res.data);
+                    set({ loading: false });
+                    return true;
+                } catch (e: any) {
+                    const msg = e.response?.data?.message || "Failed to resend OTP";
+                    console.error("Resend OTP Store Error:", msg, e);
+                    set({ error: msg, loading: false });
+                    return false;
+                }
+            },
+
             verifyOtp: async (otp) => {
                 set({ loading: true, error: null });
                 try {
-                    // If backend has a verify endpoint:
-                    // const { user } = get();
-                    // await api.post('/users/verify', { email: user?.email, otp });
-
-                    // Since I don't see a verify endpoint in the likely routes yet, 
-                    // I will keep the mock verify for now OR assume the user is just logging in after signup.
-                    // But the user complained about "verify". 
-                    // Let's assume for now we just simulate verify if no backend endpoint exists,
-                    // BUT we must check routes first. 
-                    // I'll leave this mock for a second until I see the routes file output.
-                    // Actually, I am writing this BEFORE I see the output. 
-                    // I should wait.
-                    // RE-STRATEGY: I will split this into two steps. 
-                    // Implementation Plan Step 1: Check Routes. 
-                    // I am already checking routes in parallel.
-
-                    // FAILURE: I cannot write the replacement content accurately without knowing the routes.
-                    // I will use a placeholder or generic structure and refine it if needed, 
-                    // OR better, I will ONLY do the ViewFile first.
-                    // The user said "ok do", implying I should proceed. 
-                    // I'll optimistically implement signup/login which are standard. 
-                    // Verify might be tricky.
-
-                    // WAIT. I'll just check the file first. 
-                    // I will CANCEL this specific ReplaceFile call and do it in the NEXT turn.
-                    // But I cannot cancel here. 
-                    // I will provide a SAFE implementation that tries to use real API but falls back or handles standard paths.
-
+                    // Legacy method - keeping for backward compatibility
                     await new Promise(resolve => setTimeout(resolve, 1000));
                     if (otp !== '123456') throw new Error('Invalid Code');
 
@@ -151,21 +146,52 @@ export const useAuthStore = create<AuthState>()(
                 set({ user: null, token: null, isAuthenticated: false });
             },
 
+            // Forgot Password Methods
             requestPasswordReset: async (email) => {
-                set({ loading: true });
-                // Mock send
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                set({ loading: false });
-                return true;
+                set({ loading: true, error: null });
+                try {
+                    const res = await api.post('/users/forgot-password', { email });
+                    console.log('Forgot Password response:', res.data);
+                    set({ loading: false });
+                    return true;
+                } catch (e: any) {
+                    console.error('Forgot Password error:', e.response?.data || e);
+                    const errorMessage = e.response?.data?.message || 'Failed to send password reset code';
+                    set({ error: errorMessage, loading: false });
+                    return false;
+                }
             },
 
-            resetPassword: async (password) => {
-                set({ loading: true });
-                // Mock reset
-                await new Promise(resolve => setTimeout(resolve, 1000));
-                set({ loading: false });
-                return true;
+            verifyResetOTP: async (email, otp) => {
+                set({ loading: true, error: null });
+                try {
+                    const res = await api.post('/users/verify-reset-otp', { email, otp });
+                    console.log('Verify Reset OTP response:', res.data);
+                    set({ loading: false });
+                    return true;
+                } catch (e: any) {
+                    console.error('Verify Reset OTP error:', e.response?.data || e);
+                    const errorMessage = e.response?.data?.message || 'Invalid or expired verification code';
+                    set({ error: errorMessage, loading: false });
+                    return false;
+                }
+            },
+
+            resetPassword: async (email, otp, newPassword) => {
+                set({ loading: true, error: null });
+                try {
+                    const res = await api.post('/users/reset-password', { email, otp, newPassword });
+                    console.log('Reset Password response:', res.data);
+                    set({ loading: false });
+                    return true;
+                } catch (e: any) {
+                    console.error('Reset Password error:', e.response?.data || e);
+                    const errorMessage = e.response?.data?.message || 'Failed to reset password';
+                    set({ error: errorMessage, loading: false });
+                    return false;
+                }
             }
+
         }),
         {
             name: 'auth-storage',

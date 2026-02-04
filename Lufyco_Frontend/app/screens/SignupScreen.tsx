@@ -3,34 +3,68 @@ import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView, SafeAr
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { validateEmail, getEmailValidationError, isGmailEmail } from '../utils/emailValidation';
 
 interface Props {
   navigation: StackNavigationProp<any>;
 }
 
 const SignupScreen = ({ navigation }: Props) => {
-  const { signup, loading } = useAuthStore();
+  const { signup, loading, error } = useAuthStore();
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [emailError, setEmailError] = useState('');
+
+  const handleEmailChange = (text: string) => {
+    setEmail(text);
+    // Clear error when user starts typing
+    if (emailError) setEmailError('');
+  };
+
+  const handleEmailBlur = () => {
+    // Validate email when user leaves the field
+    const error = getEmailValidationError(email);
+    setEmailError(error);
+  };
 
   const handleSignup = async () => {
+    // Validate all fields
     if (!name || !email || !password || !confirmPassword) {
       Alert.alert("Error", "Please fill all fields");
       return;
     }
+
+    // Validate email
+    const emailValidationError = getEmailValidationError(email);
+    if (emailValidationError) {
+      setEmailError(emailValidationError);
+      Alert.alert("Invalid Email", emailValidationError);
+      return;
+    }
+
+    // Check password match
     if (password !== confirmPassword) {
       Alert.alert("Error", "Passwords do not match");
       return;
     }
 
+    // Check password length
+    if (password.length < 6) {
+      Alert.alert("Error", "Password must be at least 6 characters");
+      return;
+    }
+
     const success = await signup({ name, email, password });
+
     if (success) {
-      // User created successfully, redirect to login
-      navigation.navigate('Login');
+      // Navigate to verification screen with email
+      navigation.navigate('Verification', { email });
+    } else if (error) {
+      Alert.alert("Signup Failed", error);
     }
   };
 
@@ -62,14 +96,26 @@ const SignupScreen = ({ navigation }: Props) => {
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Email Address</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, emailError ? styles.inputError : null]}
             value={email}
-            onChangeText={setEmail}
+            onChangeText={handleEmailChange}
+            onBlur={handleEmailBlur}
             placeholder="Enter your Email Address"
             placeholderTextColor="#999"
             keyboardType="email-address"
             autoCapitalize="none"
           />
+          {emailError ? (
+            <Text style={styles.errorText}>{emailError}</Text>
+          ) : null}
+          {email && validateEmail(email) && !emailError ? (
+            <View style={styles.successContainer}>
+              <Ionicons name="checkmark-circle" size={16} color="#10b981" />
+              <Text style={styles.successText}>
+                {isGmailEmail(email) ? 'Gmail address verified ✓' : 'Valid email address ✓'}
+              </Text>
+            </View>
+          ) : null}
         </View>
 
         <View style={styles.inputContainer}>
@@ -280,7 +326,25 @@ const styles = StyleSheet.create({
     width: 32,
     height: 32,
     resizeMode: 'contain'
-  }
+  },
+  inputError: {
+    borderColor: '#ef4444',
+  },
+  errorText: {
+    color: '#ef4444',
+    fontSize: 12,
+    marginTop: 4,
+  },
+  successContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 4,
+  },
+  successText: {
+    color: '#10b981',
+    fontSize: 12,
+    marginLeft: 4,
+  },
 });
 
 export default SignupScreen;

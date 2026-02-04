@@ -1,45 +1,80 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { useNavigation } from "@react-navigation/native";
-import { StackNavigationProp } from "@react-navigation/stack";
-import { RootStackParamList } from "../navigation/AppNavigator"; // Import RootStackParamList
-
-// Type the navigation prop
-type ForgotPasswordScreenNavigationProp = StackNavigationProp<RootStackParamList, "ForgotPassword">;
+import { Ionicons } from "@expo/vector-icons";
+import { useAuthStore } from "../store/useAuthStore";
 
 const ForgotPasswordScreen = () => {
-  const navigation = useNavigation<ForgotPasswordScreenNavigationProp>();
+  const navigation = useNavigation<any>();
+  const { requestPasswordReset, loading } = useAuthStore();
   const [email, setEmail] = useState("");
+
+  const handleSendCode = async () => {
+    if (!email) {
+      Alert.alert("Error", "Please enter your email address");
+      return;
+    }
+
+    const success = await requestPasswordReset(email);
+
+    if (success) {
+      Alert.alert(
+        "Success",
+        "A 4-digit verification code has been sent to your email.",
+        [
+          {
+            text: "OK",
+            onPress: () => navigation.navigate("ForgotPasswordVerification", { email })
+          }
+        ]
+      );
+    } else {
+      Alert.alert("Error", "Failed to send verification code. Please check your email and try again.");
+    }
+  };
 
   return (
     <View style={styles.container}>
       {/* Back Button */}
       <TouchableOpacity style={styles.backButton} onPress={() => navigation.goBack()}>
-        <Text style={styles.backText}>←    Forgot Password</Text>
+        <Ionicons name="arrow-back" size={24} color="#000" />
       </TouchableOpacity>
 
-      {/* Step Indicator */}
-      <Text style={styles.stepIndicator}>01/03</Text>
-
       {/* Title */}
-      <Text style={styles.title}>Confirmation Email</Text>
-      <Text style={styles.subtitle}>Enter your email address for verification.</Text>
+      <Text style={styles.title}>Forgot Password</Text>
+      <Text style={styles.subtitle}>
+        Enter your email for the verification process. We will send 4 digit code to your email.
+      </Text>
 
       {/* Email Input */}
-      <Text style={styles.label}>Email *</Text>
-      <TextInput
-        style={styles.input}
-        placeholder="Enter your email"
-        keyboardType="email-address"
-        value={email}
-        onChangeText={setEmail}
-      />
+      <View style={styles.inputContainer}>
+        <Text style={styles.label}>Email Address</Text>
+        <View style={styles.inputWrapper}>
+          <Ionicons name="mail-outline" size={20} color="#999" style={styles.inputIcon} />
+          <TextInput
+            style={styles.input}
+            placeholder="Enter your email"
+            placeholderTextColor="#999"
+            keyboardType="email-address"
+            autoCapitalize="none"
+            value={email}
+            onChangeText={setEmail}
+          />
+        </View>
+      </View>
 
-      {/* Send Button */}
-      <TouchableOpacity style={styles.sendButton} onPress={() => navigation.navigate("ForgotPasswordVerification")}>
-        <Text style={styles.sendButtonText}>Send</Text>
-        </TouchableOpacity>
-
+      {/* Send Code Button */}
+      <TouchableOpacity
+        style={[styles.sendButton, loading && styles.sendButtonDisabled]}
+        onPress={handleSendCode}
+        disabled={loading}
+      >
+        {loading ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.sendButtonText}>Send Code</Text>
+        )}
+      </TouchableOpacity>
     </View>
   );
 };
@@ -48,61 +83,67 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#fff",
-    alignItems: "center",
-    paddingHorizontal: 20,
+    paddingHorizontal: 30,
   },
   backButton: {
     alignSelf: "flex-start",
-    marginTop: 70,
-  },
-  backText: {
-    fontSize: 16,
-    fontWeight: "bold",
-  },
-  stepIndicator: {
-    alignSelf: "flex-end",
-    fontSize: 14,
-    color: "#777",
-    marginTop: -20,
+    marginTop: 60,
   },
   title: {
-    fontSize: 22,
+    fontSize: 26,
     fontWeight: "bold",
-    textAlign: "center",
-    marginTop: 20,
+    marginTop: 30,
+    color: "#000",
   },
   subtitle: {
     fontSize: 14,
-    color: "#777",
-    textAlign: "center",
-    marginBottom: 20,
+    color: "#666",
+    marginTop: 10,
+    marginBottom: 40,
+    lineHeight: 20,
+  },
+  inputContainer: {
+    marginBottom: 30,
   },
   label: {
-    alignSelf: "flex-start",
-    fontSize: 16,
-    fontWeight: "bold",
-    marginBottom: 5,
+    fontSize: 14,
+    fontWeight: "600",
+    marginBottom: 10,
+    color: "#000",
+  },
+  inputWrapper: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderWidth: 1,
+    borderColor: "#e5e7eb",
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    backgroundColor: "#f9fafb",
+  },
+  inputIcon: {
+    marginRight: 10,
   },
   input: {
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    padding: 12,
-    width: "100%",
-    marginBottom: 20,
+    flex: 1,
+    height: 50,
+    fontSize: 15,
+    color: "#000",
   },
   sendButton: {
     backgroundColor: "#000",
-    padding: 15,
-    borderRadius: 10,
+    padding: 16,
+    borderRadius: 25,
     width: "100%",
     alignItems: "center",
-    marginTop: 10,
+    marginTop: 20,
+  },
+  sendButtonDisabled: {
+    backgroundColor: "#9ca3af",
   },
   sendButtonText: {
     color: "#fff",
     fontSize: 16,
-    fontWeight: "bold",
+    fontWeight: "600",
   },
 });
 
