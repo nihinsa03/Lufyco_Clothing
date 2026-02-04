@@ -113,13 +113,23 @@ const SignupScreen = ({ navigation }: Props) => {
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Phone Number</Text>
-          <TouchableOpacity onPress={() => setShowPhoneKeypad(true)}>
-            <View style={[styles.input, styles.phoneInput]} pointerEvents="none">
-              <Text style={phone ? styles.phoneText : styles.phonePlaceholder}>
-                {phone || 'Enter Phone Number'}
-              </Text>
-            </View>
-          </TouchableOpacity>
+          <View style={styles.phoneInputWrapper}>
+            <TextInput
+              style={[styles.input, styles.phoneInputField]}
+              value={phone}
+              onChangeText={setPhone}
+              placeholder="Enter Phone Number"
+              placeholderTextColor="#999"
+              keyboardType="numeric"
+              maxLength={15}
+            />
+            <TouchableOpacity
+              style={styles.keypadIconButton}
+              onPress={() => setShowPhoneKeypad(true)}
+            >
+              <Ionicons name="keypad-outline" size={20} color="#666" />
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={styles.inputContainer}>
@@ -423,6 +433,18 @@ const styles = StyleSheet.create({
   },
   phoneInput: {
     justifyContent: 'center',
+  },
+  phoneInputWrapper: {
+    position: 'relative',
+  },
+  phoneInputField: {
+    paddingRight: 45,
+  },
+  keypadIconButton: {
+    position: 'absolute',
+    right: 12,
+    top: 12,
+    padding: 8,
   },
   phoneText: {
     fontSize: 14,
