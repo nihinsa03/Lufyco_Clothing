@@ -20,7 +20,7 @@ const ForgotPasswordScreen = () => {
     if (success) {
       Alert.alert(
         "Success",
-        "A 4-digit verification code has been sent to your email.",
+        "A 6-digit verification code has been sent to your email.",
         [
           {
             text: "OK",
@@ -43,7 +43,7 @@ const ForgotPasswordScreen = () => {
       {/* Title */}
       <Text style={styles.title}>Forgot Password</Text>
       <Text style={styles.subtitle}>
-        Enter your email for the verification process. We will send 4 digit code to your email.
+        Enter your email for the verification process. We will send 6 digit code to your email.
       </Text>
 
       {/* Email Input */}

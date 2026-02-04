@@ -283,8 +283,8 @@ router.post('/forgot-password', async (req, res) => {
             return res.status(404).json({ message: 'No account found with this email address' });
         }
 
-        // Generate 4-digit OTP for password reset
-        const otp = Math.floor(1000 + Math.random() * 9000).toString();
+        // Generate 6-digit OTP for password reset
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
 
         user.verificationOTP = otp;
@@ -332,7 +332,7 @@ router.post('/forgot-password', async (req, res) => {
                             <div class="content">
                                 <h2>Reset Your Password</h2>
                                 <p class="message">
-                                    We received a request to reset your password. Use the 4-digit code below to continue:
+                                    We received a request to reset your password. Use the 6-digit code below to continue:
                                 </p>
                                 <div class="otp-box">
                                     <div class="otp">${otp}</div>
@@ -358,7 +358,7 @@ router.post('/forgot-password', async (req, res) => {
             console.log(`Password reset OTP sent to ${email}`);
 
             res.json({
-                message: 'A 4-digit verification code has been sent to your email.',
+                message: 'A 6-digit verification code has been sent to your email.',
                 email: email
             });
         } catch (emailError) {

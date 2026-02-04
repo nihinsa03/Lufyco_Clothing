@@ -27,7 +27,8 @@ interface AuthState {
     verifyOtp: (otp: string) => Promise<boolean>;
     logout: () => void;
     requestPasswordReset: (email: string) => Promise<boolean>;
-    resetPassword: (password: string) => Promise<boolean>;
+    verifyResetOTP: (email: string, otp: string) => Promise<boolean>;
+    resetPassword: (email: string, otp: string, newPassword: string) => Promise<boolean>;
 }
 
 export const useAuthStore = create<AuthState>()(

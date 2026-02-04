@@ -18,14 +18,14 @@ const ForgotPasswordVerificationScreen = () => {
   const { verifyResetOTP, requestPasswordReset, loading } = useAuthStore();
 
   const email = route.params?.email || '';
-  const [otp, setOtp] = useState<string[]>(["", "", "", ""]);  // 4-digit OTP
+  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);  // 6-digit OTP
   const [resending, setResending] = useState(false);
 
   const handleKeyPress = (value: string) => {
     let newOtp = [...otp];
 
     if (value === "C") {
-      setOtp(["", "", "", ""]); // Clear all fields
+      setOtp(["", "", "", "", "", ""]); // Clear all fields
     } else if (value === "<-") {
       const lastFilledIndex = newOtp.reduce((lastIdx, num, idx) => num !== "" ? idx : lastIdx, -1);
       if (lastFilledIndex >= 0) {
@@ -44,8 +44,8 @@ const ForgotPasswordVerificationScreen = () => {
   const handleProceed = async () => {
     const otpString = otp.join("");
 
-    if (otpString.length !== 4) {
-      Alert.alert("Error", "Please enter the complete 4-digit verification code");
+    if (otpString.length !== 6) {
+      Alert.alert("Error", "Please enter the complete 6-digit verification code");
       return;
     }
 
@@ -65,8 +65,8 @@ const ForgotPasswordVerificationScreen = () => {
     setResending(false);
 
     if (success) {
-      setOtp(["", "", "", ""]); // Clear OTP fields
-      Alert.alert("Success", "A new 4-digit verification code has been sent to your email.");
+      setOtp(["", "", "", "", "", ""]); // Clear OTP fields
+      Alert.alert("Success", "A new 6-digit verification code has been sent to your email.");
     } else {
       Alert.alert("Error", "Failed to resend verification code. Please try again.");
     }
@@ -88,7 +88,7 @@ const ForgotPasswordVerificationScreen = () => {
       {/* Title */}
       <Text style={styles.title}>Email Verification</Text>
       <Text style={styles.subtitle}>
-        Enter the 4-digit verification code sent to your email address.
+        Enter the 6-digit verification code sent to your email address.
       </Text>
 
       {/* OTP Input Boxes */}
@@ -179,21 +179,21 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     marginTop: 8,
-    marginBottom: 40,
+    marginBottom: 30,
     lineHeight: 20,
   },
   otpContainer: {
     flexDirection: "row",
     marginBottom: 15,
-    gap: 12,
+    gap: 8,
   },
   otpBox: {
     borderWidth: 2,
     borderColor: "#e5e7eb",
-    width: 55,
-    height: 60,
+    width: 45,
+    height: 50,
     textAlign: "center",
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "600",
     borderRadius: 8,
     backgroundColor: "#f9fafb",
