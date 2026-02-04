@@ -65,21 +65,18 @@ export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
   Signup: undefined;
-  EmailVerification: { email: string };
+  Verification: { email: string };
   Login: undefined;
-  ForgotPassword: undefined; // To flow start
-  ForgotPasswordVerification: { email: string }; // OTP
-  ResetPassword: undefined;
+  ForgotPassword: undefined;
+  ForgotPasswordVerification: { email: string };
+  ResetPassword: { email: string; otp: string };
   PasswordResetSuccess: undefined;
 
-  // Existing...
+
+  // Existing..
   Intro: undefined;
   Offers: undefined;
   Payments: undefined;
-  Verification: undefined;
-  // ForgotPassword: undefined; // types conflict if duplicate, using new flow one
-  // ForgotPasswordVerification: undefined;
-  // ResetPassword: undefined;
 
   Home: undefined;
   Main: undefined;
@@ -164,11 +161,11 @@ export default function AppNavigator() {
           <Stack.Screen name="Onboarding" component={OnboardingScreen} />
           <Stack.Screen name="Login" component={LoginScreen} />
           <Stack.Screen name="Signup" component={SignupScreen} />
-          <Stack.Screen name="EmailVerification" component={EmailVerificationScreen} />
+          <Stack.Screen name="Verification" component={VerificationScreen} />
 
-          <Stack.Screen name="ForgotPassword" component={ForgotPasswordEmailScreen} />
-          <Stack.Screen name="ForgotPasswordVerification" component={ForgotPasswordOtpScreen} />
-          <Stack.Screen name="ResetPassword" component={NewPasswordScreen} />
+          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
+          <Stack.Screen name="ForgotPasswordVerification" component={ForgotPasswordVerificationScreen} />
+          <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
           <Stack.Screen name="PasswordResetSuccess" component={PasswordResetSuccessScreen} />
 
           {/* Legacy/Other screens if still needed accessible */}

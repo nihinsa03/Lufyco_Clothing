@@ -73,6 +73,7 @@ const ForgotPasswordVerificationScreen = () => {
   };
 
   const isOtpComplete = !otp.includes("");
+  const currentInputIndex = otp.findIndex(digit => digit === "");
 
   return (
     <View style={styles.container}>
@@ -85,6 +86,14 @@ const ForgotPasswordVerificationScreen = () => {
       {/* Step Indicator */}
       <Text style={styles.stepIndicator}>02/03</Text>
 
+      {/* Notification Box */}
+      <View style={styles.notification}>
+        <Ionicons name="information-circle" size={20} color="#3b82f6" style={{ marginRight: 8 }} />
+        <Text style={styles.notificationText}>
+          6-digit Verification code has been send to your email address.
+        </Text>
+      </View>
+
       {/* Title */}
       <Text style={styles.title}>Email Verification</Text>
       <Text style={styles.subtitle}>
@@ -94,14 +103,21 @@ const ForgotPasswordVerificationScreen = () => {
       {/* OTP Input Boxes */}
       <View style={styles.otpContainer}>
         {otp.map((digit, index) => (
-          <TextInput
+          <View
             key={index}
-            style={[styles.otpBox, digit !== "" ? styles.activeOtpBox : {}]}
-            value={digit}
-            keyboardType="numeric"
-            maxLength={1}
-            editable={false}
-          />
+            style={[
+              styles.otpBox,
+              digit !== "" && styles.filledOtpBox,
+              currentInputIndex === index && styles.activeOtpBox
+            ]}
+          >
+            <Text style={[styles.otpText, digit !== "" && styles.filledOtpText]}>
+              {digit}
+            </Text>
+            {currentInputIndex === index && (
+              <View style={styles.cursor} />
+            )}
+          </View>
         ))}
       </View>
 
@@ -168,10 +184,24 @@ const styles = StyleSheet.create({
     color: "#777",
     marginTop: -20,
   },
+  notification: {
+    backgroundColor: "#e0f2fe",
+    padding: 12,
+    borderRadius: 10,
+    marginTop: 20,
+    width: "100%",
+    flexDirection: "row",
+    alignItems: "center",
+  },
+  notificationText: {
+    fontSize: 13,
+    color: "#0369a1",
+    flex: 1,
+  },
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginTop: 20,
+    marginTop: 30,
     color: "#000",
   },
   subtitle: {
@@ -188,19 +218,39 @@ const styles = StyleSheet.create({
     gap: 8,
   },
   otpBox: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    width: 48,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
+  filledOtpBox: {
+    borderColor: "#3b82f6",
     borderWidth: 2,
-    borderColor: "#e5e7eb",
-    width: 45,
-    height: 50,
-    textAlign: "center",
-    fontSize: 20,
-    fontWeight: "600",
-    borderRadius: 8,
-    backgroundColor: "#f9fafb",
   },
   activeOtpBox: {
     borderColor: "#3b82f6",
-    backgroundColor: "#fff",
+    borderWidth: 2,
+    backgroundColor: "#f0f9ff",
+  },
+  otpText: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#000",
+  },
+  filledOtpText: {
+    color: "#000",
+  },
+  cursor: {
+    position: "absolute",
+    width: 2,
+    height: 24,
+    backgroundColor: "#3b82f6",
+    opacity: 0.8,
   },
   resendCode: {
     color: "#3b82f6",

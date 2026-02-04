@@ -81,6 +81,7 @@ const VerificationScreen = () => {
   };
 
   const isOtpComplete = !otp.includes("");
+  const currentInputIndex = otp.findIndex(digit => digit === "");
 
   return (
     <View style={styles.container}>
@@ -92,30 +93,36 @@ const VerificationScreen = () => {
 
       {/* Notification Box */}
       <View style={styles.notification}>
-        <Ionicons name="checkmark-circle" size={20} color="#3b82f6" style={{ marginRight: 8 }} />
+        <Ionicons name="information-circle" size={20} color="#3b82f6" style={{ marginRight: 8 }} />
         <Text style={styles.notificationText}>
-          6-digit Verification code has been sent to your email address.
+          6-digit Verification code has been send to your email address.
         </Text>
       </View>
 
       {/* Title */}
       <Text style={styles.title}>Email Verification</Text>
       <Text style={styles.subtitle}>
-        Enter the 6-digit verification code sent to{'\n'}
-        <Text style={styles.emailText}>{email}</Text>
+        Enter the 6-digit verification code sent to your email address.
       </Text>
 
       {/* OTP Input Boxes */}
       <View style={styles.otpContainer}>
         {otp.map((digit, index) => (
-          <TextInput
+          <View
             key={index}
-            style={[styles.otpBox, digit !== "" ? styles.activeOtpBox : {}]}
-            value={digit}
-            keyboardType="numeric"
-            maxLength={1}
-            editable={false}
-          />
+            style={[
+              styles.otpBox,
+              digit !== "" && styles.filledOtpBox,
+              currentInputIndex === index && styles.activeOtpBox
+            ]}
+          >
+            <Text style={[styles.otpText, digit !== "" && styles.filledOtpText]}>
+              {digit}
+            </Text>
+            {currentInputIndex === index && (
+              <View style={styles.cursor} />
+            )}
+          </View>
         ))}
       </View>
 
@@ -166,7 +173,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
   },
   notification: {
-    backgroundColor: "#dbeafe",
+    backgroundColor: "#e0f2fe",
     padding: 12,
     borderRadius: 10,
     marginTop: 20,
@@ -176,7 +183,7 @@ const styles = StyleSheet.create({
   },
   notificationText: {
     fontSize: 13,
-    color: "#1e40af",
+    color: "#0369a1",
     flex: 1,
   },
   backButton: {
@@ -193,7 +200,7 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 24,
     fontWeight: "bold",
-    marginTop: 20,
+    marginTop: 30,
     color: "#000",
   },
   subtitle: {
@@ -201,32 +208,50 @@ const styles = StyleSheet.create({
     color: "#666",
     textAlign: "center",
     marginTop: 8,
-    marginBottom: 30,
+    marginBottom: 40,
     lineHeight: 20,
-  },
-  emailText: {
-    fontWeight: "600",
-    color: "#3b82f6",
+    paddingHorizontal: 10,
   },
   otpContainer: {
     flexDirection: "row",
     marginBottom: 15,
-    gap: 8,
+    gap: 10,
+    justifyContent: "center",
   },
   otpBox: {
+    borderWidth: 1,
+    borderColor: "#d1d5db",
+    width: 48,
+    height: 56,
+    borderRadius: 12,
+    backgroundColor: "#fff",
+    justifyContent: "center",
+    alignItems: "center",
+    position: "relative",
+  },
+  filledOtpBox: {
+    borderColor: "#3b82f6",
     borderWidth: 2,
-    borderColor: "#e5e7eb",
-    width: 45,
-    height: 50,
-    textAlign: "center",
-    fontSize: 20,
-    fontWeight: "600",
-    borderRadius: 8,
-    backgroundColor: "#f9fafb",
   },
   activeOtpBox: {
     borderColor: "#3b82f6",
-    backgroundColor: "#fff",
+    borderWidth: 2,
+    backgroundColor: "#f0f9ff",
+  },
+  otpText: {
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#000",
+  },
+  filledOtpText: {
+    color: "#000",
+  },
+  cursor: {
+    position: "absolute",
+    width: 2,
+    height: 24,
+    backgroundColor: "#3b82f6",
+    opacity: 0.8,
   },
   resendCode: {
     color: "#3b82f6",
@@ -255,18 +280,17 @@ const styles = StyleSheet.create({
     flexWrap: "wrap",
     justifyContent: "center",
     width: "100%",
+    gap: 10,
   },
   key: {
-    width: width / 3.5,
-    padding: 18,
+    width: (width - 80) / 3,
+    padding: 20,
     alignItems: "center",
-    marginBottom: 10,
-    marginHorizontal: 3,
-    backgroundColor: "#f3f4f6",
-    borderRadius: 8,
+    backgroundColor: "#f9fafb",
+    borderRadius: 12,
   },
   keyText: {
-    fontSize: 20,
+    fontSize: 24,
     fontWeight: "600",
     color: "#000",
   },
