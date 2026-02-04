@@ -1,18 +1,11 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, ActivityIndicator } from "react-native";
-import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { useAuthStore } from "../store/useAuthStore";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions } from "react-native";
+import { useNavigation } from "@react-navigation/native"; // Import navigation hook
 
 const { width } = Dimensions.get("window");
 
-type VerificationScreenRouteProp = RouteProp<{ params: { email: string } }, 'params'>;
-
 const VerificationScreen = () => {
-  const navigation = useNavigation();
-  const route = useRoute<VerificationScreenRouteProp>();
-  const { verifyEmail, resendOTP, loading } = useAuthStore();
-
-  const email = route.params?.email || '';
+  const navigation = useNavigation(); // Initialize navigation
 
   const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
 
@@ -22,7 +15,7 @@ const VerificationScreen = () => {
     if (value === "C") {
       setOtp(["", "", "", "", "", ""]); // Clear all fields
     } else if (value === "<-") {
-      const lastFilledIndex = newOtp.lastIndexOf(newOtp.find((num) => num !== "") || "");
+      const lastFilledIndex = newOtp.lastIndexOf(newOtp.find((num) => num !== "") || ""); // Ensure it never returns undefined
       if (lastFilledIndex >= 0) {
         newOtp[lastFilledIndex] = "";
         setOtp(newOtp);
@@ -36,63 +29,22 @@ const VerificationScreen = () => {
     }
   };
 
-  const handleProceed = async () => {
-    const otpCode = otp.join("");
-
-    if (otpCode.length !== 6) {
-      Alert.alert("Error", "Please enter complete 6-digit code");
-      return;
-    }
-
-    const success = await verifyEmail(email, otpCode);
-
-    if (success) {
-      Alert.alert(
-        "Success",
-        "Email verified successfully!",
-        [
-          {
-            text: "OK",
-            onPress: () => navigation.navigate("Login" as never)
-          }
-        ]
-      );
-    } else {
-      // Error is already shown in the store or we can show it here
-      Alert.alert("Error", "Invalid or expired verification code");
-    }
-  };
-
-  const handleResendCode = async () => {
-    const success = await resendOTP(email);
-
-    if (success) {
-      Alert.alert("Success", "Verification code has been resent to your email");
-      setOtp(["", "", "", "", "", ""]); // Clear current OTP
-    } else {
-      Alert.alert("Error", "Failed to resend verification code");
-    }
-  };
-
   return (
     <View style={styles.container}>
 
       {/* Back Button */}
       <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backButton}>
-        <Text style={styles.backText}>←    Email Verification</Text>
+        <Text style={styles.backText}>←    Verification Code</Text>
       </TouchableOpacity>
 
       {/* Notification Box */}
       <View style={styles.notification}>
-        <Text style={styles.notificationText}>✅ 6-digit Verification code has been sent to your email address.</Text>
+        <Text style={styles.notificationText}>✅ 6-digit Verification code has been sent to your email.</Text>
       </View>
 
       {/* Title */}
       <Text style={styles.title}>Email Verification</Text>
       <Text style={styles.subtitle}>Enter the 6-digit verification code sent to your email address.</Text>
-
-      {/* Email Display */}
-      <Text style={styles.emailText}>{email}</Text>
 
       {/* OTP Input Boxes */}
       <View style={styles.otpContainer}>
@@ -109,21 +61,13 @@ const VerificationScreen = () => {
       </View>
 
       {/* Resend Code */}
-      <TouchableOpacity onPress={handleResendCode} disabled={loading}>
+      <TouchableOpacity>
         <Text style={styles.resendCode}>Resend Code</Text>
       </TouchableOpacity>
 
       {/* Proceed Button */}
-      <TouchableOpacity
-        style={[styles.proceedButton, (otp.includes("") || loading) && styles.proceedButtonDisabled]}
-        onPress={handleProceed}
-        disabled={otp.includes("") || loading}
-      >
-        {loading ? (
-          <ActivityIndicator color="#fff" />
-        ) : (
-          <Text style={styles.proceedButtonText}>Proceed</Text>
-        )}
+      <TouchableOpacity style={styles.proceedButton} disabled={otp.includes("")}>
+        <Text style={styles.proceedButtonText}>Proceed</Text>
       </TouchableOpacity>
 
       {/* Numeric Keypad */}
@@ -174,12 +118,6 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#777",
     textAlign: "center",
-    marginBottom: 10,
-  },
-  emailText: {
-    fontSize: 14,
-    color: "#007BFF",
-    fontWeight: "600",
     marginBottom: 20,
   },
   otpContainer: {
@@ -202,7 +140,6 @@ const styles = StyleSheet.create({
   resendCode: {
     color: "#007BFF",
     marginBottom: 20,
-    fontWeight: "600",
   },
   proceedButton: {
     backgroundColor: "#000",
@@ -211,9 +148,6 @@ const styles = StyleSheet.create({
     width: "100%",
     alignItems: "center",
     marginBottom: 20,
-  },
-  proceedButtonDisabled: {
-    backgroundColor: "#ccc",
   },
   proceedButtonText: {
     color: "#fff",
