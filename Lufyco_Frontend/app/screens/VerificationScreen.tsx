@@ -1,10 +1,17 @@
-import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Dimensions, Alert, ActivityIndicator } from "react-native";
+import React, { useMemo, useRef, useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+  Keyboard,
+} from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
-import { useAuthStore } from "../store/useAuthStore";
 import { Ionicons } from "@expo/vector-icons";
-
-const { width } = Dimensions.get("window");
+import { useAuthStore } from "../store/useAuthStore";
 
 type RouteParams = {
   Verification: {
@@ -12,39 +19,87 @@ type RouteParams = {
   };
 };
 
+const OTP_LENGTH = 6;
+
 const VerificationScreen = () => {
   const navigation = useNavigation<any>();
   const route = useRoute<RouteProp<RouteParams, 'Verification'>>();
   const { verifyEmail, resendOTP, loading } = useAuthStore();
 
   const email = route.params?.email || '';
-  const [otp, setOtp] = useState<string[]>(["", "", "", "", "", ""]);
+
+  const [otp, setOtp] = useState<string[]>(Array(OTP_LENGTH).fill(""));
   const [resending, setResending] = useState(false);
 
-  const handleKeyPress = (value: string) => {
-    let newOtp = [...otp];
+  const inputRefs = useRef<Array<TextInput | null>>([]);
 
-    if (value === "C") {
-      setOtp(["", "", "", "", "", ""]); // Clear all fields
-    } else if (value === "<-") {
-      const lastFilledIndex = newOtp.reduce((lastIdx, num, idx) => num !== "" ? idx : lastIdx, -1);
-      if (lastFilledIndex >= 0) {
-        newOtp[lastFilledIndex] = "";
-        setOtp(newOtp);
-      }
-    } else if (otp.includes("")) {
-      const emptyIndex = otp.indexOf("");
-      if (emptyIndex !== -1) {
-        newOtp[emptyIndex] = value;
-        setOtp(newOtp);
+  const otpString = useMemo(() => otp.join(""), [otp]);
+  const isOtpComplete = otpString.length === OTP_LENGTH && !otp.includes("");
+
+  const focusIndex = (index: number) => {
+    if (index < 0 || index >= OTP_LENGTH) return;
+    inputRefs.current[index]?.focus();
+  };
+
+  const clearOtp = () => {
+    setOtp(Array(OTP_LENGTH).fill(""));
+    focusIndex(0);
+  };
+
+  const handleChangeAtIndex = (text: string, index: number) => {
+    const clean = text.replace(/\D/g, "");
+
+    // Handle paste of full code (or multiple digits)
+    if (clean.length > 1) {
+      const digits = clean.slice(0, OTP_LENGTH).split("");
+      const filled = Array(OTP_LENGTH).fill("");
+      for (let i = 0; i < digits.length; i++) filled[i] = digits[i];
+      setOtp(filled);
+
+      const next = Math.min(digits.length, OTP_LENGTH - 1);
+      focusIndex(next);
+      return;
+    }
+
+    // Single digit entry
+    const digit = clean.slice(-1) || "";
+    setOtp((prev) => {
+      const next = [...prev];
+      next[index] = digit;
+      return next;
+    });
+
+    if (digit) {
+      if (index < OTP_LENGTH - 1) focusIndex(index + 1);
+      else Keyboard.dismiss();
+    }
+  };
+
+  const handleKeyPress = (e: any, index: number) => {
+    if (e.nativeEvent.key === "Backspace") {
+      // If current is empty -> go previous and clear it
+      if (otp[index] === "") {
+        if (index > 0) {
+          setOtp((prev) => {
+            const next = [...prev];
+            next[index - 1] = "";
+            return next;
+          });
+          focusIndex(index - 1);
+        }
+      } else {
+        // If current has value -> clear current
+        setOtp((prev) => {
+          const next = [...prev];
+          next[index] = "";
+          return next;
+        });
       }
     }
   };
 
   const handleProceed = async () => {
-    const otpString = otp.join("");
-
-    if (otpString.length !== 6) {
+    if (!isOtpComplete) {
       Alert.alert("Error", "Please enter the complete 6-digit verification code");
       return;
     }
@@ -64,6 +119,7 @@ const VerificationScreen = () => {
       );
     } else {
       Alert.alert("Verification Failed", "Invalid or expired verification code. Please try again.");
+      clearOtp();
     }
   };
 
@@ -73,15 +129,17 @@ const VerificationScreen = () => {
     setResending(false);
 
     if (success) {
-      setOtp(["", "", "", "", "", ""]); // Clear OTP fields
+      clearOtp();
       Alert.alert("Success", "A new verification code has been sent to your email.");
     } else {
       Alert.alert("Error", "Failed to resend verification code. Please try again.");
     }
   };
 
-  const isOtpComplete = !otp.includes("");
-  const currentInputIndex = otp.findIndex(digit => digit === "");
+  const activeIndex = useMemo(() => {
+    const idx = otp.findIndex((d) => d === "");
+    return idx === -1 ? OTP_LENGTH - 1 : idx;
+  }, [otp]);
 
   return (
     <View style={styles.container}>
@@ -105,24 +163,29 @@ const VerificationScreen = () => {
         Enter the 6-digit verification code sent to your email address.
       </Text>
 
-      {/* OTP Input Boxes */}
+      {/* OTP Input Boxes (Keyboard) */}
       <View style={styles.otpContainer}>
         {otp.map((digit, index) => (
-          <View
+          <TextInput
             key={index}
+            ref={(ref) => (inputRefs.current[index] = ref)}
+            value={digit}
+            onChangeText={(t) => handleChangeAtIndex(t, index)}
+            onKeyPress={(e) => handleKeyPress(e, index)}
+            keyboardType="number-pad"
+            returnKeyType="done"
+            maxLength={index === 0 ? 6 : 1} // first box supports paste
+            autoCorrect={false}
+            autoCapitalize="none"
+            textContentType="oneTimeCode"
+            importantForAutofill="yes"
+            selectionColor="#3b82f6"
             style={[
-              styles.otpBox,
+              styles.otpInput,
               digit !== "" && styles.filledOtpBox,
-              currentInputIndex === index && styles.activeOtpBox
+              activeIndex === index && styles.activeOtpBox,
             ]}
-          >
-            <Text style={[styles.otpText, digit !== "" && styles.filledOtpText]}>
-              {digit}
-            </Text>
-            {currentInputIndex === index && (
-              <View style={styles.cursor} />
-            )}
-          </View>
+          />
         ))}
       </View>
 
@@ -148,19 +211,10 @@ const VerificationScreen = () => {
         )}
       </TouchableOpacity>
 
-      {/* Numeric Keypad */}
-      <View style={styles.keypad}>
-        {["1", "2", "3", "4", "5", "6", "7", "8", "9", "<-", "0", "C"].map((key) => (
-          <TouchableOpacity
-            key={key}
-            style={styles.key}
-            onPress={() => handleKeyPress(key)}
-            activeOpacity={0.7}
-          >
-            <Text style={styles.keyText}>{key}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+      {/* Clear Button */}
+      <TouchableOpacity onPress={clearOtp} style={styles.clearBtn}>
+        <Text style={styles.clearText}>Clear</Text>
+      </TouchableOpacity>
     </View>
   );
 };
@@ -218,16 +272,17 @@ const styles = StyleSheet.create({
     gap: 10,
     justifyContent: "center",
   },
-  otpBox: {
+  otpInput: {
     borderWidth: 1,
     borderColor: "#d1d5db",
     width: 48,
     height: 56,
     borderRadius: 12,
     backgroundColor: "#fff",
-    justifyContent: "center",
-    alignItems: "center",
-    position: "relative",
+    textAlign: "center",
+    fontSize: 24,
+    fontWeight: "600",
+    color: "#000",
   },
   filledOtpBox: {
     borderColor: "#3b82f6",
@@ -237,21 +292,6 @@ const styles = StyleSheet.create({
     borderColor: "#3b82f6",
     borderWidth: 2,
     backgroundColor: "#f0f9ff",
-  },
-  otpText: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: "#000",
-  },
-  filledOtpText: {
-    color: "#000",
-  },
-  cursor: {
-    position: "absolute",
-    width: 2,
-    height: 24,
-    backgroundColor: "#3b82f6",
-    opacity: 0.8,
   },
   resendCode: {
     color: "#3b82f6",
@@ -265,7 +305,7 @@ const styles = StyleSheet.create({
     borderRadius: 25,
     width: "100%",
     alignItems: "center",
-    marginBottom: 25,
+    marginBottom: 12,
   },
   proceedButtonDisabled: {
     backgroundColor: "#9ca3af",
@@ -275,24 +315,13 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
-  keypad: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "center",
-    width: "100%",
-    gap: 10,
+  clearBtn: {
+    paddingVertical: 10,
   },
-  key: {
-    width: (width - 80) / 3,
-    padding: 20,
-    alignItems: "center",
-    backgroundColor: "#f9fafb",
-    borderRadius: 12,
-  },
-  keyText: {
-    fontSize: 24,
-    fontWeight: "600",
-    color: "#000",
+  clearText: {
+    color: "#6b7280",
+    fontSize: 13,
+    fontWeight: "500",
   },
 });
 
