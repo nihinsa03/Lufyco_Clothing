@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView, SafeAreaView, Alert, ActivityIndicator, Image } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView, SafeAreaView, Alert, ActivityIndicator, Image, Modal, Dimensions } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -18,6 +18,7 @@ const SignupScreen = ({ navigation }: Props) => {
   const [confirmPassword, setConfirmPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [showPhoneKeypad, setShowPhoneKeypad] = useState(false);
   const [emailError, setEmailError] = useState('');
 
   const handleEmailChange = (text: string) => {
@@ -75,6 +76,16 @@ const SignupScreen = ({ navigation }: Props) => {
     }
   };
 
+  const handlePhoneKeyPress = (value: string) => {
+    if (value === "C") {
+      setPhone(""); // Clear
+    } else if (value === "<-") {
+      setPhone(phone.slice(0, -1)); // Backspace
+    } else if (phone.length < 15) {
+      setPhone(phone + value); // Add digit
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
@@ -102,15 +113,13 @@ const SignupScreen = ({ navigation }: Props) => {
 
         <View style={styles.inputContainer}>
           <Text style={styles.label}>Phone Number</Text>
-          <TextInput
-            style={styles.input}
-            value={phone}
-            onChangeText={setPhone}
-            placeholder="Enter Phone Number"
-            placeholderTextColor="#999"
-            keyboardType="numeric"
-            maxLength={15}
-          />
+          <TouchableOpacity onPress={() => setShowPhoneKeypad(true)}>
+            <View style={[styles.input, styles.phoneInput]} pointerEvents="none">
+              <Text style={phone ? styles.phoneText : styles.phonePlaceholder}>
+                {phone || 'Enter Phone Number'}
+              </Text>
+            </View>
+          </TouchableOpacity>
         </View>
 
         <View style={styles.inputContainer}>
@@ -215,6 +224,53 @@ const SignupScreen = ({ navigation }: Props) => {
           </View>
         </View>
       </ScrollView>
+
+      {/* Phone Number Keypad Modal */}
+      <Modal
+        visible={showPhoneKeypad}
+        transparent={true}
+        animationType="slide"
+        onRequestClose={() => setShowPhoneKeypad(false)}
+      >
+        <TouchableOpacity
+          style={styles.modalOverlay}
+          activeOpacity={1}
+          onPress={() => setShowPhoneKeypad(false)}
+        >
+          <View style={styles.keypadContainer}>
+            <View style={styles.keypadHeader}>
+              <Text style={styles.keypadTitle}>Enter Phone Number</Text>
+              <TouchableOpacity onPress={() => setShowPhoneKeypad(false)}>
+                <Ionicons name="close" size={24} color="#000" />
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.phoneDisplay}>
+              <Text style={styles.phoneDisplayText}>{phone || '0'}</Text>
+            </View>
+
+            <View style={styles.keypad}>
+              {["1", "2", "3", "4", "5", "6", "7", "8", "9", "<-", "0", "C"].map((key) => (
+                <TouchableOpacity
+                  key={key}
+                  style={styles.key}
+                  onPress={() => handlePhoneKeyPress(key)}
+                  activeOpacity={0.7}
+                >
+                  <Text style={styles.keyText}>{key}</Text>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={styles.doneButton}
+              onPress={() => setShowPhoneKeypad(false)}
+            >
+              <Text style={styles.doneButtonText}>Done</Text>
+            </TouchableOpacity>
+          </View>
+        </TouchableOpacity>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -364,6 +420,83 @@ const styles = StyleSheet.create({
     color: '#10b981',
     fontSize: 12,
     marginLeft: 4,
+  },
+  phoneInput: {
+    justifyContent: 'center',
+  },
+  phoneText: {
+    fontSize: 14,
+    color: '#000',
+  },
+  phonePlaceholder: {
+    fontSize: 14,
+    color: '#999',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+  },
+  keypadContainer: {
+    backgroundColor: '#fff',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    paddingBottom: 40,
+  },
+  keypadHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  keypadTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#000',
+  },
+  phoneDisplay: {
+    backgroundColor: '#f3f4f6',
+    padding: 20,
+    borderRadius: 12,
+    marginBottom: 20,
+    alignItems: 'center',
+  },
+  phoneDisplayText: {
+    fontSize: 28,
+    fontWeight: '600',
+    color: '#000',
+    letterSpacing: 2,
+  },
+  keypad: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 10,
+  },
+  key: {
+    width: (Dimensions.get('window').width - 80) / 3,
+    padding: 20,
+    alignItems: 'center',
+    backgroundColor: '#f3f4f6',
+    borderRadius: 12,
+  },
+  keyText: {
+    fontSize: 24,
+    fontWeight: '600',
+    color: '#000',
+  },
+  doneButton: {
+    backgroundColor: '#000',
+    padding: 16,
+    borderRadius: 25,
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  doneButtonText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '600',
   },
 });
 
