@@ -70,8 +70,22 @@ export const useShopStore = create<ShopState>()(
 
             toggleFilter: (key) => set((state) => {
                 const val = state.activeFilters[key];
+
+                // Handle basic booleans
                 if (typeof val === 'boolean') {
-                    return { activeFilters: { ...state.activeFilters, [key]: !val } };
+                    let nextFilters = { ...state.activeFilters, [key]: !val };
+
+                    // Enforce mutual exclusivity for price sort
+                    if (key === 'priceLowToHigh' && !val) {
+                        // If turning ON LowToHigh, turn OFF HighToLow
+                        nextFilters.priceHighToLow = false;
+                    }
+                    if (key === 'priceHighToLow' && !val) {
+                        // If turning ON HighToLow, turn OFF LowToHigh
+                        nextFilters.priceLowToHigh = false;
+                    }
+
+                    return { activeFilters: nextFilters };
                 }
                 return state;
             }),
