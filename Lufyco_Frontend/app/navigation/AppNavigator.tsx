@@ -19,7 +19,7 @@ import IntroScreen from "../screens/IntroScreen";
 import OffersScreen from "../screens/OffersScreen";
 import PaymentsScreen from "../screens/PaymentsScreen";
 import VerificationScreen from "../screens/VerificationScreen";
-import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
+import ForgotPasswordScreen from "../screens/ForgotPasswordScreenFixed";
 import ForgotPasswordVerificationScreen from "../screens/ForgotPasswordVerificationScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 // import PasswordResetSuccessScreen from "../screens/PasswordResetSuccessScreen"; // Replaced
