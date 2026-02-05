@@ -44,9 +44,13 @@ const SearchScreen = () => {
                     onSubmitEditing={() => handleSearch(input)}
                     autoFocus
                 />
-                {input.length > 0 && (
+                {input.length > 0 ? (
                     <TouchableOpacity onPress={handleClear}>
                         <Feather name="x-circle" size={18} color="#999" />
+                    </TouchableOpacity>
+                ) : (
+                    <TouchableOpacity onPress={() => navigation.navigate('Filter')}>
+                        <Ionicons name="options-outline" size={24} color="#666" />
                     </TouchableOpacity>
                 )}
             </View>
@@ -66,7 +70,7 @@ const SearchScreen = () => {
                         renderItem={({ item }) => (
                             <TouchableOpacity style={styles.recentItem} onPress={() => handleSearch(item)}>
                                 <Text style={styles.recentText}>{item}</Text>
-                                <Feather name="arrow-up-left" size={18} color="#ccc" />
+                                <Feather name="arrow-up-right" size={20} color="#ccc" />
                             </TouchableOpacity>
                         )}
                     />

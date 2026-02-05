@@ -17,6 +17,10 @@ export interface FilterState {
     priceMin?: number;
     priceMax?: number;
     categoryId?: string;
+
+    // Sorting
+    priceLowToHigh?: boolean;
+    priceHighToLow?: boolean;
 }
 
 interface ShopState {
@@ -44,6 +48,8 @@ const initialFilters: FilterState = {
     priceDropping: false,
     discountOnly: false,
     popularity: false,
+    priceLowToHigh: false,
+    priceHighToLow: false,
 
     priceMin: undefined,
     priceMax: undefined,
