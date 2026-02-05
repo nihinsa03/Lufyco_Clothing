@@ -9,11 +9,11 @@ const COLUMN_count = 3;
 const ITEM_WIDTH = (width - 40) / COLUMN_count;
 
 const CategoriesScreen = () => {
-  const { categories, setCategory } = useShopStore();
+  const { categories, setFilter } = useShopStore();
   const navigation = useNavigation<any>();
 
   const handlePress = (catId: string) => {
-    setCategory(catId);
+    setFilter({ categoryId: catId });
     navigation.navigate('CategoryProducts');
   };
 
