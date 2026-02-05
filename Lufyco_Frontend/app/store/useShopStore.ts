@@ -123,8 +123,12 @@ export const useShopStore = create<ShopState>()(
                 });
 
                 // Sorting
-                if (popularity) {
-                    filtered.sort((a, b) => b.reviews - a.reviews); // Mock popularity by reviews
+                if (activeFilters.priceLowToHigh) {
+                    filtered.sort((a, b) => a.price - b.price);
+                } else if (activeFilters.priceHighToLow) {
+                    filtered.sort((a, b) => b.price - a.price);
+                } else if (popularity) {
+                    filtered.sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
                 }
 
                 return filtered;
