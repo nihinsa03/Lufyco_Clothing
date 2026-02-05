@@ -39,6 +39,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [qty, setQty] = useState(1);
     const [showSuccess, setShowSuccess] = useState(false);
+    const [successMessage, setSuccessMessage] = useState("Successfully Added to Cart");
 
     // Animation Values
     const buttonScale = useRef(new Animated.Value(1)).current;
@@ -66,7 +67,8 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         ]).start();
     };
 
-    const showSuccessMessage = () => {
+    const showSuccessMessage = (message: string) => {
+        setSuccessMessage(message);
         setShowSuccess(true);
         Animated.sequence([
             Animated.timing(successOpacity, { toValue: 1, duration: 300, useNativeDriver: true }),
@@ -87,8 +89,15 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         animateButton();
         if (validateSelection()) {
             addToCart();
-            showSuccessMessage();
+            showSuccessMessage("Successfully Added to Cart");
         }
+    };
+
+    const handleToggleWishlist = () => {
+        if (!isWishlisted) {
+            showSuccessMessage("Successfully Added to Wishlist");
+        }
+        toggleWishlist({ ...fullProduct });
     };
 
     const validateSelection = () => {
@@ -233,7 +242,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
             {/* Sticky Bottom Bar */}
             <View style={styles.bottomBar}>
-                <TouchableOpacity style={styles.wishBtn} onPress={() => toggleWishlist({ ...fullProduct })}>
+                <TouchableOpacity style={styles.wishBtn} onPress={handleToggleWishlist}>
                     <Ionicons name={isWishlisted ? "heart" : "heart-outline"} size={28} color={isWishlisted ? "red" : "#111"} />
                 </TouchableOpacity>
 
@@ -256,7 +265,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                         <View style={styles.checkCircle}>
                             <Feather name="check" size={24} color="#fff" />
                         </View>
-                        <Text style={styles.successText}>Successfully Added to Cart</Text>
+                        <Text style={styles.successText}>{successMessage}</Text>
                     </View>
                 </Animated.View>
             )}
