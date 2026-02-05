@@ -138,9 +138,9 @@ export const useShopStore = create<ShopState>()(
 
                 // Sorting
                 if (activeFilters.priceLowToHigh) {
-                    filtered.sort((a, b) => a.price - b.price);
+                    filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
                 } else if (activeFilters.priceHighToLow) {
-                    filtered.sort((a, b) => b.price - a.price);
+                    filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
                 } else if (popularity) {
                     filtered.sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
                 }

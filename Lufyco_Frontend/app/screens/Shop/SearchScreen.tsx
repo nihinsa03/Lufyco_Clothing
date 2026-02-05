@@ -77,7 +77,11 @@ const SearchScreen = () => {
                 </View>
             )}
 
+
             {/* Optional: Popular Search suggestions could go here */}
+
+            <View style={styles.bottomSpacer} />
+            <View style={styles.homeIndicator} />
         </SafeAreaView>
     );
 };
@@ -118,7 +122,18 @@ const styles = StyleSheet.create({
         borderBottomWidth: 1,
         borderBottomColor: '#f9f9f9'
     },
-    recentText: { fontSize: 16, color: '#333' }
+    recentText: { fontSize: 16, color: '#333' },
+
+    bottomSpacer: { flex: 1 },
+    homeIndicator: {
+        width: 134,
+        height: 5,
+        backgroundColor: '#000',
+        borderRadius: 2.5,
+        alignSelf: 'center',
+        marginBottom: 8,
+        opacity: 0.8
+    }
 });
 
 export default SearchScreen;
