@@ -54,6 +54,9 @@ const ProfileScreen = () => {
     return (
         <SafeAreaView style={styles.safe}>
             <View style={styles.header}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 5 }}>
+                    <Feather name="arrow-left" size={24} color="#111" />
+                </TouchableOpacity>
                 <Text style={styles.headerTitle}>Profile</Text>
             </View>
 
@@ -118,8 +121,8 @@ const ProfileScreen = () => {
 
 const styles = StyleSheet.create({
     safe: { flex: 1, backgroundColor: "#fff" },
-    header: { padding: 20, paddingBottom: 10, backgroundColor: '#fff' },
-    headerTitle: { fontSize: 28, fontWeight: "800", color: '#111' },
+    header: { padding: 20, paddingBottom: 10, backgroundColor: '#fff', flexDirection: 'row', alignItems: 'center' },
+    headerTitle: { fontSize: 28, fontWeight: "800", color: '#111', marginLeft: 10 },
 
     userCard: {
         flexDirection: "row", alignItems: "center", backgroundColor: "#fff",
