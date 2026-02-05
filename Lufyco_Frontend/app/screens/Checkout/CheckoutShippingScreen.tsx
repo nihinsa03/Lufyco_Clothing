@@ -1,5 +1,4 @@
-
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import {
     SafeAreaView,
     View,
@@ -11,14 +10,170 @@ import {
     Alert,
     KeyboardAvoidingView,
     Platform,
+    Modal,
+    FlatList
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useCheckoutStore, Address } from "../../store/useCheckoutStore";
-import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { NativeStackNavigationProp } from "../../navigation/AppNavigator";
 import type { RootStackParamList } from "../../navigation/AppNavigator";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "CheckoutShipping">;
+
+const calculateTotalCities = (data: typeof sriLankaData) => {
+    let count = 0;
+    data.forEach(p => p.districts.forEach(d => count += d.cities.length));
+    return count;
+};
+
+const sriLankaData = [
+    {
+        "province": "Western",
+        "districts": [
+            {
+                "district": "Colombo",
+                "cities": ["Colombo", "Dehiwala-Mount Lavinia", "Moratuwa", "Sri Jayawardenepura Kotte", "Homagama", "Maharagama", "Piliyandala"]
+            },
+            {
+                "district": "Gampaha",
+                "cities": ["Gampaha", "Negombo", "Kelaniya", "Wattala", "Ja-Ela", "Minuwangoda", "Mirigama"]
+            },
+            {
+                "district": "Kalutara",
+                "cities": ["Kalutara", "Panadura", "Beruwala", "Horana", "Matugama", "Aluthgama"]
+            }
+        ]
+    },
+    {
+        "province": "Central",
+        "districts": [
+            {
+                "district": "Kandy",
+                "cities": ["Kandy", "Gampola", "Nawalapitiya", "Peradeniya", "Katugastota"]
+            },
+            {
+                "district": "Matale",
+                "cities": ["Matale", "Dambulla", "Sigiriya", "Ukuwela"]
+            },
+            {
+                "district": "Nuwara Eliya",
+                "cities": ["Nuwara Eliya", "Hatton", "Talawakele", "Ragala"]
+            }
+        ]
+    },
+    {
+        "province": "Southern",
+        "districts": [
+            {
+                "district": "Galle",
+                "cities": ["Galle", "Ambalangoda", "Hikkaduwa", "Karapitiya", "Elpitiya"]
+            },
+            {
+                "district": "Matara",
+                "cities": ["Matara", "Weligama", "Dikwella", "Kamburupitiya", "Akuressa"]
+            },
+            {
+                "district": "Hambantota",
+                "cities": ["Hambantota", "Tangalle", "Tissamaharama", "Ambalantota"]
+            }
+        ]
+    },
+    {
+        "province": "Northern",
+        "districts": [
+            {
+                "district": "Jaffna",
+                "cities": ["Jaffna", "Chavakachcheri", "Point Pedro", "Nallur"]
+            },
+            {
+                "district": "Kilinochchi",
+                "cities": ["Kilinochchi", "Pallai", "Paranthan"]
+            },
+            {
+                "district": "Mannar",
+                "cities": ["Mannar", "Talaimannar", "Nanattan"]
+            },
+            {
+                "district": "Vavuniya",
+                "cities": ["Vavuniya", "Cheddikulam", "Nedunkeni"]
+            },
+            {
+                "district": "Mullaitivu",
+                "cities": ["Mullaitivu", "Puthukkudiyiruppu", "Mulliyawalai"]
+            }
+        ]
+    },
+    {
+        "province": "Eastern",
+        "districts": [
+            {
+                "district": "Trincomalee",
+                "cities": ["Trincomalee", "Kinniya", "Kantale"]
+            },
+            {
+                "district": "Batticaloa",
+                "cities": ["Batticaloa", "Kattankudy", "Eravur"]
+            },
+            {
+                "district": "Ampara",
+                "cities": ["Ampara", "Kalmunai", "Sainthamaruthu", "Akkaraipattu"]
+            }
+        ]
+    },
+    {
+        "province": "North Western",
+        "districts": [
+            {
+                "district": "Kurunegala",
+                "cities": ["Kurunegala", "Kuliyapitiya", "Polgahawela", "Wariyapola"]
+            },
+            {
+                "district": "Puttalam",
+                "cities": ["Puttalam", "Chilaw", "Wennappuwa", "Dankotuwa"]
+            }
+        ]
+    },
+    {
+        "province": "North Central",
+        "districts": [
+            {
+                "district": "Anuradhapura",
+                "cities": ["Anuradhapura", "Kekirawa", "Medawachchiya", "Mihintale"]
+            },
+            {
+                "district": "Polonnaruwa",
+                "cities": ["Polonnaruwa", "Kaduruwela", "Hingurakgoda", "Medirigiriya"]
+            }
+        ]
+    },
+    {
+        "province": "Uva",
+        "districts": [
+            {
+                "district": "Badulla",
+                "cities": ["Badulla", "Bandarawela", "Haputale", "Ella", "Mahiyanganaya"]
+            },
+            {
+                "district": "Monaragala",
+                "cities": ["Monaragala", "Wellawaya", "Kataragama", "Bibile"]
+            }
+        ]
+    },
+    {
+        "province": "Sabaragamuwa",
+        "districts": [
+            {
+                "district": "Ratnapura",
+                "cities": ["Ratnapura", "Balangoda", "Embilipitiya", "Pelmadulla"]
+            },
+            {
+                "district": "Kegalle",
+                "cities": ["Kegalle", "Mawanella", "Warakapola", "Rambukkana"]
+            }
+        ]
+    }
+];
 
 const CheckoutShippingScreen = () => {
     const navigation = useNavigation<NavProp>();
@@ -33,8 +188,14 @@ const CheckoutShippingScreen = () => {
         postalCode: shippingAddress?.postalCode || "",
     });
 
-    // Mock state for Province since it might not be in Address type yet
+    // We can store province in local state or in address if we added a field.
+    // Assuming we just keep it local for filtering, or maybe overload a field?
+    // Let's keep it local. If user comes back, we might lose it unless we modify Store.
+    // For now, local state.
     const [province, setProvince] = useState("");
+
+    const [modalVisible, setModalVisible] = useState(false);
+    const [selectionMode, setSelectionMode] = useState<'province' | 'city'>('province');
 
     const [errors, setErrors] = useState<Partial<Record<keyof Address, string>>>({});
 
@@ -45,6 +206,7 @@ const CheckoutShippingScreen = () => {
         if (!form.fullName) { newErrors.fullName = "Required"; valid = false; }
         if (!form.phone) { newErrors.phone = "Required"; valid = false; }
         if (!form.city) { newErrors.city = "Required"; valid = false; }
+        if (!province) { newErrors.city = "Province is required"; valid = false; } // Error on city field visually if needed
         if (!form.addressLine) { newErrors.addressLine = "Required"; valid = false; }
         if (!form.postalCode) { newErrors.postalCode = "Required"; valid = false; }
 
@@ -59,6 +221,40 @@ const CheckoutShippingScreen = () => {
         } else {
             Alert.alert("Error", "Please fill in all required fields.");
         }
+    };
+
+    // Derived data for lists
+    const provincesList = useMemo(() => sriLankaData.map(p => p.province), []);
+
+    // Flatten cities for the selected province
+    const citiesList = useMemo(() => {
+        if (!province) return [];
+        const provData = sriLankaData.find(p => p.province === province);
+        if (!provData) return [];
+        const allCities: string[] = [];
+        provData.districts.forEach(d => {
+            allCities.push(...d.cities);
+        });
+        return allCities.sort();
+    }, [province]);
+
+    const openModal = (mode: 'province' | 'city') => {
+        if (mode === 'city' && !province) {
+            Alert.alert("Notice", "Please select a province first.");
+            return;
+        }
+        setSelectionMode(mode);
+        setModalVisible(true);
+    };
+
+    const handleSelect = (item: string) => {
+        if (selectionMode === 'province') {
+            setProvince(item);
+            setForm({ ...form, city: "" }); // Reset city when province changes
+        } else {
+            setForm({ ...form, city: item });
+        }
+        setModalVisible(false);
     };
 
     const renderInput = (label: string, field: keyof Address, placeholder: string, keyboardType: any = 'default', isRequired = true) => (
@@ -142,26 +338,32 @@ const CheckoutShippingScreen = () => {
                         {errors.phone && <Text style={styles.errorText}>{errors.phone}</Text>}
                     </View>
 
-                    {/* Province Dropdown (Mock) */}
+                    {/* Province Dropdown */}
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>Province <Text style={{ color: '#EF4444' }}>*</Text></Text>
-                        <View style={[styles.input, styles.dropdownInput]}>
+                        <TouchableOpacity
+                            onPress={() => openModal('province')}
+                            style={[styles.input, styles.dropdownInput]}
+                        >
                             <Text style={province ? styles.inputText : styles.placeholderText}>
                                 {province || "Select Province"}
                             </Text>
                             <Feather name="chevron-down" size={20} color="#4B5563" />
-                        </View>
+                        </TouchableOpacity>
                     </View>
 
-                    {/* City Dropdown (Mock, mapped to city field) */}
+                    {/* City Dropdown */}
                     <View style={styles.inputGroup}>
                         <Text style={styles.label}>City <Text style={{ color: '#EF4444' }}>*</Text></Text>
-                        <View style={[styles.input, styles.dropdownInput]}>
+                        <TouchableOpacity
+                            onPress={() => openModal('city')}
+                            style={[styles.input, styles.dropdownInput]}
+                        >
                             <Text style={form.city ? styles.inputText : styles.placeholderText}>
                                 {form.city || "Select City"}
                             </Text>
                             <Feather name="chevron-down" size={20} color="#4B5563" />
-                        </View>
+                        </TouchableOpacity>
                         {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
                     </View>
 
@@ -177,6 +379,48 @@ const CheckoutShippingScreen = () => {
                     <Text style={styles.btnText}>Save</Text>
                 </TouchableOpacity>
             </View>
+
+            {/* Selection Modal */}
+            <Modal
+                visible={modalVisible}
+                animationType="slide"
+                transparent={true}
+                onRequestClose={() => setModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>
+                                Select {selectionMode === 'province' ? 'Province' : 'City'}
+                            </Text>
+                            <TouchableOpacity onPress={() => setModalVisible(false)}>
+                                <Feather name="x" size={24} color="#111" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <FlatList
+                            data={selectionMode === 'province' ? provincesList : citiesList}
+                            keyExtractor={(item) => item}
+                            renderItem={({ item }) => (
+                                <TouchableOpacity
+                                    style={styles.modalItem}
+                                    onPress={() => handleSelect(item)}
+                                >
+                                    <Text style={styles.modalItemText}>{item}</Text>
+                                    {(selectionMode === 'province' ? province === item : form.city === item) && (
+                                        <Feather name="check" size={20} color="#2563EB" />
+                                    )}
+                                </TouchableOpacity>
+                            )}
+                            ListEmptyComponent={
+                                <Text style={{ textAlign: 'center', padding: 20, color: '#999' }}>
+                                    No options available
+                                </Text>
+                            }
+                        />
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -243,6 +487,45 @@ const styles = StyleSheet.create({
     footer: { position: 'absolute', bottom: 0, width: '100%', padding: 20, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#F3F4F6' },
     btn: { backgroundColor: '#111', height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
     btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+
+    // Modal
+    modalOverlay: {
+        flex: 1,
+        backgroundColor: "rgba(0,0,0,0.5)",
+        justifyContent: "flex-end",
+    },
+    modalContent: {
+        backgroundColor: "#fff",
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        paddingBottom: 40,
+        maxHeight: "60%",
+    },
+    modalHeader: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        padding: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: "#F3F4F6",
+    },
+    modalTitle: {
+        fontSize: 18,
+        fontWeight: "700",
+    },
+    modalItem: {
+        flexDirection: "row",
+        justifyContent: "space-between",
+        alignItems: "center",
+        paddingVertical: 16,
+        paddingHorizontal: 20,
+        borderBottomWidth: 1,
+        borderBottomColor: "#F3F4F6",
+    },
+    modalItemText: {
+        fontSize: 16,
+        color: "#333",
+    },
 });
 
 export default CheckoutShippingScreen;
