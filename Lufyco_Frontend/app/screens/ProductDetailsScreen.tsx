@@ -58,6 +58,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         )
     }
 
+
     const isWishlisted = isInWishlist(fullProduct.id || fullProduct._id);
 
     const animateButton = () => {
@@ -94,10 +95,20 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     };
 
     const handleToggleWishlist = () => {
+        const item = {
+            id: fullProduct.id || fullProduct._id,
+            productId: fullProduct.id || fullProduct._id,
+            title: fullProduct.title || fullProduct.name,
+            price: fullProduct.price,
+            image: fullProduct.images ? fullProduct.images[0] : (fullProduct.image || ""),
+            size: selectedSize || undefined,
+            color: selectedColor || undefined
+        };
+
         if (!isWishlisted) {
             showSuccessMessage("Successfully Added to Wishlist");
         }
-        toggleWishlist({ ...fullProduct });
+        toggleWishlist(item);
     };
 
     const validateSelection = () => {
