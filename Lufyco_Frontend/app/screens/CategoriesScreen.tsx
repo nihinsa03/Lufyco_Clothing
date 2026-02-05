@@ -21,7 +21,7 @@ const CategoriesScreen = () => {
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
         <Text style={styles.title}>Categories</Text>
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => navigation.navigate('Search')}>
           <Feather name="search" size={22} color="#111" />
         </TouchableOpacity>
       </View>
