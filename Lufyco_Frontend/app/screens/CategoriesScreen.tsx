@@ -20,7 +20,12 @@ const CategoriesScreen = () => {
   return (
     <SafeAreaView style={styles.safe}>
       <View style={styles.header}>
-        <Text style={styles.title}>Categories</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 15 }}>
+            <Feather name="arrow-left" size={24} color="#111" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Categories</Text>
+        </View>
         <TouchableOpacity onPress={() => navigation.navigate('Search')}>
           <Feather name="search" size={22} color="#111" />
         </TouchableOpacity>
