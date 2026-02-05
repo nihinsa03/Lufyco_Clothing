@@ -16,7 +16,7 @@ import {
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useCheckoutStore, Address } from "../../store/useCheckoutStore";
-import type { NativeStackNavigationProp } from "../../navigation/AppNavigator";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/AppNavigator";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "CheckoutShipping">;
