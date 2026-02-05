@@ -73,7 +73,7 @@ const HomeScreen = ({ navigation }: Props) => {
                 <Text style={[styles.tabText, activeTab === "Beauty" && styles.activeTabText]}>Beauty</Text>
               </TouchableOpacity>
             </View>
-            <TouchableOpacity style={styles.gridIcon}>
+            <TouchableOpacity style={styles.gridIcon} onPress={() => navigation.navigate("Categories")}>
               <Ionicons name="grid-outline" size={20} color="#000" />
             </TouchableOpacity>
           </View>

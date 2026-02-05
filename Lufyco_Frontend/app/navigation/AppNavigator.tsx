@@ -183,6 +183,7 @@ export default function AppNavigator() {
           <Stack.Screen name="Filter" component={require('../screens/Shop/FilterModal').default} options={{ presentation: 'modal' }} />
           <Stack.Screen name="Sale" component={require('../screens/Shop/SaleScreen').default} />
 
+          <Stack.Screen name="Categories" component={CategoriesScreen} />
           <Stack.Screen name="MensWear" component={MensWearScreen} />
           <Stack.Screen name="MenCasualShirts" component={MenCasualShirtsScreen} />
           <Stack.Screen name="AIStylist" component={AIStylistScreen} />
