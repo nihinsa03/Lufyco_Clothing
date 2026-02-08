@@ -10,7 +10,7 @@ import {
     Image,
     Alert,
 } from "react-native";
-import { Feather, FontAwesome } from "@expo/vector-icons"; // Ensure FontAwesome is available or use Feather
+import { Feather, FontAwesome, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useCheckoutStore, PaymentMethod } from "../../store/useCheckoutStore";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -47,20 +47,33 @@ const CheckoutPaymentScreen = () => {
         navigation.navigate("CheckoutReview");
     };
 
-    const renderMethod = (id: 'visa' | 'mastercard' | 'paypal' | 'applepay', icon: any, label: string) => (
+    const renderMethodIcon = (id: 'visa' | 'mastercard' | 'paypal' | 'applepay') => {
+        const iconColor = selectedMethod === id ? '#2563EB' : '#6B7280';
+        const iconSize = id === 'visa' || id === 'mastercard' ? 32 : 28;
+
+        switch (id) {
+            case 'visa':
+                return <FontAwesome5 name="cc-visa" size={iconSize} color={iconColor} />;
+            case 'mastercard':
+                return <FontAwesome5 name="cc-mastercard" size={iconSize} color={iconColor} />;
+            case 'paypal':
+                return <FontAwesome5 name="cc-paypal" size={iconSize} color={iconColor} />;
+            case 'applepay':
+                return <FontAwesome5 name="apple-pay" size={iconSize} color={iconColor} />;
+        }
+    };
+
+    const renderMethod = (id: 'visa' | 'mastercard' | 'paypal' | 'applepay') => (
         <TouchableOpacity
             style={[styles.payOption, selectedMethod === id && styles.payOptionActive]}
             onPress={() => setSelectedMethod(id)}
         >
-            {/* Using text or simple icons for mock */}
-            <View style={styles.methodIcon}>
-                <Text style={{ fontWeight: '700', fontSize: 10 }}>{label}</Text>
-            </View>
             {selectedMethod === id && (
                 <View style={styles.checkBadge}>
-                    <Feather name="check" size={10} color="#fff" />
+                    <Feather name="check" size={12} color="#fff" />
                 </View>
             )}
+            {renderMethodIcon(id)}
         </TouchableOpacity>
     );
 
@@ -102,10 +115,10 @@ const CheckoutPaymentScreen = () => {
             <ScrollView contentContainerStyle={{ padding: 20 }}>
                 <Text style={styles.sectionTitle}>Payment Method</Text>
                 <View style={styles.methodsRow}>
-                    {renderMethod('visa', null, "VISA")}
-                    {renderMethod('mastercard', null, "MASTER")}
-                    {renderMethod('paypal', null, "PAYPAL")}
-                    {renderMethod('applepay', null, "APPLE")}
+                    {renderMethod('visa')}
+                    {renderMethod('mastercard')}
+                    {renderMethod('paypal')}
+                    {renderMethod('applepay')}
                 </View>
 
                 {/* Card Form */}
@@ -184,17 +197,44 @@ const styles = StyleSheet.create({
     stepTextDone: { color: '#2563EB', fontWeight: '700' },
     line: { width: 40, height: 2, backgroundColor: '#F3F4F6', marginBottom: 16, marginHorizontal: 8 },
 
-    sectionTitle: { fontSize: 16, fontWeight: '700', marginBottom: 16 },
+    sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16, color: '#111' },
     methodsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 24 },
     payOption: {
-        width: 70, height: 50, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 10,
-        alignItems: 'center', justifyContent: 'center', position: 'relative'
+        flex: 1,
+        height: 56,
+        borderWidth: 1.5,
+        borderColor: '#E5E7EB',
+        borderRadius: 12,
+        alignItems: 'center',
+        justifyContent: 'center',
+        position: 'relative',
+        marginHorizontal: 4,
+        backgroundColor: '#fff'
     },
-    payOptionActive: { borderColor: '#2563EB', backgroundColor: '#EFF6FF' },
-    methodIcon: { alignItems: 'center', justifyContent: 'center' },
+    payOptionActive: {
+        borderColor: '#2563EB',
+        borderWidth: 2,
+        backgroundColor: '#fff'
+    },
+    methodLabel: {
+        fontSize: 13,
+        fontWeight: '600',
+        color: '#6B7280'
+    },
+    methodLabelActive: {
+        color: '#2563EB',
+        fontWeight: '700'
+    },
     checkBadge: {
-        position: 'absolute', top: -6, right: -6, width: 16, height: 16, borderRadius: 8,
-        backgroundColor: '#2563EB', alignItems: 'center', justifyContent: 'center'
+        position: 'absolute',
+        top: 6,
+        right: 6,
+        width: 20,
+        height: 20,
+        borderRadius: 10,
+        backgroundColor: '#2563EB',
+        alignItems: 'center',
+        justifyContent: 'center'
     },
 
     cardForm: { marginTop: 10 },
