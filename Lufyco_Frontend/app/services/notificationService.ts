@@ -31,8 +31,15 @@ const NOTIFICATION_MESSAGES = {
 
 /**
  * Request notification permissions from user
+ * Only works on native platforms (iOS/Android), not web
  */
 export async function registerForPushNotificationsAsync() {
+    // Skip on web platform
+    if (Platform.OS === 'web') {
+        console.log('⚠️ Notifications are not supported on web platform');
+        return;
+    }
+
     let token;
 
     if (Platform.OS === 'android') {
@@ -66,8 +73,15 @@ export async function registerForPushNotificationsAsync() {
 
 /**
  * Schedule daily notifications at specific times
+ * Only works on native platforms (iOS/Android), not web
  */
 export async function scheduleDailyNotifications() {
+    // Skip on web platform
+    if (Platform.OS === 'web') {
+        console.log('⚠️ Notifications are not supported on web platform');
+        return;
+    }
+
     // Cancel any existing notifications first
     await Notifications.cancelAllScheduledNotificationsAsync();
 
