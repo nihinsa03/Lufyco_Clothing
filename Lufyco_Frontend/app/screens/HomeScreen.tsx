@@ -15,7 +15,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 const HomeScreen = ({ navigation }: Props) => {
   const { products, categories, setFilter } = useShopStore();
-  const [activeTab, setActiveTab] = useState("Fashion");
+
 
   // Filter for Latest Products (New Arrivals)
   const latestProducts = products.filter(p => p.isNewArrival).slice(0, 4);
@@ -57,20 +57,15 @@ const HomeScreen = ({ navigation }: Props) => {
         {/* Content */}
         <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
 
-          {/* Tabs */}
+          {/* Tabs - Fashion Only */}
           <View style={styles.tabContainer}>
             <View style={styles.tabsWrapper}>
+              {/* Only Fashion, always active style (Black pill) */}
               <TouchableOpacity
-                style={[styles.tab, activeTab === "Fashion" && styles.activeTab]}
-                onPress={() => setActiveTab("Fashion")}
+                style={[styles.tab, styles.activeTab]} // Use activeTab style directly
+                activeOpacity={1}
               >
-                <Text style={[styles.tabText, activeTab === "Fashion" && styles.activeTabText]}>Fashion</Text>
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.tab, activeTab === "Beauty" && styles.activeTab]}
-                onPress={() => setActiveTab("Beauty")}
-              >
-                <Text style={[styles.tabText, activeTab === "Beauty" && styles.activeTabText]}>Beauty</Text>
+                <Text style={[styles.tabText, styles.activeTabText]}>Fashion</Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.gridIcon} onPress={() => navigation.navigate("Categories")}>
