@@ -789,6 +789,275 @@ GET /api/closet?userId=123&search=blue&category=Tops
 
 ---
 
+## AI Stylist Features
+
+### **Outfit Recommendation API** (Planned/Future)
+
+**Endpoint:** `POST /api/ai/recommend-outfit`
+
+Generate AI-powered outfit recommendations based on user preferences.
+
+**Request Body:**
+```json
+{
+  "userId": "user_id",
+  "mood": "Happy",
+  "occasion": "Office",
+  "weather": {
+    "condition": "Sunny",
+    "temperature": 75
+  },
+  "timeframe": "now",
+  "preferredColors": ["blue", "white"],
+  "selectedDate": "2026-02-15T10:00:00Z"
+}
+```
+
+**Algorithm Logic:**
+1. Filter products by occasion type
+2. Apply weather-based filtering (hot/cold)
+3. Match mood preferences to style categories
+4. Assemble outfit from categories (Tops, Bottoms, Shoes, Outerwear)
+5. Return with similarity/confidence scores
+
+**Response:**
+```json
+{
+  "outfitId": "outfit_123",
+  "items": [
+    {
+      "category": "Tops",
+      "product": {
+        "_id": "prod_1",
+        "name": "Blue Oxford Shirt",
+        "image": "image_url",
+        "price": 49.99
+      },
+      "confidence": 95
+    },
+    {
+      "category": "Bottoms",
+      "product": {
+        "_id": "prod_2",
+        "name": "Navy Chinos",
+        "image": "image_url",
+        "price": 59.99
+      },
+      "confidence": 88
+    },
+    {
+      "category": "Shoes",
+      "product": {
+        "_id": "prod_3",
+        "name": "Brown Loafers",
+        "image": "image_url",
+        "price": 79.99
+      },
+      "confidence": 92
+    }
+  ],
+  "totalPrice": 189.97,
+  "accessories": [
+    {
+      "_id": "acc_1",
+      "name": "Leather Watch",
+      "price": 120.00
+    }
+  ]
+}
+```
+
+---
+
+### **Saved Looks API**
+
+Manage user's saved outfit combinations.
+
+#### Save Outfit
+
+**Endpoint:** `POST /api/ai/saved-looks`
+
+**Request Body:**
+```json
+{
+  "userId": "user_id",
+  "outfitName": "Office Monday",
+  "occasion": "Office",
+  "items": ["prod_1", "prod_2", "prod_3"],
+  "eventDate": "2026-02-15T09:00:00Z",
+  "notes": "Meeting with clients"
+}
+```
+
+**Response:** `201 Created` with saved look object
+
+#### Get User's Saved Looks
+
+**Endpoint:** `GET /api/ai/saved-looks?userId={userId}`
+
+**Query Parameters:**
+- `userId` (required)
+- `occasion` (optional) - Filter by occasion
+- `upcoming` (boolean) - Show only future events
+
+**Response:**
+```json
+[
+  {
+    "_id": "look_id",
+    "userId": "user_id",
+    "outfitName": "Office Monday",
+    "occasion": "Office",
+    "items": [...],
+    "eventDate": "2026-02-15T09:00:00Z",
+    "createdAt": "2026-02-11T10:00:00Z"
+  }
+]
+```
+
+#### Delete Saved Look
+
+**Endpoint:** `DELETE /api/ai/saved-looks/:id`
+
+**Response:** `{ message: 'Look deleted' }`
+
+---
+
+### **Weather Integration**
+
+**Current Implementation:** Frontend uses mock weather data via `useWeather()` hook.
+
+**Future Backend Integration:**
+
+**Endpoint:** `GET /api/weather?location={lat,lng}`
+
+Integrate with weather API (OpenWeatherMap, WeatherAPI, etc.) to provide real-time weather data for outfit recommendations.
+
+**Query Parameters:**
+- `location` - Coordinates or city name
+- `date` - Future date for forecast
+
+**Response:**
+```json
+{
+  "location": "Colombo, Sri Lanka",
+  "current": {
+    "temperature": 85,
+    "condition": "Sunny",
+    "humidity": 70,
+    "windSpeed": 12
+  },
+  "forecast": [
+    {
+      "date": "2026-02-12",
+      "high": 88,
+      "low": 75,
+      "condition": "Partly Cloudy"
+    }
+  ]
+}
+```
+
+**Weather-Based Outfit Logic:**
+- **Hot (>75°F)**: Light fabrics, T-shirts, shorts, skirts, no jackets
+- **Moderate (60-75°F)**: Long sleeves, light jackets, jeans
+- **Cold (<60°F)**: Sweaters, hoodies, jackets, long pants
+- **Rainy**: Waterproof outerwear, closed shoes
+- **Sunny**: Sunglasses, hats (accessories)
+
+---
+
+## AI & Machine Learning Features (Planned)
+
+### **Image Search API**
+
+**Endpoint:** `POST /api/ai/image-search`
+
+Visual product search using uploaded images.
+
+**Request:**
+- Multipart form data with image file
+- Max file size: 5MB
+- Accepted formats: JPG, PNG, WEBP
+
+**Request Body:**
+```
+Content-Type: multipart/form-data
+image: [binary file data]
+```
+
+**Processing:**
+1. Image upload to cloud storage (AWS S3, Cloudinary)
+2. Feature extraction using AI model (TensorFlow, Google Vision API)
+3. Similarity matching against product database
+4. Return ranked results by visual similarity
+
+**Response:**
+```json
+{
+  "searchId": "search_123",
+  "results": [
+    {
+      "product": {
+        "_id": "prod_1",
+        "name": "Similar Blue Shirt",
+        "image": "image_url",
+        "price": 39.99
+      },
+      "similarity": 95,
+      "matchedFeatures": ["color", "pattern", "category"]
+    },
+    {
+      "product": { ... },
+      "similarity": 88,
+      "matchedFeatures": ["color", "style"]
+    }
+  ]
+}
+```
+
+**Technology Stack Options:**
+- **Google Cloud Vision API**: Pre-trained image recognition
+- **AWS Rekognition**: Similar product detection
+- **TensorFlow.js**: Custom ML model
+- **OpenCV**: Image processing
+
+---
+
+### **Personalized Recommendations**
+
+**Endpoint:** `GET /api/ai/recommendations?userId={userId}`
+
+Machine learning-based product recommendations.
+
+**Algorithm Factors:**
+- User purchase history
+- Browsing behavior
+- Wishlist items
+- Closet contents
+- Similar users' preferences (collaborative filtering)
+- Trending products
+
+**Response:**
+```json
+{
+  "recommendations": [
+    {
+      "product": { ... },
+      "score": 0.92,
+      "reason": "Based on your recent purchases"
+    },
+    {
+      "product": { ... },
+      "score": 0.85,
+      "reason": "Trending in your style"
+    }
+  ]
+}
+```
+
+---
+
 ## Scalability Considerations
 
 ### **Current Architecture**
