@@ -49,7 +49,9 @@ const HomeScreen = ({ navigation }: Props) => {
           <Ionicons name="search-outline" size={20} color="#666" />
           <Text style={styles.searchInput}>Search for brands and products</Text>
           <View style={styles.searchRightIcons}>
-            <Feather name="camera" size={20} color="#666" style={{ marginRight: 15 }} />
+            <TouchableOpacity onPress={() => navigation.navigate("ImageSearch")}>
+              <Feather name="camera" size={20} color="#667eea" style={{ marginRight: 15 }} />
+            </TouchableOpacity>
             <Feather name="mic" size={20} color="#666" />
           </View>
         </TouchableOpacity>

@@ -35,6 +35,7 @@ import ShopNewStylesScreen from "../screens/ShopNewStylesScreen";
 import UpcomingEventsScreen from "../screens/UpcomingEventsScreen";
 import AddToClosetScreen from "../screens/AddToClosetScreen";
 import AddToClosetPreviewScreen from "../screens/AddToClosetPreviewScreen";
+import ImageSearchScreen from "../screens/ImageSearchScreen";
 import WomensWearScreen from "../screens/WomensWearScreen";
 import WomenTopsScreen from "../screens/WomenTopsScreen";
 import WomenTopDetailsScreen from "../screens/WomenTopDetailsScreen";
@@ -123,6 +124,7 @@ export type RootStackParamList = {
   Search: undefined;
   Filter: undefined;
   Sale: undefined;
+  ImageSearch: undefined;
 
   Wishlist: undefined;
   MyCart: undefined;
@@ -182,6 +184,7 @@ export default function AppNavigator() {
           <Stack.Screen name="Search" component={require('../screens/Shop/SearchScreen').default} />
           <Stack.Screen name="Filter" component={require('../screens/Shop/FilterModal').default} options={{ presentation: 'modal' }} />
           <Stack.Screen name="Sale" component={require('../screens/Shop/SaleScreen').default} />
+          <Stack.Screen name="ImageSearch" component={ImageSearchScreen} />
 
           <Stack.Screen name="Categories" component={CategoriesScreen} />
           <Stack.Screen name="MensWear" component={MensWearScreen} />
