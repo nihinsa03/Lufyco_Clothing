@@ -463,39 +463,329 @@ Returns a dummy user object without database connection:
 
 ---
 
-## API Endpoints Summary
+## API Endpoints - Complete Reference
 
 ### **User Routes** (`/api/users`)
-- `POST /register` - Register new user + send OTP
-- `POST /verify-email` - Verify email with OTP
-- `POST /resend-otp` - Resend verification OTP
-- `POST /login` - Login user
-- `POST /forgot-password` - Request password reset OTP
-- `POST /verify-reset-otp` - Verify password reset OTP
-- `POST /reset-password` - Reset password
+
+#### Authentication Endpoints
+
+| Endpoint | Method | Description | Request Body | Response |
+|----------|--------|-------------|--------------|----------|
+| `/register` | POST | Register new user + send OTP | `{ name, phone, email, password }` | `{ message, requiresVerification, email }` |
+| `/verify-email` | POST | Verify email with OTP | `{ email, otp }` | `{ message, verified }` |
+| `/resend-otp` | POST | Resend verification OTP | `{ email }` | `{ message }` |
+| `/login` | POST | Login user | `{ email, password }` | `{ _id, name, email, isAdmin, token? }` |
+
+**Special Login Credentials (Offline Mode):**
+- Email: `user` (case-insensitive)
+- Password: `user`
+- Returns: `{ _id: 'dummy_user_id', name: 'Offline User', email: 'user', token: 'offline-token-123' }`
+
+#### Password Reset Endpoints
+
+| Endpoint | Method | Description | Request Body | Response |
+|----------|--------|-------------|--------------|----------|
+| `/forgot-password` | POST | Request password reset OTP | `{ email }` | `{ message, email }` |
+| `/verify-reset-otp` | POST | Verify password reset OTP | `{ email, otp }` | `{ message, verified }` |
+| `/reset-password` | POST | Reset password with OTP | `{ email, otp, newPassword }` | `{ message, success }` |
+
+**Validation Rules:**
+- Email must be valid format (validated with `validator` library)
+- Supported email providers: Gmail, Yahoo, Outlook, Hotmail, iCloud, ProtonMail, AOL, Mail.com, Zoho
+- Password minimum length: 6 characters
+- OTP expiry: 10 minutes
+- OTP format: 6-digit numeric code
+
+---
 
 ### **Product Routes** (`/api/products`)
-- `GET /` - Get all products
-- `GET /:id` - Get single product
-- `POST /` - Create product (admin)
-- `PUT /:id` - Update product (admin)
-- `DELETE /:id` - Delete product (admin)
+
+#### Get All Products with Advanced Filtering
+
+**Endpoint:** `GET /api/products`
+
+**Query Parameters:**
+| Parameter | Type | Description | Example |
+|-----------|------|-------------|---------|
+| `gender` | String | Filter by gender | `?gender=Men` |
+| `category` | String | Filter by category | `?category=Clothing` |
+| `subCategory` | String | Filter by subcategory | `?subCategory=Tops` |
+| `type` | String | Filter by type | `?type=T-Shirt` |
+| `search` | String | Search in name/description | `?search=blue shirt` |
+| `isSale` | Boolean | Filter sale items | `?isSale=true` |
+| `sort` | String | Sort results | `?sort=price_low_to_high` |
+
+**Sort Options:**
+- `price_low_to_high` - Ascending price
+- `price_high_to_low` - Descending price
+- `whats_new` - Latest products (by `createdAt`)
+- `popularity` - Most reviewed (by `reviewsCount`)
+
+**Example Request:**
+```
+GET /api/products?gender=Men&category=Clothing&sort=price_low_to_high&search=casual
+```
+
+**Response:**
+```json
+[
+  {
+    "_id": "507f1f77bcf86cd799439011",
+    "name": "Casual Blue Shirt",
+    "price": 29.99,
+    "compareAtPrice": 49.99,
+    "description": "Comfortable cotton shirt",
+    "image": "https://example.com/shirt.jpg",
+    "category": "Clothing",
+    "subCategory": "Tops",
+    "type": "Shirt",
+    "gender": "Men",
+    "stock": 50,
+    "reviewsCount": 120,
+    "rating": 4.5,
+    "createdAt": "2026-01-15T10:30:00Z"
+  }
+]
+```
+
+#### Create Product
+
+**Endpoint:** `POST /api/products`
+
+**Request Body:**
+```json
+{
+  "name": "Product Name",
+  "price": 49.99,
+  "description": "Product description",
+  "image": "image_url",
+  "category": "Category name"
+}
+```
+
+**Response:** `201 Created` with product object
+
+---
 
 ### **Order Routes** (`/api/orders`)
-- `POST /` - Create new order
-- `GET /myorders` - Get user's orders
-- `GET /:id` - Get order by ID
+
+#### Create New Order
+
+**Endpoint:** `POST /api/orders`
+
+**Request Body:**
+```json
+{
+  "user": "user_id",
+  "orderItems": [
+    {
+      "name": "Product Name",
+      "qty": 2,
+      "image": "image_url",
+      "price": 29.99,
+      "product": "product_id"
+    }
+  ],
+  "shippingAddress": {
+    "address": "123 Main St",
+    "city": "Colombo",
+    "postalCode": "10100",
+    "country": "Sri Lanka"
+  },
+  "paymentMethod": "Card",
+  "itemsPrice": 59.98,
+  "taxPrice": 5.99,
+  "shippingPrice": 10.00,
+  "totalPrice": 75.97
+}
+```
+
+**Response:** `201 Created` with order object
+
+#### Get User Orders
+
+**Endpoint:** `GET /api/orders/myorders?userId={userId}`
+
+**Query Parameters:**
+- `userId` (required) - User ID to fetch orders for
+
+**Response:**
+```json
+[
+  {
+    "_id": "order_id",
+    "user": "user_id",
+    "orderItems": [...],
+    "shippingAddress": {...},
+    "paymentMethod": "Card",
+    "totalPrice": 75.97,
+    "isPaid": false,
+    "isDelivered": false,
+    "createdAt": "2026-02-11T15:30:00Z"
+  }
+]
+```
+
+---
 
 ### **Closet Routes** (`/api/closet`)
-- `GET /` - Get user's cart
-- `POST /` - Add item to cart
-- `PUT /:id` - Update cart item
-- `DELETE /:id` - Remove from cart
+
+Virtual wardrobe management for users.
+
+#### Get Closet Items
+
+**Endpoint:** `GET /api/closet`
+
+**Query Parameters:**
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `userId` | String | Filter by user ID |
+| `category` | String | Filter by category (e.g., "Tops", "Bottoms") |
+| `search` | String | Search by item name |
+
+**Example:**
+```
+GET /api/closet?userId=123&category=Tops&search=shirt
+```
+
+**Response:**
+```json
+[
+  {
+    "_id": "item_id",
+    "user": "user_id",
+    "name": "Blue Casual Shirt",
+    "category": "Tops",
+    "image": "image_url",
+    "notes": "Bought for office meetings",
+    "createdAt": "2026-02-01T10:00:00Z"
+  }
+]
+```
+
+#### Add to Closet
+
+**Endpoint:** `POST /api/closet`
+
+**Request Body:**
+```json
+{
+  "userId": "user_id",
+  "name": "Item name",
+  "category": "Tops",
+  "image": "image_url",
+  "notes": "Optional notes"
+}
+```
+
+**Response:** `201 Created` with closet item
+
+#### Delete from Closet
+
+**Endpoint:** `DELETE /api/closet/:id`
+
+**Response:** `{ message: 'Item removed' }`
+
+---
 
 ### **Wishlist Routes** (`/api/wishlist`)
-- `GET /` - Get user's wishlist
-- `POST /` - Add to wishlist
-- `DELETE /:id` - Remove from wishlist
+
+User's saved favorite products.
+
+#### Get Wishlist Items
+
+**Endpoint:** `GET /api/wishlist?userId={userId}`
+
+**Response:**
+```json
+[
+  {
+    "_id": "wishlist_id",
+    "user": "user_id",
+    "product": "product_id",
+    "title": "Product Name",
+    "price": 49.99,
+    "image": "image_url",
+    "createdAt": "2026-02-05T12:00:00Z"
+  }
+]
+```
+
+#### Add to Wishlist
+
+**Endpoint:** `POST /api/wishlist`
+
+**Request Body:**
+```json
+{
+  "userId": "user_id",
+  "productId": "product_id",
+  "title": "Product Name",
+  "price": 49.99,
+  "image": "image_url"
+}
+```
+
+**Validation:**
+- Checks for duplicate items (by `productId` or `title`)
+- Returns `400` if item already exists
+
+**Response:** `201 Created` with wishlist item
+
+#### Remove from Wishlist
+
+**Endpoint:** `DELETE /api/wishlist/:id`
+
+**Response:** `{ message: 'Item removed' }`
+
+---
+
+## Advanced Features
+
+### **Product Search & Filtering**
+
+The product API supports MongoDB regex-based search:
+
+```javascript
+// Search implementation
+if (search) {
+  query.$or = [
+    { name: { $regex: search, $options: 'i' } },
+    { description: { $regex: search, $options: 'i' } }
+  ];
+}
+```
+
+**Features:**
+- Case-insensitive search (`options: 'i'`)
+- Searches both name and description fields
+- Supports partial matches
+- Combines with other filters
+
+### **Sale Items Filter**
+
+```javascript
+if (isSale === 'true') {
+  query.compareAtPrice = { $gt: 0 };
+  query.$expr = { $gt: ["$compareAtPrice", "$price"] };
+}
+```
+
+Only shows products where `compareAtPrice` > `price`.
+
+### **Multi-Parameter Filtering**
+
+Combine multiple filters:
+```
+GET /api/products?gender=Women&category=Clothing&type=Dress&isSale=true&sort=price_low_to_high
+```
+
+### **Closet Search**
+
+Search within virtual closet by item name:
+```
+GET /api/closet?userId=123&search=blue&category=Tops
+```
 
 ---
 

@@ -721,6 +721,12 @@ Lufyco_Frontend/
 ### ✅ **E-Commerce Functionality** (15+ Screens)
 - **Product Browsing**: Grid and list views with infinite scroll
 - **Advanced Search**: Search overlay with autocomplete
+- **Image Search**: 
+  - Upload or capture image to find similar products
+  - Visual similarity matching
+  - Camera integration via `expo-image-picker`
+  - Photo library access
+  - AI-powered image recognition (planned)
 - **Category Filtering**: Men's/Women's wear with subcategories
 - **Filter Sheet**: Price, size, color, brand filters
 - **Product Details**: 
