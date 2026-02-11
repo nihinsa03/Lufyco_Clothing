@@ -185,11 +185,114 @@ The app contains **39 distinct screens** organized into feature modules:
 - **ChangePasswordScreen**: Password update
 - Additional profile management screens
 
-#### **AI & Smart Features**
-- **AIStylistScreen**: AI-powered outfit recommendations
-- **PlanMyLookScreen**: Plan outfits for events
-- **SuggestedOutfitScreen**: AI-generated outfit suggestions
-- **UpcomingEventsScreen**: Event-based outfit planning
+#### **AI & Smart Features** (4 Advanced Screens)
+
+##### **1. AIStylistScreen** - AI Dashboard (8,625 bytes)
+Main hub for AI-powered fashion assistance:
+- **Personalized Greeting**: Dynamic user name display
+- **Quick Action Tiles**:
+  - 🛍️ My Closet - Access virtual wardrobe
+  - ☀️ Plan My Look - Event-based outfit planning
+  - 💼 Shop New Styles - Browse new arrivals
+  - 📅 Upcoming Events - View saved event outfits
+- **Your Upcoming Looks**: Preview saved outfits for events
+  - Outfit cards with item previews
+  - Date and event information
+  - Pagination (1 of 2)
+- **Weather Integration**: Real-time weather display using `useWeather()` hook
+  - Temperature display (°F)
+  - Weather condition (Sunny/Cloudy with icons)
+  - Dynamic icon colors
+
+##### **2. PlanMyLookScreen** - Smart Outfit Planner (12,414 bytes)
+AI-powered outfit planning based on multiple factors:
+
+**Input Parameters:**
+- **Mood Selection** (5 options with emojis):
+  - 😊 Happy
+  - 😎 Confident
+  - ☹️ Sad
+  - 😐 Tired
+  - 😁 Excited
+- **Occasion Selection** (5 categories):
+  - Casual
+  - Office
+  - Party
+  - Date
+  - Wedding
+- **Time Need** (2 options):
+  - Now - Immediate outfit
+  - Future - Schedule for later
+- **Date & Time Picker**: 
+  - Interactive calendar using `react-native-ui-datepicker`
+  - Time picker for scheduled events
+  - Minimum date: Today
+  - Format: "DD MMM YYYY | hh:mm A"
+- **Weather Display**: Real-time weather conditions
+  - Temperature and conditions
+  - Affects outfit recommendations
+
+**Features:**
+- Beautiful mood tiles with emoji icons on yellow backgrounds
+- Chip-based selection with active state highlighting
+- Date selector with calendar icon
+- "Generate My Look" CTA button
+- Navigation to SuggestedOutfitScreen with parameters
+
+##### **3. SuggestedOutfitScreen** - AI Outfit Generator (11,605 bytes)
+Intelligent outfit generation using AI algorithms:
+
+**Algorithm Features:**
+- **Weather-Based Logic**:
+  - Cold weather (Rain/Snow/Fog/Cloud): Suggests hoodies, sweaters, jackets
+  - Hot weather (Sunny/Clear): Suggests T-shirts, shorts, skirts, no jackets
+- **Occasion-Based Filtering**:
+  - **Office**: Formal tops, no T-shirts/hoodies, no shorts
+  - **Party**: Prioritizes dresses and stylish pieces
+  - **Casual**: Mixed items, comfortable wear
+- **Outfit Assembly**:
+  - Smart category filtering (Tops, Bottoms, Shoes, Outerwear, Dresses)
+  - 30% chance for dress selection (if available)
+  - Always includes shoes
+  - Adds jacket/outerwear in cold weather
+  - Randomized selection from filtered items
+- **Mock Product Integration**: Uses `MOCK_PRODUCTS` data
+
+**UI Components:**
+- **Selection Pill**: Shows mood emoji + weather + occasion
+- **Your Suggested Outfit Card**:
+  - Image previews of each item
+  - Item names
+  - Scrollable horizontal layout
+- **Complete Your Look Section**:
+  - Accessory suggestions (watches, perfume)
+  - "Add to Cart" buttons
+  - "View More Suggestions" link
+- **Action Buttons**:
+  - "Try Again" - Regenerate outfit
+  - "Save This Look" - Save to profile
+
+**Data Flow:**
+```
+User Input (Mood + Occasion + Weather)
+  ↓
+Filter Products by Categories
+  ↓
+Apply Weather Logic
+  ↓
+Apply Occasion Logic
+  ↓
+Randomly Assemble Outfit
+  ↓
+Display with Accessories
+```
+
+##### **4. UpcomingEventsScreen** - Event Management (6,766 bytes)
+View and manage saved outfits for upcoming events:
+- Event calendar view
+- Saved outfit previews
+- Edit/delete event outfits
+- Quick access to re-plan looks
 
 #### **Wishlist & Closet**
 - **WishlistScreen**: Saved favorite products
@@ -603,48 +706,148 @@ Lufyco_Frontend/
 
 ## Key Features Implemented
 
-### ✅ **Authentication & Security**
-- Email/password registration
-- OTP email verification (6-digit codes)
-- Login with persistent sessions
-- Forgot password flow
-- Password reset with OTP
-- Offline mode (`user/user` login)
-- Secure token storage
+### ✅ **Authentication & Security** (10 Screens)
+- **Email/Password Registration**: Full signup flow with validation
+- **OTP Email Verification**: 6-digit codes with 10-minute expiry
+- **Login with Persistent Sessions**: Token-based auth with AsyncStorage
+- **Forgot Password Flow**: Complete 3-step password recovery
+- **Password Reset with OTP**: Secure OTP verification
+- **Offline Mode**: Test credentials (`user/user`) for development
+- **Secure Token Storage**: Encrypted AsyncStorage
+- **Email Provider Validation**: Supports Gmail, Yahoo, Outlook, etc.
+- **Auto-login After Signup**: Seamless user experience
+- **Password Visibility Toggle**: Eye icon for password fields
 
-### ✅ **E-Commerce Functionality**
-- Product browsing and search
-- Category filtering
-- Product details with images
-- Shopping cart with quantity control
-- Wishlist/favorites
-- Checkout flow
-- Order history
-- Payment method selection
+### ✅ **E-Commerce Functionality** (15+ Screens)
+- **Product Browsing**: Grid and list views with infinite scroll
+- **Advanced Search**: Search overlay with autocomplete
+- **Category Filtering**: Men's/Women's wear with subcategories
+- **Filter Sheet**: Price, size, color, brand filters
+- **Product Details**: 
+  - High-resolution image gallery
+  - Size selector with stock status
+  - Quantity picker
+  - Reviews and ratings
+  - Similar products
+  - Scale animation on "Add to Cart"
+- **Shopping Cart**: 
+  - Quantity adjustment (+/-)
+  - Item removal swipe gesture
+  - Subtotal calculation
+  - Promo code application via VoucherCodeSheet
+  - Success overlay on add to cart
+- **Wishlist/Favorites**: 
+  - Heart icon toggle
+  - Persistent across sessions
+  - Quick add to cart from wishlist
+- **Checkout Flow** (5 screens):
+  - Cart review
+  - Shipping address
+  - Payment method selection (COD, Card, PayPal)
+  - Order summary
+  - Success confirmation
+- **Order History**: 
+  - Past orders with status
+  - Order tracking
+  - Reorder functionality
+  - Invoice download
 
-### ✅ **AI-Powered Features**
-- AI Stylist recommendations
-- Outfit planning for events
-- Smart outfit combinations
-- Virtual closet management
-- "Plan My Look" feature
+### ✅ **AI-Powered Features** (4 Advanced Screens)
+- **AI Stylist Dashboard**: 
+  - Personalized recommendations based on user profile
+  - Weather-integrated suggestions
+  - Quick access tiles
+- **Plan My Look**: 
+  - 5 mood options with emoji selection
+  - 5 occasion categories
+  - Date/time picker for future events
+  - Weather integration for smart suggestions
+- **Suggested Outfit Generator**:
+  - AI algorithm with weather-based logic
+  - Occasion-appropriate filtering
+  - Smart category matching (tops, bottoms, shoes, outerwear)
+  - Accessory recommendations
+  - "Try Again" regeneration
+  - Save to profile
+- **Virtual Closet Management**: 
+  - Add purchased items
+  - View wardrobe
+  - Outfit history
+- **Upcoming Events**: 
+  - Calendar view
+  - Saved event outfits
+  - Quick re-planning
 
-### ✅ **User Experience**
-- Onboarding carousel (3 screens)
-- Bottom tab navigation
-- Haptic feedback
-- Loading states
-- Error handling
-- Success animations
-- Pull-to-refresh
-- Swipe gestures
+### ✅ **User Experience Enhancements**
+- **Onboarding Carousel**: 
+  - 3 beautiful slides (Intro, Offers, Payments)
+  - Pagination dots with active state
+  - Skip and Next buttons
+  - Custom images
+- **Navigation**:
+  - Bottom tab navigation with icons
+  - Stack navigation for flows
+  - Modal overlays
+  - Deep linking support (`myapp://`)
+- **Haptic Feedback**: 
+  - Button presses
+  - Success/error vibrations
+  - Tab switches
+- **Loading States**:
+  - Skeleton screens
+  - Spinner animations
+  - Progress indicators
+- **Error Handling**:
+  - User-friendly error messages
+  - Retry mechanisms
+  - Offline mode fallback
+- **Success Animations**:
+  - Scale animations
+  - Fade transitions
+  - Success overlays
+- **Gestures**:
+  - Pull-to-refresh on product lists
+  - Swipe to delete cart items
+  - Swipe carousel for product images
+  - Gesture handler integration
 
 ### ✅ **Notification System**
-- Push notifications
-- Order updates
-- Promotional offers
-- Cart reminders
-- Wishlist restocks
+- **Push Notifications** (Expo Notifications):
+  - Permission requests
+  - Push token registration
+  - Notification badges
+- **Notification Types**:
+  - Order updates (Processing, Shipped, Delivered)
+  - Promotional offers
+  - Cart reminders (abandoned cart recovery)
+  - Wishlist restocks (when item back in stock)
+  - Flash sales alerts
+- **In-App Display**: 
+  - Notification center
+  - Unread badges
+  - Notification history
+
+### ✅ **Additional Features**
+- **Profile Management**:
+  - Edit profile
+  - Change password
+  - Address book
+  - Saved payment methods
+  - Preferences
+- **Image Handling**:
+  - Image picker for profile
+  - Camera access
+  - Photo library
+  - Image optimization
+- **Location Services**:
+  - Auto-detect location
+  - Shipping address suggestions
+  - Store locator (planned)
+- **Date/Time Management**:
+  - dayjs integration
+  - Relative time displays
+  - Calendar picker
+  - Time zone handling
 
 ---
 
