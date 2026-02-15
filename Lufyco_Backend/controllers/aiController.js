@@ -1,8 +1,9 @@
 const multer = require('multer');
 const Product = require('../models/Product');
 const SavedLook = require('../models/SavedLook');
-const { uploadToCloudinary, calculateColorSimilarity } = require('../services/imageService');
+const { uploadToCloudinary } = require('../services/imageService');
 const { generateOutfit } = require('../services/outfitService');
+const { extractFeatures, findSimilarProducts } = require('../services/mlFeatureExtractor');
 
 // Configure multer for memory storage
 const upload = multer({
@@ -22,7 +23,7 @@ const upload = multer({
 
 /**
  * @route   POST /api/ai/image-search
- * @desc    Search for similar products using uploaded image
+ * @desc    Search for similar products using ML-powered image similarity
  * @access  Public
  */
 const imageSearch = async (req, res) => {
@@ -31,46 +32,49 @@ const imageSearch = async (req, res) => {
             return res.status(400).json({ message: 'No image file uploaded' });
         }
 
+        console.log('🔍 Processing image search with ML features...');
+
         // Upload image to Cloudinary
         const uploadResult = await uploadToCloudinary(req.file.buffer, 'lufyco/search');
+        console.log('✅ Image uploaded to Cloudinary');
 
-        // Get all products
-        const allProducts = await Product.find();
+        // Extract ML features from uploaded image
+        const queryFeatures = await extractFeatures(req.file.buffer);
+        console.log(`✅ Extracted ${queryFeatures.length}-dim feature vector`);
 
-        // Simple similarity matching (color-based for MVP)
-        // In production, you'd extract features and compare
-        const results = allProducts.map(product => {
-            // Calculate similarity based on category and basic matching
-            // This is simplified - in production use ML features
-            const similarity = Math.floor(Math.random() * 30) + 70; // Mock 70-100%
+        // Get all products (or filter by category if needed)
+        const allProducts = await Product.find().lean();
+        console.log(`📦 Searching across ${allProducts.length} products`);
 
-            return {
-                product: {
-                    _id: product._id,
-                    name: product.name,
-                    price: product.price,
-                    image: product.image || product.images?.[0],
-                    category: product.category,
-                    type: product.type
-                },
-                similarity,
-                matchedFeatures: ['color', 'category']
-            };
-        });
+        // Find similar products using ML features
+        const similarProducts = findSimilarProducts(queryFeatures, allProducts, 10);
 
-        // Sort by similarity and return top 10
-        const topResults = results
-            .sort((a, b) => b.similarity - a.similarity)
-            .slice(0, 10);
+        // Format results
+        const results = similarProducts.map(item => ({
+            product: {
+                _id: item.product._id,
+                name: item.product.name,
+                price: item.product.price,
+                image: item.product.image || item.product.images?.[0],
+                category: item.product.category,
+                type: item.product.type
+            },
+            similarity: item.similarity,
+            matchedFeatures: ['visual_features', 'deep_learning']
+        }));
+
+        console.log(`✅ Found ${results.length} similar products`);
 
         res.json({
             searchId: uploadResult.public_id,
             uploadedImage: uploadResult.secure_url,
-            results: topResults
+            results,
+            method: 'ml_features',
+            featureVectorDim: queryFeatures.length
         });
 
     } catch (error) {
-        console.error('Image search error:', error);
+        console.error('❌ Image search error:', error);
         res.status(500).json({ message: error.message || 'Image search failed' });
     }
 };
