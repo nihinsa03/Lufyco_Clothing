@@ -1,25 +1,35 @@
 const tf = require('@tensorflow/tfjs-node-gpu');
+const fs = require('fs');
+const path = require('path');
 
-let model = null;
+let customModel = null;
+const MODEL_PATH = path.join(__dirname, '../models/fashion-similarity-model/model.json');
 
 /**
- * Load pre-trained MobileNet model for feature extraction
- * Using MobileNet instead of ResNet50 for faster inference
+ * Load custom trained model
  * @returns {Promise<void>}
  */
-const loadModel = async () => {
-    if (model) return; // Model already loaded
+const loadCustomModel = async () => {
+    if (customModel) return; // Model already loaded
 
     try {
-        console.log('Loading MobileNet model for GPU inference...');
+        // Check if custom model exists
+        if (fs.existsSync(MODEL_PATH)) {
+            console.log('🎯 Loading custom trained fashion model...');
+            customModel = await tf.loadLayersModel(`file://${MODEL_PATH}`);
+            console.log('✅ Custom fashion model loaded successfully');
+        } else {
+            console.log('⚠️ Custom model not found, falling back to pre-trained MobileNet');
+            console.log(`Expected path: ${MODEL_PATH}`);
+            console.log('Run training script: node scripts/trainModel.js');
 
-        // Load MobileNet v2 from TensorFlow Hub
-        model = await tf.loadGraphModel(
-            'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v2_100_224/feature_vector/3/default/1',
-            { fromTFHub: true }
-        );
-
-        console.log('✅ MobileNet model loaded successfully on GPU');
+            // Fallback to pre-trained model
+            customModel = await tf.loadGraphModel(
+                'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v2_100_224/feature_vector/3/default/1',
+                { fromTFHub: true }
+            );
+            console.log('✅ Pre-trained MobileNet v2 loaded as fallback');
+        }
     } catch (error) {
         console.error('❌ Error loading model:', error);
         throw error;
@@ -27,19 +37,19 @@ const loadModel = async () => {
 };
 
 /**
- * Extract feature vector from image buffer
+ * Extract feature vector from image buffer using custom or pre-trained model
  * @param {Buffer} imageBuffer - Image buffer from uploaded file
- * @returns {Promise<Array>} 1280-dimensional feature vector
+ * @returns {Promise<Array>} Feature vector
  */
-const extractFeatures = async (imageBuffer) => {
+const extractFeaturesCustom = async (imageBuffer) => {
     try {
         // Ensure model is loaded
-        await loadModel();
+        await loadCustomModel();
 
         // Decode image from buffer
         const imageTensor = tf.node.decodeImage(imageBuffer, 3);
 
-        // Resize to 224x224 (MobileNet input size)
+        // Resize to 224x224
         const resized = tf.image.resizeBilinear(imageTensor, [224, 224]);
 
         // Normalize pixel values to [0, 1]
@@ -49,7 +59,7 @@ const extractFeatures = async (imageBuffer) => {
         const batched = normalized.expandDims(0);
 
         // Get feature vector from model
-        const features = model.predict(batched);
+        const features = customModel.predict(batched);
 
         // Convert to array
         const featureArray = await features.data();
@@ -117,39 +127,22 @@ const findSimilarProducts = (queryVector, products, topK = 10) => {
 };
 
 /**
- * Batch extract features from multiple images
- * @param {Array} imageBuffers - Array of image buffers
- * @returns {Promise<Array>} Array of feature vectors
+ * Get model info
+ * @returns {Object} Model information
  */
-const batchExtractFeatures = async (imageBuffers) => {
-    const features = [];
-
-    for (const buffer of imageBuffers) {
-        const vector = await extractFeatures(buffer);
-        features.push(vector);
-    }
-
-    return features;
-};
-
-/**
- * Get GPU memory info
- * @returns {Object} GPU memory stats
- */
-const getGPUInfo = () => {
+const getModelInfo = () => {
     return {
+        isCustomModel: fs.existsSync(MODEL_PATH),
+        modelPath: MODEL_PATH,
         backend: tf.getBackend(),
-        numTensors: tf.memory().numTensors,
-        numDataBuffers: tf.memory().numDataBuffers,
-        numBytes: tf.memory().numBytes
+        memory: tf.memory()
     };
 };
 
 module.exports = {
-    loadModel,
-    extractFeatures,
+    loadCustomModel,
+    extractFeatures: extractFeaturesCustom,
     cosineSimilarity,
     findSimilarProducts,
-    batchExtractFeatures,
-    getGPUInfo
+    getModelInfo
 };
