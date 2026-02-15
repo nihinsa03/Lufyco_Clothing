@@ -96,7 +96,7 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
         }
     };
 
-    // Mock search function (will be replaced with actual API call)
+    // Search for similar products using uploaded image
     const searchSimilarProducts = async () => {
         if (!selectedImage) {
             Alert.alert('No Image', 'Please select or capture an image first.');
@@ -105,43 +105,52 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
 
         setSearching(true);
 
-        // Simulate API call
-        setTimeout(() => {
-            // Mock results
-            const mockResults = [
-                {
-                    _id: '1',
-                    name: 'Similar Blue Shirt',
-                    price: 29.99,
-                    image: 'https://via.placeholder.com/150/0000FF/FFFFFF?text=Shirt+1',
-                    similarity: 95,
-                },
-                {
-                    _id: '2',
-                    name: 'Casual Button-Down',
-                    price: 34.99,
-                    image: 'https://via.placeholder.com/150/4169E1/FFFFFF?text=Shirt+2',
-                    similarity: 88,
-                },
-                {
-                    _id: '3',
-                    name: 'Classic Denim Shirt',
-                    price: 39.99,
-                    image: 'https://via.placeholder.com/150/1E90FF/FFFFFF?text=Shirt+3',
-                    similarity: 82,
-                },
-                {
-                    _id: '4',
-                    name: 'Oxford Shirt',
-                    price: 44.99,
-                    image: 'https://via.placeholder.com/150/00BFFF/FFFFFF?text=Shirt+4',
-                    similarity: 78,
-                },
-            ];
+        try {
+            // Prepare image for upload
+            const formData = new FormData();
 
-            setSearchResults(mockResults);
+            // Extract file name from URI
+            const filename = selectedImage.split('/').pop() || 'image.jpg';
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+            formData.append('image', {
+                uri: selectedImage,
+                name: filename,
+                type,
+            } as any);
+
+            // Call backend API
+            const response = await fetch('http://localhost:5001/api/ai/image-search', {
+                method: 'POST',
+                body: formData,
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+
+            if (!response.ok) {
+                throw new Error('Search failed');
+            }
+
+            const data = await response.json();
+
+            // Format results
+            const formattedResults = data.results.map((item: any) => ({
+                _id: item.product._id,
+                name: item.product.name,
+                price: item.product.price,
+                image: item.product.image,
+                similarity: item.similarity,
+            }));
+
+            setSearchResults(formattedResults);
+        } catch (error) {
+            console.error('Search error:', error);
+            Alert.alert('Search Failed', 'Unable to search for similar products. Please try again.');
+        } finally {
             setSearching(false);
-        }, 1500);
+        }
     };
 
     return (
