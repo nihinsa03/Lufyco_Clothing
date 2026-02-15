@@ -2,6 +2,8 @@
 node_modules/
 .DS_Store
 
+# Environment files
+.env
 .env.local
 .env.development.local
 .env.test.local
@@ -26,3 +28,74 @@ coverage/
 Thumbs.db
 ehthumbs.db
 Desktop.ini
+
+# ========================================
+# AI & Machine Learning
+# ========================================
+
+# DeepFashion Dataset (large files)
+DeepFashion/
+deepfashion/
+dataset/
+datasets/
+*.zip
+*.tar.gz
+*.rar
+
+# Uploaded images (temporary)
+uploads/
+temp/
+tmp/
+
+# ML Models (large files)
+models/
+*.h5
+*.pb
+*.pth
+*.onnx
+*.pkl
+*.joblib
+
+# Training outputs
+checkpoints/
+logs/
+tensorboard/
+
+# Image processing cache
+cache/
+.cache/
+
+# ========================================
+# Backend Specific
+# ========================================
+
+# Lufyco_Backend environment
+Lufyco_Backend/.env
+Lufyco_Backend/uploads/
+Lufyco_Backend/temp/
+Lufyco_Backend/dataset/
+
+# ========================================
+# Frontend Specific
+# ========================================
+
+# Expo
+.expo/
+.expo-shared/
+web-build/
+
+# React Native
+*.jsbundle
+*.bundle
+
+# iOS
+Lufyco_Frontend/ios/Pods/
+Lufyco_Frontend/ios/build/
+*.xcworkspace/xcuserdata/
+
+# Android
+Lufyco_Frontend/android/app/build/
+Lufyco_Frontend/android/.gradle/
+*.keystore
+!debug.keystore
+
