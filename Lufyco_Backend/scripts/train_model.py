@@ -25,9 +25,9 @@ from pathlib import Path
 # ========================================
 
 class Config:
-    # Dataset paths - ADJUST THESE TO YOUR DEEPFASHION LOCATION
-    DATASET_ROOT = r"D:\My_PaidProjects\Lufyco_Clothing\DeepFashion"
-    TRAIN_DIR = os.path.join(DATASET_ROOT, "train_images")
+    # Dataset paths
+    DATASET_ROOT = r"D:\My_PaidProjects\Lufyco_Clothing\datasets"
+    TRAIN_DIR = os.path.join(DATASET_ROOT, "train_images_organized")
     TEST_DIR = os.path.join(DATASET_ROOT, "test_images")
     
     # Model settings
@@ -231,6 +231,16 @@ def train_model(config):
     # Note: You'll need tensorflowjs package for this
     # Install: pip install tensorflowjs
     try:
+        # MONKEY PATCH for numpy <-> tensorflowjs compatibility
+        try:
+            np.object = object
+            np.bool = bool
+        except AttributeError:
+            pass
+
+        # Fix for protobuf version mismatch
+        os.environ["PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION"] = "python"
+
         import tensorflowjs as tfjs
         tfjs.converters.save_keras_model(model, tfjs_path)
         print(f"✅ Saved TensorFlow.js model: {tfjs_path}")

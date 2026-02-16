@@ -1,9 +1,24 @@
-const tf = require('@tensorflow/tfjs-node-gpu');
 const fs = require('fs');
 const path = require('path');
+const sharp = require('sharp'); // For image decoding in pure JS mode
+
+// Try to load native TensorFlow (GPU or CPU), fall back to pure JS
+let tf;
+try {
+    tf = require('@tensorflow/tfjs-node-gpu');
+    console.log('✅ Loaded @tensorflow/tfjs-node-gpu');
+} catch (e1) {
+    try {
+        tf = require('@tensorflow/tfjs-node');
+        console.log('✅ Loaded @tensorflow/tfjs-node');
+    } catch (e2) {
+        console.warn('⚠️ Native TensorFlow not found, falling back to pure JS @tensorflow/tfjs');
+        tf = require('@tensorflow/tfjs');
+    }
+}
 
 let customModel = null;
-const MODEL_PATH = path.join(__dirname, '../models/fashion-similarity-model/model.json');
+const MODEL_PATH = path.join(__dirname, '../models/fashion-similarity-model_tfjs/model.json');
 
 /**
  * Load custom trained model
@@ -16,12 +31,11 @@ const loadCustomModel = async () => {
         // Check if custom model exists
         if (fs.existsSync(MODEL_PATH)) {
             console.log('🎯 Loading custom trained fashion model...');
+            // In pure JS mode, use file:// handler if available, or just load directly if node backend
             customModel = await tf.loadLayersModel(`file://${MODEL_PATH}`);
             console.log('✅ Custom fashion model loaded successfully');
         } else {
             console.log('⚠️ Custom model not found, falling back to pre-trained MobileNet');
-            console.log(`Expected path: ${MODEL_PATH}`);
-            console.log('Run training script: node scripts/trainModel.js');
 
             // Fallback to pre-trained model
             customModel = await tf.loadGraphModel(
@@ -46,14 +60,35 @@ const extractFeaturesCustom = async (imageBuffer) => {
         // Ensure model is loaded
         await loadCustomModel();
 
-        // Decode image from buffer
-        const imageTensor = tf.node.decodeImage(imageBuffer, 3);
+        let imageTensor;
 
-        // Resize to 224x224
-        const resized = tf.image.resizeBilinear(imageTensor, [224, 224]);
+        // Use tf.node.decodeImage if available (native backend)
+        if (tf.node && tf.node.decodeImage) {
+            imageTensor = tf.node.decodeImage(imageBuffer, 3);
+        } else {
+            // Fallback: Decode using sharp (pure JS backend)
+            const { data, info } = await sharp(imageBuffer)
+                .removeAlpha()
+                .resize(224, 224, { fit: 'fill' }) // Resize directly for efficiency
+                .raw()
+                .toBuffer({ resolveWithObject: true });
+
+            imageTensor = tf.tensor3d(new Uint8Array(data), [224, 224, 3]);
+        }
+
+        // Processing (Resize if not already, Normalize)
+        let processedTensor = imageTensor;
+
+        // If we didn't resize in sharp (native path), resize here
+        if (tf.node && tf.node.decodeImage) {
+            processedTensor = tf.image.resizeBilinear(imageTensor, [224, 224]);
+        } else {
+            // Sharp already resized to 224x224, but ensure float32
+            processedTensor = imageTensor.toFloat();
+        }
 
         // Normalize pixel values to [0, 1]
-        const normalized = resized.div(255.0);
+        const normalized = processedTensor.div(255.0);
 
         // Add batch dimension
         const batched = normalized.expandDims(0);
