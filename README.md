@@ -9,6 +9,96 @@ This repository contains the source code for the Lufyco Clothing application, in
 
 ---
 
+## Requirements / Dependencies
+
+### Backend (Node.js)
+
+| Package | Version |
+|---------|---------|
+| @tensorflow/tfjs | ^4.22.0 |
+| axios | ^1.13.5 |
+| cloudinary | ^2.9.0 |
+| cors | ^2.8.5 |
+| dotenv | ^17.2.3 |
+| express | ^5.2.1 |
+| mongoose | ^9.1.3 |
+| multer | ^2.0.2 |
+| nodemailer | ^7.0.13 |
+| sharp | ^0.34.5 |
+| validator | ^13.15.26 |
+
+**Dev Dependencies:**
+
+| Package | Version |
+|---------|---------|
+| nodemon | ^3.1.11 |
+
+### Python (ML Model Training)
+
+| Package | Version |
+|---------|---------|
+| tensorflow-gpu | >=2.13.0 |
+| tensorflowjs | >=4.0.0 |
+| numpy | >=1.24.0 |
+| Pillow | >=10.0.0 |
+| matplotlib | >=3.7.0 |
+
+### Frontend (Expo / React Native)
+
+| Package | Version |
+|---------|---------|
+| @expo/vector-icons | ^14.0.2 |
+| @react-native-async-storage/async-storage | ^2.2.0 |
+| @react-navigation/bottom-tabs | ^7.2.0 |
+| @react-navigation/native | ^7.0.14 |
+| @react-navigation/stack | ^7.1.1 |
+| axios | ^1.7.9 |
+| dayjs | ^1.11.18 |
+| expo | ^52.0.47 |
+| expo-blur | ~14.0.3 |
+| expo-constants | ~17.0.5 |
+| expo-device | ^8.0.10 |
+| expo-font | ~13.0.3 |
+| expo-haptics | ~14.0.1 |
+| expo-image-picker | ~16.0.6 |
+| expo-linking | ~7.0.5 |
+| expo-location | ~18.0.10 |
+| expo-notifications | ^0.32.16 |
+| expo-router | ~4.0.17 |
+| expo-splash-screen | ~0.29.21 |
+| expo-status-bar | ~2.0.1 |
+| expo-symbols | ~0.2.2 |
+| expo-system-ui | ~4.0.8 |
+| expo-web-browser | ~14.0.2 |
+| react | 18.3.1 |
+| react-dom | 18.3.1 |
+| react-native | 0.76.7 |
+| react-native-gesture-handler | ~2.20.2 |
+| react-native-pager-view | ^6.7.0 |
+| react-native-reanimated | ~3.16.1 |
+| react-native-safe-area-context | ^4.12.0 |
+| react-native-screens | ~4.4.0 |
+| react-native-ui-datepicker | ^3.1.2 |
+| react-native-vector-icons | ^10.2.0 |
+| react-native-web | ~0.19.13 |
+| react-native-webview | 13.12.5 |
+| zustand | ^5.0.10 |
+
+**Dev Dependencies:**
+
+| Package | Version |
+|---------|---------|
+| @babel/core | ^7.25.2 |
+| @types/jest | ^29.5.12 |
+| @types/react | ~18.3.12 |
+| @types/react-test-renderer | ^18.3.0 |
+| jest | ^29.2.1 |
+| jest-expo | ~52.0.3 |
+| react-test-renderer | 18.3.1 |
+| typescript | ^5.3.3 |
+
+---
+
 ## Prerequisites
 
 Before running the application, ensure you have the following installed:
