@@ -32,21 +32,47 @@ const imageSearch = async (req, res) => {
             return res.status(400).json({ message: 'No image file uploaded' });
         }
 
-        console.log('🔍 Processing image search with ML features...');
+        console.log('🔍 Processing image search...');
 
-        // Upload image to Cloudinary
-        const uploadResult = await uploadToCloudinary(req.file.buffer, 'lufyco/search');
-        console.log('✅ Image uploaded to Cloudinary');
+        // Optional: Try to upload image to Cloudinary (for logging/reference only)
+        let uploadedImageUrl = null;
+        let searchId = `search_${Date.now()}`;
+        try {
+            const uploadResult = await uploadToCloudinary(req.file.buffer, 'lufyco/search');
+            uploadedImageUrl = uploadResult.secure_url;
+            searchId = uploadResult.public_id;
+            console.log('✅ Image uploaded to Cloudinary');
+        } catch (uploadErr) {
+            console.warn('⚠️ Cloudinary upload skipped:', uploadErr.message);
+        }
 
-        // Extract ML features from uploaded image
-        const queryFeatures = await extractFeatures(req.file.buffer);
-        console.log(`✅ Extracted ${queryFeatures.length}-dim feature vector`);
-
-        // Get all products (or filter by category if needed)
+        // Get all products
         const allProducts = await Product.find().lean();
         console.log(`📦 Searching across ${allProducts.length} products`);
 
-        // Find similar products using ML features
+        if (allProducts.length === 0) {
+            return res.json({
+                searchId,
+                uploadedImage: uploadedImageUrl,
+                results: [],
+                method: 'no_products',
+                message: 'No products in the database to search against.'
+            });
+        }
+
+        let queryFeatures = [];
+        let method = 'fallback';
+
+        // Try ML feature extraction (may fail if TF not properly loaded)
+        try {
+            queryFeatures = await extractFeatures(req.file.buffer);
+            console.log(`✅ Extracted ${queryFeatures.length}-dim feature vector`);
+            method = 'ml_features';
+        } catch (mlError) {
+            console.warn('⚠️ ML feature extraction failed, using fallback:', mlError.message);
+        }
+
+        // Find similar products (has built-in fallback if no feature vectors)
         const similarProducts = findSimilarProducts(queryFeatures, allProducts, 10);
 
         // Format results
@@ -60,16 +86,16 @@ const imageSearch = async (req, res) => {
                 type: item.product.type
             },
             similarity: item.similarity,
-            matchedFeatures: ['visual_features', 'deep_learning']
+            matchedFeatures: item.fallback ? ['category_match'] : ['visual_features', 'deep_learning']
         }));
 
-        console.log(`✅ Found ${results.length} similar products`);
+        console.log(`✅ Found ${results.length} similar products (method: ${method})`);
 
         res.json({
-            searchId: uploadResult.public_id,
-            uploadedImage: uploadResult.secure_url,
+            searchId,
+            uploadedImage: uploadedImageUrl,
             results,
-            method: 'ml_features',
+            method,
             featureVectorDim: queryFeatures.length
         });
 

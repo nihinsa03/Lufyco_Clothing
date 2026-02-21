@@ -14,6 +14,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
+import api from '../api/api';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'ImageSearch'>;
 
@@ -120,20 +121,15 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
                 type,
             } as any);
 
-            // Call backend API
-            const response = await fetch('http://localhost:5001/api/ai/image-search', {
-                method: 'POST',
-                body: formData,
+            // Call backend API using shared api instance
+            const response = await api.post('/ai/image-search', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                 },
+                timeout: 30000, // 30s timeout for ML processing
             });
 
-            if (!response.ok) {
-                throw new Error('Search failed');
-            }
-
-            const data = await response.json();
+            const data = response.data;
 
             // Format results
             const formattedResults = data.results.map((item: any) => ({
@@ -145,9 +141,10 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
             }));
 
             setSearchResults(formattedResults);
-        } catch (error) {
+        } catch (error: any) {
             console.error('Search error:', error);
-            Alert.alert('Search Failed', 'Unable to search for similar products. Please try again.');
+            const message = error.response?.data?.message || error.message || 'Unable to search for similar products.';
+            Alert.alert('Search Failed', message + ' Please try again.');
         } finally {
             setSearching(false);
         }
