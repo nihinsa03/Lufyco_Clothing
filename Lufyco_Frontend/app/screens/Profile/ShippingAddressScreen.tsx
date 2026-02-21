@@ -10,37 +10,69 @@ import {
     Alert,
     KeyboardAvoidingView,
     Platform,
-    ToastAndroid
+    ToastAndroid,
+    Image,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useProfileStore } from "../../store/useProfileStore";
-import { Address } from "../../store/useCheckoutStore"; // Reuse type
+import { useTheme } from "../../context/ThemeContext";
+import { Address } from "../../store/useCheckoutStore";
+
+const PROVINCES = [
+    "Western", "Central", "Southern", "Northern", "Eastern",
+    "North Western", "North Central", "Uva", "Sabaragamuwa"
+];
+
+const CITIES: Record<string, string[]> = {
+    "Western": ["Colombo", "Gampaha", "Kalutara", "Negombo", "Panadura"],
+    "Central": ["Kandy", "Matale", "Nuwara Eliya"],
+    "Southern": ["Galle", "Matara", "Hambantota"],
+    "Northern": ["Jaffna", "Kilinochchi", "Mullaitivu"],
+    "Eastern": ["Batticaloa", "Trincomalee", "Ampara"],
+    "North Western": ["Kurunegala", "Puttalam"],
+    "North Central": ["Anuradhapura", "Polonnaruwa"],
+    "Uva": ["Badulla", "Monaragala"],
+    "Sabaragamuwa": ["Ratnapura", "Kegalle"],
+};
 
 const ShippingAddressScreen = () => {
     const navigation = useNavigation();
     const { savedAddress, saveAddress } = useProfileStore();
+    const { colors } = useTheme();
 
-    const [form, setForm] = useState<Address>({
-        fullName: "",
-        phone: "",
-        country: "United States",
-        city: "",
-        addressLine: "",
-        postalCode: "",
-    });
+    const [fullName, setFullName] = useState("");
+    const [phone, setPhone] = useState("");
+    const [province, setProvince] = useState("");
+    const [city, setCity] = useState("");
+    const [addressLine, setAddressLine] = useState("");
+    const [postalCode, setPostalCode] = useState("");
+    const [showProvinces, setShowProvinces] = useState(false);
+    const [showCities, setShowCities] = useState(false);
 
     useEffect(() => {
         if (savedAddress) {
-            setForm(savedAddress);
+            setFullName(savedAddress.fullName || "");
+            setPhone(savedAddress.phone || "");
+            setCity(savedAddress.city || "");
+            setAddressLine(savedAddress.addressLine || "");
+            setPostalCode(savedAddress.postalCode || "");
         }
     }, [savedAddress]);
 
     const onSave = () => {
-        if (!form.fullName || !form.addressLine) {
-            Alert.alert("Required", "Please fill in the required fields.");
+        if (!fullName || !addressLine || !phone) {
+            Alert.alert("Required", "Please fill in all required fields.");
             return;
         }
+        const form: Address = {
+            fullName,
+            phone: "+94 " + phone,
+            country: "Sri Lanka",
+            city: city || province,
+            addressLine,
+            postalCode,
+        };
         saveAddress(form);
         if (Platform.OS === 'android') {
             ToastAndroid.show("Address Saved", ToastAndroid.SHORT);
@@ -50,48 +82,143 @@ const ShippingAddressScreen = () => {
         navigation.goBack();
     };
 
-    const renderInput = (label: string, field: keyof Address, placeholder: string) => (
-        <View style={styles.inputGroup}>
-            <Text style={styles.label}>{label}</Text>
-            <TextInput
-                style={styles.input}
-                placeholder={placeholder}
-                value={form[field]}
-                onChangeText={(t) => setForm({ ...form, [field]: t })}
-            />
-        </View>
-    );
-
     return (
-        <SafeAreaView style={styles.safe}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { borderColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Feather name="arrow-left" size={24} color="#111" />
+                    <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Shipping Address</Text>
+                <View style={styles.headerCenter}>
+                    <Text style={[styles.headerTitle, { color: colors.text }]}>Shipping Address</Text>
+                    <Feather name="map-pin" size={16} color={colors.textMuted} style={{ marginLeft: 6 }} />
+                </View>
                 <View style={{ width: 24 }} />
             </View>
 
             <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={{ flex: 1 }}>
-                <ScrollView contentContainerStyle={{ padding: 20 }}>
-                    {renderInput("Full Name", "fullName", "Ex: Jane Doe")}
-                    {renderInput("Phone Number", "phone", "Ex: +1 234 ...")}
-                    {renderInput("City", "city", "Ex: New York")}
-                    {renderInput("Street Address", "addressLine", "Ex: 123 Main St")}
-                    {renderInput("Postal Code", "postalCode", "Ex: 10001")}
+                <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
 
+                    {/* Full Name */}
                     <View style={styles.inputGroup}>
-                        <Text style={styles.label}>Country</Text>
-                        <View style={[styles.input, { justifyContent: 'center', backgroundColor: '#F9FAFB' }]}>
-                            <Text style={{ color: '#111' }}>{form.country}</Text>
+                        <Text style={[styles.label, { color: colors.text }]}>Full Name <Text style={styles.required}>*</Text></Text>
+                        <TextInput
+                            style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.inputBg }]}
+                            placeholder="Enter full name"
+                            placeholderTextColor={colors.textMuted}
+                            value={fullName}
+                            onChangeText={setFullName}
+                        />
+                    </View>
+
+                    {/* Phone Number */}
+                    <View style={styles.inputGroup}>
+                        <Text style={[styles.label, { color: colors.text }]}>Phone Number <Text style={styles.required}>*</Text></Text>
+                        <View style={[styles.phoneRow, { borderColor: colors.border, backgroundColor: colors.inputBg }]}>
+                            <View style={styles.flagBox}>
+                                <Text style={{ fontSize: 20 }}>🇱🇰</Text>
+                                <Feather name="chevron-down" size={14} color={colors.textMuted} style={{ marginLeft: 4 }} />
+                            </View>
+                            <View style={[styles.divider, { backgroundColor: colors.border }]} />
+                            <Text style={[styles.countryCode, { color: colors.textMuted }]}>+94</Text>
+                            <TextInput
+                                style={[styles.phoneInput, { color: colors.text }]}
+                                placeholder=""
+                                placeholderTextColor={colors.textMuted}
+                                keyboardType="phone-pad"
+                                value={phone}
+                                onChangeText={setPhone}
+                            />
                         </View>
                     </View>
+
+                    {/* Province Dropdown */}
+                    <View style={styles.inputGroup}>
+                        <Text style={[styles.label, { color: colors.text }]}>Select Province</Text>
+                        <TouchableOpacity
+                            style={[styles.dropdown, { borderColor: colors.border, backgroundColor: colors.inputBg }]}
+                            onPress={() => { setShowProvinces(!showProvinces); setShowCities(false); }}
+                        >
+                            <Text style={[styles.dropdownText, { color: province ? colors.text : colors.textMuted }]}>
+                                {province || "Select Province"}
+                            </Text>
+                            <Feather name="chevron-down" size={18} color={colors.textMuted} />
+                        </TouchableOpacity>
+                        {showProvinces && (
+                            <View style={[styles.dropdownList, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                                {PROVINCES.map((p) => (
+                                    <TouchableOpacity
+                                        key={p}
+                                        style={[styles.dropdownItem, { borderBottomColor: colors.border }]}
+                                        onPress={() => { setProvince(p); setCity(""); setShowProvinces(false); }}
+                                    >
+                                        <Text style={[styles.dropdownItemText, { color: colors.text }]}>{p}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+                    </View>
+
+                    {/* City Dropdown */}
+                    <View style={styles.inputGroup}>
+                        <Text style={[styles.label, { color: colors.text }]}>Select City</Text>
+                        <TouchableOpacity
+                            style={[styles.dropdown, { borderColor: colors.border, backgroundColor: colors.inputBg }]}
+                            onPress={() => {
+                                if (!province) { Alert.alert("", "Please select a province first."); return; }
+                                setShowCities(!showCities); setShowProvinces(false);
+                            }}
+                        >
+                            <Text style={[styles.dropdownText, { color: city ? colors.text : colors.textMuted }]}>
+                                {city || "Select City"}
+                            </Text>
+                            <Feather name="chevron-down" size={18} color={colors.textMuted} />
+                        </TouchableOpacity>
+                        {showCities && province && (
+                            <View style={[styles.dropdownList, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                                {(CITIES[province] || []).map((c) => (
+                                    <TouchableOpacity
+                                        key={c}
+                                        style={[styles.dropdownItem, { borderBottomColor: colors.border }]}
+                                        onPress={() => { setCity(c); setShowCities(false); }}
+                                    >
+                                        <Text style={[styles.dropdownItemText, { color: colors.text }]}>{c}</Text>
+                                    </TouchableOpacity>
+                                ))}
+                            </View>
+                        )}
+                    </View>
+
+                    {/* Street Address */}
+                    <View style={styles.inputGroup}>
+                        <Text style={[styles.label, { color: colors.text }]}>Street Address <Text style={styles.required}>*</Text></Text>
+                        <TextInput
+                            style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.inputBg }]}
+                            placeholder="Enter street address"
+                            placeholderTextColor={colors.textMuted}
+                            value={addressLine}
+                            onChangeText={setAddressLine}
+                        />
+                    </View>
+
+                    {/* Postal Code */}
+                    <View style={styles.inputGroup}>
+                        <Text style={[styles.label, { color: colors.text }]}>Postal Code <Text style={styles.required}>*</Text></Text>
+                        <TextInput
+                            style={[styles.input, { borderColor: colors.border, color: colors.text, backgroundColor: colors.inputBg }]}
+                            placeholder="Enter postal code"
+                            placeholderTextColor={colors.textMuted}
+                            keyboardType="number-pad"
+                            value={postalCode}
+                            onChangeText={setPostalCode}
+                        />
+                    </View>
+
                 </ScrollView>
             </KeyboardAvoidingView>
 
-            <View style={styles.footer}>
+            <View style={[styles.footer, { backgroundColor: colors.background, borderColor: colors.border }]}>
                 <TouchableOpacity style={styles.btn} onPress={onSave}>
-                    <Text style={styles.btnText}>Save Address</Text>
+                    <Text style={styles.btnText}>Save</Text>
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
@@ -99,22 +226,56 @@ const ShippingAddressScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" },
+    safe: { flex: 1 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F3F4F6'
+        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1,
     },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: '#111' },
+    headerCenter: { flexDirection: 'row', alignItems: 'center' },
+    headerTitle: { fontSize: 18, fontWeight: '700' },
 
-    inputGroup: { marginBottom: 16 },
-    label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#374151' },
+    inputGroup: { marginBottom: 18 },
+    label: { fontSize: 14, fontWeight: '600', marginBottom: 8 },
+    required: { color: '#EF4444' },
     input: {
-        height: 50, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12,
-        paddingHorizontal: 16, fontSize: 15, color: '#111'
+        height: 50, borderWidth: 1, borderRadius: 12,
+        paddingHorizontal: 16, fontSize: 15,
     },
 
-    footer: { position: 'absolute', bottom: 0, width: '100%', padding: 20, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#F3F4F6' },
-    btn: { backgroundColor: '#111', height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    phoneRow: {
+        flexDirection: 'row', alignItems: 'center',
+        height: 50, borderWidth: 1, borderRadius: 12,
+        paddingHorizontal: 12,
+    },
+    flagBox: { flexDirection: 'row', alignItems: 'center' },
+    divider: { width: 1, height: 24, marginHorizontal: 10 },
+    countryCode: { fontSize: 15, marginRight: 4 },
+    phoneInput: { flex: 1, fontSize: 15, height: 48 },
+
+    dropdown: {
+        height: 50, borderWidth: 1, borderRadius: 12,
+        paddingHorizontal: 16, flexDirection: 'row',
+        alignItems: 'center', justifyContent: 'space-between',
+    },
+    dropdownText: { fontSize: 15 },
+    dropdownList: {
+        borderWidth: 1, borderRadius: 12,
+        marginTop: 4, overflow: 'hidden',
+    },
+    dropdownItem: {
+        paddingVertical: 12, paddingHorizontal: 16,
+        borderBottomWidth: 1,
+    },
+    dropdownItemText: { fontSize: 14 },
+
+    footer: {
+        position: 'absolute', bottom: 0, width: '100%',
+        padding: 20, borderTopWidth: 1,
+    },
+    btn: {
+        backgroundColor: '#111', height: 56, borderRadius: 14,
+        alignItems: 'center', justifyContent: 'center',
+    },
     btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });
 
