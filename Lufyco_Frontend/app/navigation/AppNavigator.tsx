@@ -46,6 +46,7 @@ import WishlistScreen from "../screens/WishlistScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import OrderHistoryScreen from "../screens/OrderHistoryScreen";
 import ChangePasswordScreen from "../screens/ChangePasswordScreen";
+import NotificationsScreen from "../screens/NotificationsScreen";
 
 // Checkout Flow
 import CheckoutShippingScreen from "../screens/Checkout/CheckoutShippingScreen";
@@ -126,6 +127,7 @@ export type RootStackParamList = {
   Sale: undefined;
   ImageSearch: undefined;
 
+  Notifications: undefined;
   Wishlist: undefined;
   MyCart: undefined;
 
@@ -204,6 +206,7 @@ export default function AppNavigator() {
           <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
           <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+          <Stack.Screen name="Notifications" component={NotificationsScreen} />
 
           {/* Checkout Flow */}
           <Stack.Screen name="CheckoutShipping" component={CheckoutShippingScreen} />

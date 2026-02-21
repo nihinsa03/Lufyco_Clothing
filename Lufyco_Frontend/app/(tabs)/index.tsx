@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { CartProvider } from "../context/CartContext";
 import { AuthProvider } from "../context/AuthContext";
+import { ThemeProvider } from "../context/ThemeContext";
 import AppNavigator from "../navigation/AppNavigator";
 import { registerForPushNotificationsAsync, scheduleDailyNotifications } from "../services/notificationService";
 
@@ -16,10 +17,12 @@ export default function App() {
   }, []);
 
   return (
-    <AuthProvider>
-      <CartProvider>
-        <AppNavigator />
-      </CartProvider>
-    </AuthProvider>
+    <ThemeProvider>
+      <AuthProvider>
+        <CartProvider>
+          <AppNavigator />
+        </CartProvider>
+      </AuthProvider>
+    </ThemeProvider>
   );
 }

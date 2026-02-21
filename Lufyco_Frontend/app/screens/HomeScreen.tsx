@@ -7,6 +7,7 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCart } from "../context/CartContext";
 import { useShopStore } from "../store/useShopStore";
+import { useTheme } from "../context/ThemeContext";
 import { RootStackParamList } from "../navigation/AppNavigator";
 
 const screenWidth = Dimensions.get("window").width;
@@ -15,6 +16,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 const HomeScreen = ({ navigation }: Props) => {
   const { products, categories, setFilter } = useShopStore();
+  const { colors } = useTheme();
 
 
   // Filter for Latest Products (New Arrivals)
@@ -30,30 +32,31 @@ const HomeScreen = ({ navigation }: Props) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      <View style={styles.container}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.logo}>Fashion</Text>
+          <Text style={[styles.logo, { color: colors.text }]}>Fashion</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconBtn}><Feather name="bell" size={24} color="#000" /></TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn}><Feather name="heart" size={24} color="#000" /></TouchableOpacity>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate("Notifications" as any)}>
+              <Feather name="bell" size={24} color={colors.text} />
+            </TouchableOpacity>
+            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate("Main", { screen: "Wishlist" } as any)}>
+              <Feather name="heart" size={24} color={colors.text} />
+            </TouchableOpacity>
             <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate("Main", { screen: "Profile" } as any)}>
-              <Feather name="user" size={24} color="#000" />
+              <Feather name="user" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Search */}
-        <TouchableOpacity style={styles.searchBox} onPress={() => navigation.navigate("Search")}>
-          <Ionicons name="search-outline" size={20} color="#666" />
-          <Text style={styles.searchInput}>Search for brands and products</Text>
-          <View style={styles.searchRightIcons}>
-            <TouchableOpacity onPress={() => navigation.navigate("ImageSearch")}>
-              <Feather name="camera" size={20} color="#667eea" style={{ marginRight: 15 }} />
-            </TouchableOpacity>
-            <Feather name="mic" size={20} color="#666" />
-          </View>
+        <TouchableOpacity style={[styles.searchBox, { backgroundColor: colors.searchBg }]} onPress={() => navigation.navigate("Search")}>
+          <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
+          <Text style={[styles.searchInput, { color: colors.textSecondary }]}>Search for brands and products</Text>
+          <TouchableOpacity onPress={() => navigation.navigate("ImageSearch")}>
+            <Feather name="camera" size={20} color="#667eea" />
+          </TouchableOpacity>
         </TouchableOpacity>
 
         {/* Content */}
