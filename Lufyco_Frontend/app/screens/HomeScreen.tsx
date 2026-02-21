@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, FlatList,
-  Dimensions, SafeAreaView, ActivityIndicator
+  Dimensions, SafeAreaView, ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -18,6 +18,35 @@ const HomeScreen = ({ navigation }: Props) => {
   const { products, categories, setFilter } = useShopStore();
   const { colors } = useTheme();
 
+  // Banner carousel data
+  const banners = [
+    { image: require("../../assets/images/categories/men/watches.jpg"), discount: "30% OFF", title: "On Watches", subtitle: "Exclusive Sales" },
+    { image: require("../../assets/images/categories/men/jackets.jpg"), discount: "25% OFF", title: "On Jackets", subtitle: "Winter Collection" },
+    { image: require("../../assets/images/categories/men/perfume.jpg"), discount: "40% OFF", title: "On Perfumes", subtitle: "Premium Fragrances" },
+    { image: require("../../assets/images/categories/men/sports-shoes.jpg"), discount: "20% OFF", title: "On Sneakers", subtitle: "Trending Now" },
+    { image: require("../../assets/images/categories/men/sweater.jpg"), discount: "35% OFF", title: "On Sweaters", subtitle: "Season Sale" },
+  ];
+
+  const [activeBanner, setActiveBanner] = useState(0);
+  const bannerScrollRef = useRef<ScrollView>(null);
+  const bannerWidth = screenWidth - 32; // account for padding
+
+  // Auto-scroll banners
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setActiveBanner(prev => {
+        const next = (prev + 1) % banners.length;
+        bannerScrollRef.current?.scrollTo({ x: next * bannerWidth, animated: true });
+        return next;
+      });
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const handleBannerScroll = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+    const index = Math.round(event.nativeEvent.contentOffset.x / bannerWidth);
+    setActiveBanner(index);
+  };
 
   // Filter for Latest Products (New Arrivals)
   const latestProducts = products.filter(p => p.isNewArrival).slice(0, 4);
@@ -90,23 +119,34 @@ const HomeScreen = ({ navigation }: Props) => {
             ))}
           </View>
 
-          {/* Banner */}
+          {/* Banner Carousel */}
           <View style={styles.bannerContainer}>
-            <Image source={require("../../assets/images/categories/men/watches.jpg")} style={styles.banner} resizeMode="cover" />
-            <View style={styles.bannerOverlay}>
-              <View style={styles.discountTag}>
-                <Text style={styles.discountText}>30% OFF</Text>
-              </View>
-              <Text style={styles.bannerTitle}>On Watches</Text>
-              <Text style={styles.bannerSubtitle}>Exclusive Sales</Text>
-            </View>
+            <ScrollView
+              ref={bannerScrollRef}
+              horizontal
+              pagingEnabled
+              showsHorizontalScrollIndicator={false}
+              onMomentumScrollEnd={handleBannerScroll}
+              style={{ borderRadius: 20 }}
+            >
+              {banners.map((banner, index) => (
+                <View key={index} style={[styles.bannerSlide, { width: bannerWidth }]}>
+                  <Image source={banner.image} style={styles.banner} resizeMode="cover" />
+                  <View style={styles.bannerOverlay}>
+                    <View style={styles.discountTag}>
+                      <Text style={styles.discountText}>{banner.discount}</Text>
+                    </View>
+                    <Text style={styles.bannerTitle}>{banner.title}</Text>
+                    <Text style={styles.bannerSubtitle}>{banner.subtitle}</Text>
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
             {/* Pagination Dots */}
             <View style={styles.paginationDots}>
-              <View style={[styles.dot, styles.activeDot]} />
-              <View style={styles.dot} />
-              <View style={styles.dot} />
-              <View style={styles.dot} />
-              <View style={styles.dot} />
+              {banners.map((_, index) => (
+                <View key={index} style={[styles.dot, index === activeBanner && styles.activeDot]} />
+              ))}
             </View>
           </View>
 
@@ -190,6 +230,7 @@ const styles = StyleSheet.create({
   categoryName: { fontSize: 10, fontWeight: '600', textAlign: 'center', color: '#333' },
 
   bannerContainer: { height: 180, borderRadius: 20, overflow: 'hidden', marginBottom: 25, position: 'relative' },
+  bannerSlide: { height: 180, borderRadius: 20, overflow: 'hidden' },
   banner: { width: "100%", height: "100%" },
   bannerOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 20, justifyContent: 'center' },
   discountTag: { backgroundColor: '#111', alignSelf: 'flex-start', paddingHorizontal: 8, paddingVertical: 4, borderRadius: 4, marginBottom: 5 },
