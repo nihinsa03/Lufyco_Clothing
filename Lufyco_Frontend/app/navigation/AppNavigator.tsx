@@ -19,7 +19,7 @@ import IntroScreen from "../screens/IntroScreen";
 import OffersScreen from "../screens/OffersScreen";
 import PaymentsScreen from "../screens/PaymentsScreen";
 import VerificationScreen from "../screens/VerificationScreen";
-import ForgotPasswordScreen from "../screens/ForgotPasswordScreen";
+import ForgotPasswordScreen from "../screens/ForgotPasswordScreenFixed";
 import ForgotPasswordVerificationScreen from "../screens/ForgotPasswordVerificationScreen";
 import ResetPasswordScreen from "../screens/ResetPasswordScreen";
 // import PasswordResetSuccessScreen from "../screens/PasswordResetSuccessScreen"; // Replaced
@@ -35,6 +35,7 @@ import ShopNewStylesScreen from "../screens/ShopNewStylesScreen";
 import UpcomingEventsScreen from "../screens/UpcomingEventsScreen";
 import AddToClosetScreen from "../screens/AddToClosetScreen";
 import AddToClosetPreviewScreen from "../screens/AddToClosetPreviewScreen";
+import ImageSearchScreen from "../screens/ImageSearchScreen";
 import WomensWearScreen from "../screens/WomensWearScreen";
 import WomenTopsScreen from "../screens/WomenTopsScreen";
 import WomenTopDetailsScreen from "../screens/WomenTopDetailsScreen";
@@ -45,6 +46,7 @@ import WishlistScreen from "../screens/WishlistScreen";
 import ProfileScreen from "../screens/ProfileScreen";
 import OrderHistoryScreen from "../screens/OrderHistoryScreen";
 import ChangePasswordScreen from "../screens/ChangePasswordScreen";
+import NotificationsScreen from "../screens/NotificationsScreen";
 
 // Checkout Flow
 import CheckoutShippingScreen from "../screens/Checkout/CheckoutShippingScreen";
@@ -123,7 +125,9 @@ export type RootStackParamList = {
   Search: undefined;
   Filter: undefined;
   Sale: undefined;
+  ImageSearch: undefined;
 
+  Notifications: undefined;
   Wishlist: undefined;
   MyCart: undefined;
 
@@ -182,7 +186,9 @@ export default function AppNavigator() {
           <Stack.Screen name="Search" component={require('../screens/Shop/SearchScreen').default} />
           <Stack.Screen name="Filter" component={require('../screens/Shop/FilterModal').default} options={{ presentation: 'modal' }} />
           <Stack.Screen name="Sale" component={require('../screens/Shop/SaleScreen').default} />
+          <Stack.Screen name="ImageSearch" component={ImageSearchScreen} />
 
+          <Stack.Screen name="Categories" component={CategoriesScreen} />
           <Stack.Screen name="MensWear" component={MensWearScreen} />
           <Stack.Screen name="MenCasualShirts" component={MenCasualShirtsScreen} />
           <Stack.Screen name="AIStylist" component={AIStylistScreen} />
@@ -200,6 +206,7 @@ export default function AppNavigator() {
           <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
           <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
           <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
+          <Stack.Screen name="Notifications" component={NotificationsScreen} />
 
           {/* Checkout Flow */}
           <Stack.Screen name="CheckoutShipping" component={CheckoutShippingScreen} />

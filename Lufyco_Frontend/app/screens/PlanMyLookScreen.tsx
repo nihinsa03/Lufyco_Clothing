@@ -22,14 +22,13 @@ type Props = NativeStackScreenProps<RootStackParamList, "PlanMyLook">;
 
 const moods = [
   { key: "Happy", label: "Happy", emoji: "😊" },
-  { key: "Chill", label: "Chill", emoji: "😌" },
   { key: "Confident", label: "Confident", emoji: "😎" },
-  { key: "Trendy", label: "Trendy", emoji: "✨" },
-  { key: "Edgy", label: "Edgy", emoji: "🎸" },
-  { key: "Elegant", label: "Elegant", emoji: "🍸" },
+  { key: "Sad", label: "Sad", emoji: "☹️" },
+  { key: "Tired", label: "Tired", emoji: "😐" },
+  { key: "Excited", label: "Excited", emoji: "😁" },
 ];
 
-const occasions = ["Casual", "Office", "Party", "Date", "Wedding", "Gym"] as const;
+const occasions = ["Casual", "Office", "Party", "Date", "Wedding"] as const;
 const timeNeeds = ["Now", "Future"] as const;
 
 const formatDateTime = (d: Dayjs) => d.format("DD MMM YYYY | hh:mm A");
@@ -129,7 +128,6 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
           <SectionTitle>How are you feeling today ?</SectionTitle>
 
           {/* 2 rows (3 columns then 2 columns) to match UI */}
-          {/* 2 rows with 3 columns each */}
           <View style={styles.moodRow}>
             {moods.slice(0, 3).map((m) => (
               <MoodTile
@@ -142,7 +140,7 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
             ))}
           </View>
           <View style={styles.moodRow}>
-            {moods.slice(3, 6).map((m) => (
+            {moods.slice(3, 5).map((m) => (
               <MoodTile
                 key={m.key}
                 emoji={m.emoji}
@@ -151,6 +149,8 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
                 onPress={() => setMood(m.key)}
               />
             ))}
+            {/* Spacer to maintain alignment */}
+            <View style={{ width: "30%" }} />
           </View>
         </View>
 

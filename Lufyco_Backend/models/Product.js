@@ -50,6 +50,11 @@ const productSchema = new mongoose.Schema(
             type: Number,
             default: 0,
         },
+        featureVector: {
+            type: [Number],
+            required: false,
+            default: []
+        }
     },
     {
         timestamps: true,

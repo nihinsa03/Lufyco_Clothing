@@ -1,7 +1,8 @@
 export interface Category {
     id: string;
     name: string;
-    image: any; // require() path or uri string
+    image: any;
+    gender: 'men' | 'women';
 }
 
 export interface Product {
@@ -11,15 +12,13 @@ export interface Product {
     oldPrice?: number;
     rating: number;
     reviews: number;
-    images: any[]; // require() paths or uri strings
+    images: any[];
     categoryId: string;
     tags: string[];
     colors: string[];
     sizes: string[];
     isExclusive?: boolean;
     description?: string;
-
-    // New fields
     isNewArrival?: boolean;
     isPopular?: boolean;
     isPriceDropping?: boolean;
@@ -29,18 +28,18 @@ export interface Product {
 import { MOCK_PRODUCTS } from './mockProducts';
 
 export const mockCategories: Category[] = [
-    { id: 'cat_shirts', name: 'Shirts', image: require('../../assets/images/categories/men/shirts.png') },
-    { id: 'cat_jeans', name: 'Jeans', image: require('../../assets/images/categories/men/jeans.jpg') },
-    { id: 'cat_tshirts', name: 'Tshirts', image: require('../../assets/images/categories/men/tshirts.jpg') },
-    { id: 'cat_casual_shoes', name: 'Casual Shoes', image: require('../../assets/images/categories/men/casual-shoes.jpg') },
-    { id: 'cat_sweater', name: 'Sweater', image: require('../../assets/images/categories/men/sweater.jpg') },
-    { id: 'cat_sports_shoes', name: 'Sports Shoes', image: require('../../assets/images/categories/men/sports-shoes.jpg') },
-    { id: 'cat_dresses', name: 'Dresses', image: require('../../assets/images/categories/women/dresses.jpg') },
-    { id: 'cat_tops', name: 'Tops', image: require('../../assets/images/categories/women/tops.jpg') },
-    { id: 'cat_trousers', name: 'Trousers', image: require('../../assets/images/categories/men/trousers.jpg') },
-    { id: 'cat_heels', name: 'Heels', image: require('../../assets/images/categories/women/heels.jpg') },
-    { id: 'cat_jackets', name: 'Jackets', image: require('../../assets/images/categories/men/jackets.jpg') },
-    { id: 'cat_kurtas', name: 'Kurtas', image: require('../../assets/images/categories/women/kurtas.jpg') },
+    { id: 'cat_shirts', name: 'Shirts', image: require('../../assets/images/categories/men/shirts.png'), gender: 'men' },
+    { id: 'cat_jeans', name: 'Jeans', image: require('../../assets/images/categories/men/jeans.jpg'), gender: 'men' },
+    { id: 'cat_tshirts', name: 'Tshirts', image: require('../../assets/images/categories/men/tshirts.jpg'), gender: 'men' },
+    { id: 'cat_casual_shoes', name: 'Casual Shoes', image: require('../../assets/images/categories/men/casual-shoes.jpg'), gender: 'men' },
+    { id: 'cat_sweater', name: 'Sweater', image: require('../../assets/images/categories/men/sweater.jpg'), gender: 'men' },
+    { id: 'cat_sports_shoes', name: 'Sports Shoes', image: require('../../assets/images/categories/men/sports-shoes.jpg'), gender: 'men' },
+    { id: 'cat_dresses', name: 'Dresses', image: require('../../assets/images/categories/women/dresses.jpg'), gender: 'women' },
+    { id: 'cat_tops', name: 'Tops', image: require('../../assets/images/categories/women/tops.jpg'), gender: 'women' },
+    { id: 'cat_trousers', name: 'Trousers', image: require('../../assets/images/categories/men/trousers.jpg'), gender: 'men' },
+    { id: 'cat_heels', name: 'Heels', image: require('../../assets/images/categories/women/heels.jpg'), gender: 'women' },
+    { id: 'cat_jackets', name: 'Jackets', image: require('../../assets/images/categories/men/jackets.jpg'), gender: 'men' },
+    { id: 'cat_kurtas', name: 'Kurtas', image: require('../../assets/images/categories/women/kurtas.jpg'), gender: 'women' },
 ];
 
 // Helper to map category name to ID
@@ -68,6 +67,7 @@ mockCategories.forEach((cat) => {
             isNewArrival: i <= 2, // First 2 are new
             isPopular: i > 2 && i <= 4,
             isPriceDropping: i === 5,
+            oldPrice: i === 5 ? Math.floor(Math.random() * (12000 - 9000) + 9000) : undefined, // Add oldPrice for item 5
         });
     }
 });

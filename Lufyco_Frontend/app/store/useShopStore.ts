@@ -17,6 +17,10 @@ export interface FilterState {
     priceMin?: number;
     priceMax?: number;
     categoryId?: string;
+
+    // Sorting
+    priceLowToHigh?: boolean;
+    priceHighToLow?: boolean;
 }
 
 interface ShopState {
@@ -44,6 +48,8 @@ const initialFilters: FilterState = {
     priceDropping: false,
     discountOnly: false,
     popularity: false,
+    priceLowToHigh: false,
+    priceHighToLow: false,
 
     priceMin: undefined,
     priceMax: undefined,
@@ -64,8 +70,22 @@ export const useShopStore = create<ShopState>()(
 
             toggleFilter: (key) => set((state) => {
                 const val = state.activeFilters[key];
+
+                // Handle basic booleans
                 if (typeof val === 'boolean') {
-                    return { activeFilters: { ...state.activeFilters, [key]: !val } };
+                    let nextFilters = { ...state.activeFilters, [key]: !val };
+
+                    // Enforce mutual exclusivity for price sort
+                    if (key === 'priceLowToHigh' && !val) {
+                        // If turning ON LowToHigh, turn OFF HighToLow
+                        nextFilters.priceHighToLow = false;
+                    }
+                    if (key === 'priceHighToLow' && !val) {
+                        // If turning ON HighToLow, turn OFF LowToHigh
+                        nextFilters.priceLowToHigh = false;
+                    }
+
+                    return { activeFilters: nextFilters };
                 }
                 return state;
             }),
@@ -117,8 +137,12 @@ export const useShopStore = create<ShopState>()(
                 });
 
                 // Sorting
-                if (popularity) {
-                    filtered.sort((a, b) => b.reviews - a.reviews); // Mock popularity by reviews
+                if (activeFilters.priceLowToHigh) {
+                    filtered.sort((a, b) => (a.price || 0) - (b.price || 0));
+                } else if (activeFilters.priceHighToLow) {
+                    filtered.sort((a, b) => (b.price || 0) - (a.price || 0));
+                } else if (popularity) {
+                    filtered.sort((a, b) => (b.reviews || 0) - (a.reviews || 0));
                 }
 
                 return filtered;

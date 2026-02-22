@@ -10,8 +10,12 @@ const COLUMN_WIDTH = (width - 45) / 2;
 
 const CategoryProductsScreen = () => {
     const navigation = useNavigation<any>();
-    const { getFilteredProducts } = useShopStore();
+    const { getFilteredProducts, activeFilters } = useShopStore();
     const products = getFilteredProducts();
+
+    let headerTitle = "Products";
+    if (activeFilters.query) headerTitle = `"${activeFilters.query}"`;
+    else if (activeFilters.discountOnly) headerTitle = "Exclusive Sale";
 
     const renderItem = ({ item }: { item: Product }) => (
         <TouchableOpacity
@@ -34,13 +38,18 @@ const CategoryProductsScreen = () => {
                     {item.colors.slice(0, 3).map((c, i) => (
                         <View key={i} style={[styles.dot, { backgroundColor: c }]} />
                     ))}
-                    <Text style={styles.plusText}>All Colors</Text>
+                    {item.colors.length > 3 && (
+                        <Text style={styles.plusText}>+{item.colors.length - 3} Colors</Text>
+                    )}
                 </View>
 
                 <Text numberOfLines={1} style={styles.title}>{item.title}</Text>
 
                 <View style={styles.priceRow}>
                     <Text style={styles.price}>LKR {item.price.toFixed(2)}</Text>
+                    {item.oldPrice && (
+                        <Text style={styles.oldPrice}>LKR {item.oldPrice.toFixed(2)}</Text>
+                    )}
                 </View>
             </View>
         </TouchableOpacity>
@@ -53,15 +62,15 @@ const CategoryProductsScreen = () => {
                     <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 15 }}>
                         <Feather name="arrow-left" size={24} color="#000" />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Products</Text>
+                    <Text style={styles.headerTitle}>{headerTitle}</Text>
                 </View>
 
                 <View style={styles.headerIcons}>
                     <TouchableOpacity onPress={() => navigation.navigate('Filter')} style={{ marginRight: 15 }}>
-                        <Feather name="filter" size={22} color="#000" />
+                        <Ionicons name="options-outline" size={24} color="#000" />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-                        <Ionicons name="search" size={22} color="#000" />
+                        <Ionicons name="search" size={24} color="#000" />
                     </TouchableOpacity>
                 </View>
             </View>

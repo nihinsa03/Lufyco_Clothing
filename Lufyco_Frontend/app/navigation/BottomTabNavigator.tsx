@@ -9,14 +9,16 @@ import MyCartScreen from '../screens/MyCartScreen'; // Exist
 import WishlistScreen from '../screens/WishlistScreen'; // Exist
 import ProfileScreen from '../screens/ProfileScreen';
 import { useCart } from '../context/CartContext';
+import { useTheme } from '../context/ThemeContext';
 
 const Tab = createBottomTabNavigator();
 
 const CustomTabBar = ({ state, descriptors, navigation }: any) => {
     const { count } = useCart();
+    const { colors } = useTheme();
 
     return (
-        <View style={styles.tabBar}>
+        <View style={[styles.tabBar, { backgroundColor: colors.tabBar, borderColor: colors.border }]}>
             {state.routes.map((route: any, index: number) => {
                 const { options } = descriptors[route.key];
                 const isFocused = state.index === index;
@@ -67,14 +69,14 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
                         style={styles.tabItem}
                     >
                         <View>
-                            <IconComp name={iconName} size={22} color={isFocused ? '#111' : '#999'} />
+                            <IconComp name={iconName} size={22} color={isFocused ? colors.tabActive : colors.tabInactive} />
                             {route.name === 'MyCart' && count > 0 && (
                                 <View style={styles.badge}>
                                     <Text style={styles.badgeText}>{count}</Text>
                                 </View>
                             )}
                         </View>
-                        <Text style={{ fontSize: 10, color: isFocused ? '#111' : '#999', marginTop: 4, fontWeight: isFocused ? '700' : '500' }}>
+                        <Text style={{ fontSize: 10, color: isFocused ? colors.tabActive : colors.tabInactive, marginTop: 4, fontWeight: isFocused ? '700' : '500' }}>
                             {label}
                         </Text>
                     </TouchableOpacity>

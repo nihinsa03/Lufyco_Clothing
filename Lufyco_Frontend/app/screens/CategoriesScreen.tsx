@@ -1,59 +1,185 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
 import { useShopStore } from '../store/useShopStore';
 import { useNavigation } from '@react-navigation/native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
+import { mockCategories, Category } from '../data/mockData';
 
 const { width } = Dimensions.get('window');
-const COLUMN_count = 3;
-const ITEM_WIDTH = (width - 40) / COLUMN_count;
+
+// Sidebar categories data with actual product images
+const SIDEBAR_ITEMS = [
+  { id: 'men', name: "Men's Wear", image: require('../../assets/images/categories/men/shirts.png') },
+  { id: 'women', name: "Women's Wear", image: require('../../assets/images/categories/women/dresses.jpg') },
+  { id: 'kids', name: "Kids's Wear", image: require('../../assets/images/categories/women/kurtas.jpg') }, // Using kurtas as placeholder for kids
+  { id: 'footwear', name: "Foot Wear", image: require('../../assets/images/categories/men/casual-shoes.jpg') },
+  { id: 'beauty', name: "Beauty Products", image: require('../../assets/images/categories/women/perfume.jpg') },
+  { id: 'jewellery', name: "Jewellery", image: require('../../assets/images/categories/women/handbags.jpg') },
+  { id: 'accessories', name: "Accessories", image: require('../../assets/images/categories/women/handbags.jpg') },
+];
+
+// Map sidebar ID to mockCategories filter or specific subcategories
+const getSubCategories = (sidebarId: string) => {
+  switch (sidebarId) {
+    case 'men':
+      return mockCategories.filter(c => c.gender === 'men' && !c.id.includes('shoes'));
+    case 'women':
+      return mockCategories.filter(c => c.gender === 'women' && !c.id.includes('heels'));
+    case 'footwear':
+      return mockCategories.filter(c => c.id.includes('shoes') || c.id.includes('heels'));
+    // Fallbacks for categories where we might not have 'mock' data yet, returning empty or generic
+    default:
+      // For demo purposes, if no specific match, show some random categories to populate the grid
+      if (['kids', 'beauty', 'jewellery', 'accessories'].includes(sidebarId)) {
+        // In a real app, you'd fetch specific data. Here distinct filtered lists or empty.
+        return [];
+      }
+      return [];
+  }
+};
 
 const CategoriesScreen = () => {
-  const { categories, setCategory } = useShopStore();
+  const { setFilter } = useShopStore();
   const navigation = useNavigation<any>();
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // Start with nothing selected
 
-  const handlePress = (catId: string) => {
-    setCategory(catId);
+  const subCategories = selectedCategory ? getSubCategories(selectedCategory) : []; // Only show if something is selected
+
+  const handleSubCategoryPress = (catId: string) => {
+    setFilter({ categoryId: catId });
     navigation.navigate('CategoryProducts');
+  };
+
+  const renderSidebarItem = ({ item }: { item: any }) => {
+    const isActive = selectedCategory === item.id;
+    return (
+      <TouchableOpacity
+        style={[styles.sidebarItem, isActive && styles.sidebarItemActive]}
+        onPress={() => setSelectedCategory(item.id)}
+      >
+        <View style={styles.imageBox}>
+          <Image
+            source={item.image}
+            style={styles.sidebarImage}
+            resizeMode="cover"
+          />
+        </View>
+        <Text style={styles.sidebarText}>
+          {item.name}
+        </Text>
+      </TouchableOpacity>
+    );
   };
 
   return (
     <SafeAreaView style={styles.safe}>
+      {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.title}>Categories</Text>
-        <TouchableOpacity>
-          <Feather name="search" size={22} color="#111" />
-        </TouchableOpacity>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 15 }}>
+            <Feather name="arrow-left" size={24} color="#111" />
+          </TouchableOpacity>
+          <Text style={styles.title}>Categories</Text>
+        </View>
+        <View style={styles.headerRight}>
+          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+            <Feather name="bell" size={22} color="#111" style={{ marginRight: 15 }} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+            <Feather name="heart" size={22} color="#111" style={{ marginRight: 15 }} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
+            <Feather name="user" size={22} color="#111" />
+          </TouchableOpacity>
+        </View>
       </View>
 
-      <FlatList
-        data={categories}
-        keyExtractor={item => item.id}
-        numColumns={COLUMN_count}
-        contentContainerStyle={{ padding: 20 }}
-        columnWrapperStyle={{ justifyContent: 'space-between', marginBottom: 20 }}
-        renderItem={({ item }) => (
-          <TouchableOpacity style={styles.item} onPress={() => handlePress(item.id)}>
-            <View style={styles.imageBox}>
-              <Image source={item.image} style={styles.image} resizeMode="cover" />
+      <View style={styles.contentContainer}>
+        {/* Left Sidebar */}
+        <View style={styles.sidebar}>
+          <FlatList
+            data={SIDEBAR_ITEMS}
+            keyExtractor={item => item.id}
+            renderItem={renderSidebarItem}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingVertical: 10 }}
+          />
+        </View>
+
+        {/* Right Content Area */}
+        <View style={styles.mainContent}>
+          {subCategories.length > 0 ? (
+            <FlatList
+              data={subCategories}
+              keyExtractor={item => item.id}
+              numColumns={2}
+              columnWrapperStyle={{ justifyContent: 'space-between' }}
+              contentContainerStyle={{ padding: 20 }}
+              renderItem={({ item }) => (
+                <TouchableOpacity style={styles.subCategoryItem} onPress={() => handleSubCategoryPress(item.id)}>
+                  <View style={styles.subCategoryImageContainer}>
+                    <Image source={item.image} style={styles.subCategoryImage} resizeMode="cover" />
+                  </View>
+                  <Text style={styles.subCategoryName}>{item.name}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          ) : (
+            <View style={styles.emptyState}>
+              <Feather name="package" size={40} color="#ccc" />
+              <Text style={styles.emptyText}>No items found</Text>
             </View>
-            <Text style={styles.name}>{item.name}</Text>
-          </TouchableOpacity>
-        )}
-      />
+          )}
+        </View>
+      </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
   safe: { flex: 1, backgroundColor: "#fff" },
-  header: { flexDirection: 'row', justifyContent: 'space-between', padding: 20, alignItems: 'center' },
-  title: { fontSize: 24, fontWeight: '800', color: '#111' },
+  header: {
+    flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, alignItems: 'center',
+    borderBottomWidth: 1, borderBottomColor: '#F3F4F6', backgroundColor: '#fff'
+  },
+  title: { fontSize: 20, fontWeight: '600', color: '#111' },
+  headerRight: { flexDirection: 'row' },
 
-  item: { width: ITEM_WIDTH, alignItems: 'center' },
-  imageBox: { width: ITEM_WIDTH, height: ITEM_WIDTH * 1.2, borderRadius: 12, overflow: 'hidden', marginBottom: 8, backgroundColor: '#F3F4F6' },
-  image: { width: '100%', height: '100%' },
-  name: { fontSize: 13, fontWeight: '600', color: '#333' },
+  contentContainer: { flex: 1, flexDirection: 'row' },
+
+  // Sidebar
+  sidebar: {
+    width: 90,
+    backgroundColor: '#fff',
+    borderWidth: 2,
+    borderColor: '#3B82F6', // Blue border like Figma
+    borderRadius: 20,
+    margin: 10
+  },
+  sidebarItem: { alignItems: 'center', paddingVertical: 15, width: '100%' },
+  sidebarItemActive: { backgroundColor: '#F0F7FF' }, // Light blue background for active
+
+  imageBox: {
+    width: 56,
+    height: 56,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 6,
+    backgroundColor: '#F3F4F6'
+  },
+  sidebarImage: { width: '100%', height: '100%' },
+
+  sidebarText: { fontSize: 10, textAlign: 'center', color: '#4B5563', fontWeight: '500', paddingHorizontal: 4 },
+
+  // Main Content
+  mainContent: { flex: 1, backgroundColor: '#fff' },
+  subCategoryItem: { width: '47%', marginBottom: 20, alignItems: 'center' },
+  subCategoryImageContainer: { width: '100%', aspectRatio: 1, borderRadius: 12, overflow: 'hidden', marginBottom: 8, backgroundColor: '#F9FAFB' },
+  subCategoryImage: { width: '100%', height: '100%' },
+  subCategoryName: { fontSize: 13, fontWeight: '500', color: '#111', textAlign: 'center' },
+
+  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  emptyText: { marginTop: 10, color: '#999', fontSize: 14 },
 });
 
 export default CategoriesScreen;
