@@ -53,7 +53,12 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
     <SafeAreaView style={styles.safe}>
       {/* Header */}
       <View style={styles.header}>
-        <Text style={styles.greet}>Hello, {user?.name?.split(" ")[0] || "User"}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 10 }}>
+            <Ionicons name="arrow-back" size={24} color="#000" />
+          </TouchableOpacity>
+          <Text style={styles.greet}>Hello, {user?.name?.split(" ")[0] || "User"}</Text>
+        </View>
         <View style={styles.headerIcons}>
           <Feather name="bell" size={22} style={styles.hIcon} />
           <Feather name="heart" size={22} style={styles.hIcon} onPress={() => navigation.navigate("Wishlist")} />
