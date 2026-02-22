@@ -19,22 +19,22 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const handleSave = async () => {
     try {
-      // In a real app, upload image to a cloud storage (Cloudinary/S3) and get URL.
-      // For this demo, we'll just send the local URI (it won't persist across devices but works for demo).
-      // Or if using base64.
-
       const payload = {
         name: "New Upload",
-        category: "Tops", // Defaulting for now
+        category: "Tops",
         image: uri,
+        color: "#000000",
       };
 
-      await api.post("/closet", payload);
+      console.log("Saving to closet:", JSON.stringify(payload).substring(0, 200));
+      const res = await api.post("/closet", payload);
+      console.log("Save response:", res.data);
       alert("Added to closet!");
       navigation.navigate("MyCloset");
-    } catch (e) {
-      console.error(e);
-      alert("Failed to save.");
+    } catch (e: any) {
+      const errorMsg = e.response?.data?.message || e.message || "Unknown error";
+      console.error("Save to closet failed:", errorMsg, e);
+      alert(`Failed to save: ${errorMsg}`);
     }
   };
 

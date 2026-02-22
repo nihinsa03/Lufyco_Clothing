@@ -9,11 +9,14 @@ import {
     ScrollView,
     Switch,
     StatusBar,
+    Alert,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useAuthStore } from "../store/useAuthStore";
+import { useProfileStore } from "../store/useProfileStore";
 import { useTheme } from "../context/ThemeContext";
+import * as ImagePicker from "expo-image-picker";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -23,6 +26,48 @@ const ProfileScreen = () => {
     const navigation = useNavigation<NavProp>();
     const { logout, user } = useAuthStore();
     const { isDark, toggleTheme, colors } = useTheme();
+    const { user: profileUser, updateUser } = useProfileStore();
+
+    const pickImageFromGallery = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+            Alert.alert("Permission Denied", "We need camera roll permissions to change your profile picture.");
+            return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ["images"],
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+        if (!result.canceled && result.assets[0]) {
+            updateUser({ avatar: result.assets[0].uri });
+        }
+    };
+
+    const pickImageFromCamera = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== "granted") {
+            Alert.alert("Permission Denied", "We need camera permissions to take a profile picture.");
+            return;
+        }
+        const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.8,
+        });
+        if (!result.canceled && result.assets[0]) {
+            updateUser({ avatar: result.assets[0].uri });
+        }
+    };
+
+    const handleChangeProfilePicture = () => {
+        Alert.alert("Change Profile Picture", "Choose an option", [
+            { text: "📷 Take Photo", onPress: pickImageFromCamera },
+            { text: "🖼️ Choose from Gallery", onPress: pickImageFromGallery },
+            { text: "Cancel", style: "cancel" },
+        ]);
+    };
 
     const personalItems = [
         { label: "Shipping Address", icon: "map-pin", action: () => navigation.navigate("ShippingAddress") },
@@ -61,13 +106,21 @@ const ProfileScreen = () => {
                 </View>
 
                 <View style={styles.profileRow}>
-                    <Image source={require("../../assets/images/clothing.png")} style={styles.avatar} />
+                    <TouchableOpacity onPress={handleChangeProfilePicture} activeOpacity={0.7}>
+                        <Image
+                            source={profileUser?.avatar ? { uri: profileUser.avatar } : require("../../assets/images/clothing.png")}
+                            style={styles.avatar}
+                        />
+                        <View style={styles.cameraIcon}>
+                            <Feather name="camera" size={12} color="#fff" />
+                        </View>
+                    </TouchableOpacity>
                     <View style={styles.profileInfo}>
                         <Text style={styles.userName}>{user?.name || user?.email?.split('@')[0] || "Guest"}</Text>
                         <Text style={styles.userEmail}>{user?.email || "guest@example.com"}</Text>
                     </View>
-                    <TouchableOpacity style={styles.editBtn}>
-                        <Feather name="refresh-cw" size={18} color="#fff" />
+                    <TouchableOpacity style={styles.editBtn} onPress={handleChangeProfilePicture}>
+                        <Feather name="camera" size={18} color="#fff" />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -149,6 +202,12 @@ const styles = StyleSheet.create({
         width: 56, height: 56, borderRadius: 28,
         borderWidth: 2, borderColor: 'rgba(255,255,255,0.5)',
         backgroundColor: '#fff',
+    },
+    cameraIcon: {
+        position: 'absolute', bottom: 0, right: 0,
+        width: 22, height: 22, borderRadius: 11,
+        backgroundColor: '#4A90D9', alignItems: 'center', justifyContent: 'center',
+        borderWidth: 2, borderColor: '#fff',
     },
     profileInfo: { flex: 1, marginLeft: 14 },
     userName: { fontSize: 18, fontWeight: '700', color: '#fff', marginBottom: 2 },
