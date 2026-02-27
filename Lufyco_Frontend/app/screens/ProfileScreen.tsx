@@ -209,6 +209,27 @@ const ProfileScreen = () => {
                             </TouchableOpacity>
                         </View>
 
+                        {/* Profile Picture Changer */}
+                        <TouchableOpacity
+                            style={{ alignItems: 'center', marginBottom: 20 }}
+                            onPress={() => {
+                                setIsEditModalVisible(false);
+                                setTimeout(() => handleChangeProfilePicture(), 400);
+                            }}
+                            activeOpacity={0.7}
+                        >
+                            <View>
+                                <Image
+                                    source={profileUser?.avatar ? { uri: profileUser.avatar } : require("../../assets/images/clothing.png")}
+                                    style={{ width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: isDark ? colors.border : '#4A90D9' }}
+                                />
+                                <View style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: isDark ? '#3B5BFF' : '#4A90D9', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: isDark ? colors.card : '#fff' }}>
+                                    <Feather name="camera" size={13} color="#fff" />
+                                </View>
+                            </View>
+                            <Text style={{ marginTop: 8, fontSize: 14, fontWeight: '600', color: isDark ? '#60A5FA' : '#4A90D9' }}>Change Profile Photo</Text>
+                        </TouchableOpacity>
+
                         <View style={styles.inputContainer}>
                             <Text style={[styles.inputLabel, { color: colors.textMuted }]}>Name</Text>
                             <TextInput
