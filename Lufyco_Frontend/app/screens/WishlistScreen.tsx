@@ -69,9 +69,7 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
                     <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
                 <Text style={[styles.headerTitle, { color: colors.text }]}>Wishlist</Text>
-                <TouchableOpacity style={{ padding: 4 }}>
-                    <Feather name="more-horizontal" size={24} color={colors.text} />
-                </TouchableOpacity>
+                <View style={{ width: 24 }} />
             </View>
 
             <ScrollView contentContainerStyle={{ padding: 16 }}>

@@ -58,19 +58,23 @@ const CheckoutPaymentScreen = () => {
     };
 
     const renderMethodIcon = (id: 'visa' | 'mastercard' | 'paypal' | 'googlepay') => {
-        const iconColor = selectedMethod === id ? '#2563EB' : '#6B7280';
-        const iconSize = id === 'visa' || id === 'mastercard' ? 32 : 28;
-
+        let source;
         switch (id) {
             case 'visa':
-                return <FontAwesome5 name="cc-visa" size={iconSize} color={iconColor} />;
+                source = require('../../../assets/images/visa.png');
+                break;
             case 'mastercard':
-                return <FontAwesome5 name="cc-mastercard" size={iconSize} color={iconColor} />;
+                source = require('../../../assets/images/mastercard.png');
+                break;
             case 'paypal':
-                return <FontAwesome5 name="cc-paypal" size={iconSize} color={iconColor} />;
+                source = require('../../../assets/images/paypal.png');
+                break;
             case 'googlepay':
-                return <FontAwesome5 name="google-pay" size={iconSize} color={iconColor} />;
+                source = require('../../../assets/images/googlepay.png');
+                break;
         }
+
+        return <Image source={source} style={{ width: 44, height: 28, resizeMode: 'contain', opacity: selectedMethod === id ? 1 : 0.6 }} />;
     };
 
     const renderMethod = (id: 'visa' | 'mastercard' | 'paypal' | 'googlepay') => (
