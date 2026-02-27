@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions } from 'react-native';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions, Image } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
@@ -90,13 +90,16 @@ export const OTPInput = ({ otp, setOtp }: { otp: string, setOtp: (s: string) => 
 export const SocialRow = () => (
     <View style={styles.socialRow}>
         <TouchableOpacity style={styles.socialBtn}>
-            <Ionicons name="logo-google" size={24} color="#DB4437" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialBtn}>
-            <Ionicons name="logo-apple" size={24} color="#000" />
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.socialBtn}>
             <Ionicons name="logo-facebook" size={24} color="#1877F2" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.socialBtn}>
+            <Image source={require('../../assets/images/instagram_icon.png')} style={{ width: 28, height: 28, borderRadius: 6 }} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.socialBtn}>
+            <Image source={require('../../assets/images/google_icon.png')} style={{ width: 28, height: 28, borderRadius: 6 }} />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.socialBtn}>
+            <Ionicons name="logo-tiktok" size={24} color="#000" />
         </TouchableOpacity>
     </View>
 );

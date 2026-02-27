@@ -98,14 +98,20 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
                             <TouchableOpacity
                                 style={[styles.cartBtn, { backgroundColor: isDark ? colors.iconBg : '#E5E7EB' }]}
                                 onPress={() => {
-                                    addItem({
-                                        productId: item.productId,
-                                        title: item.title,
-                                        price: item.price,
-                                        image: item.image,
-                                        qty: 1,
-                                    });
-                                    Alert.alert('Added to Cart', `${item.title} added to your cart!`);
+                                    try {
+                                        const imageVal = typeof item.image === 'number' ? '' : item.image;
+                                        addItem({
+                                            productId: item.productId,
+                                            title: item.title,
+                                            price: item.price,
+                                            image: imageVal,
+                                            qty: 1,
+                                        });
+                                        navigation.navigate('MyCart' as any);
+                                    } catch (e) {
+                                        console.error('Add to cart error:', e);
+                                        Alert.alert('Error', 'Could not add item to cart. Please try again.');
+                                    }
                                 }}
                             >
                                 <Feather name="shopping-cart" size={16} color={colors.text} />
