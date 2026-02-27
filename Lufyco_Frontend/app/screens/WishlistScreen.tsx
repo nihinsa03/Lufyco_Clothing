@@ -8,10 +8,13 @@ import {
     Image,
     ScrollView,
     Modal,
-    Dimensions
+    Dimensions,
+    Alert,
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useWishlistStore } from "../store/useWishlistStore";
+import { useCartStore } from "../store/useCartStore";
+import { useTheme } from "../context/ThemeContext";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -20,6 +23,8 @@ const { width, height } = Dimensions.get("window");
 
 const WishlistScreen: React.FC<Props> = ({ navigation }) => {
     const { items, removeFromWishlist } = useWishlistStore();
+    const { addItem } = useCartStore();
+    const { colors, isDark } = useTheme();
     const [deleteId, setDeleteId] = useState<string | null>(null);
 
     const confirmDelete = () => {
@@ -31,12 +36,12 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
 
     if (items.length === 0) {
         return (
-            <SafeAreaView style={styles.safe}>
-                <View style={styles.header}>
+            <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+                <View style={[styles.header, { borderColor: colors.border }]}>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Feather name="arrow-left" size={24} />
+                        <Feather name="arrow-left" size={24} color={colors.text} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Wishlist</Text>
+                    <Text style={[styles.headerTitle, { color: colors.text }]}>Wishlist</Text>
                     <View style={{ width: 24 }} />
                 </View>
 
@@ -46,10 +51,10 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
                         style={styles.emptyImg}
                         resizeMode="contain"
                     />
-                    <Text style={styles.emptyTitle}>Your wishlist is empty</Text>
-                    <Text style={styles.emptySub}>Tap the heart icon to start saving your favorites</Text>
+                    <Text style={[styles.emptyTitle, { color: colors.text }]}>Your wishlist is empty</Text>
+                    <Text style={[styles.emptySub, { color: colors.textMuted }]}>Tap the heart icon to start saving your favorites</Text>
 
-                    <TouchableOpacity style={styles.exploreBtn} onPress={() => navigation.navigate("Home")}>
+                    <TouchableOpacity style={[styles.exploreBtn, { backgroundColor: isDark ? '#3B5BFF' : '#111' }]} onPress={() => navigation.navigate("Home")}>
                         <Text style={styles.exploreText}>Explore Categories</Text>
                     </TouchableOpacity>
                 </View>
@@ -58,39 +63,56 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
     }
 
     return (
-        <SafeAreaView style={styles.safe}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { borderColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Feather name="arrow-left" size={24} color="#111" />
+                    <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Wishlist</Text>
-                <TouchableOpacity style={{ padding: 4 }}>
-                    <Feather name="more-horizontal" size={24} color="#111" />
-                </TouchableOpacity>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Wishlist</Text>
+                <View style={{ width: 24 }} />
             </View>
 
             <ScrollView contentContainerStyle={{ padding: 16 }}>
                 {items.map((item) => (
-                    <View key={item.id} style={styles.card}>
-                        <Image
-                            source={typeof item.image === 'string' ? { uri: item.image } : item.image}
-                            style={styles.itemThumb}
-                        />
-                        <View style={styles.itemInfo}>
-                            <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
-                            <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
-                        </View>
+                    <View key={item.id} style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
+                        <TouchableOpacity
+                            style={{ flexDirection: 'row', flex: 1, alignItems: 'center' }}
+                            onPress={() => navigation.navigate("ProductDetails", { id: item.productId, product: item } as any)}
+                        >
+                            <Image
+                                source={typeof item.image === 'string' ? { uri: item.image } : item.image}
+                                style={[styles.itemThumb, { backgroundColor: isDark ? colors.iconBg : '#eee' }]}
+                            />
+                            <View style={styles.itemInfo}>
+                                <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={2}>{item.title}</Text>
+                                <Text style={[styles.itemPrice, { color: colors.text }]}>${item.price.toFixed(2)}</Text>
+                            </View>
+                        </TouchableOpacity>
 
                         <View style={styles.actions}>
-                            <TouchableOpacity style={styles.delBtn} onPress={() => setDeleteId(item.productId)}>
+                            <TouchableOpacity style={[styles.delBtn, { backgroundColor: isDark ? '#5C2020' : '#FEE2E2' }]} onPress={() => setDeleteId(item.productId)}>
                                 <Feather name="trash-2" size={18} color="#EF4444" />
                             </TouchableOpacity>
                             <TouchableOpacity
-                                style={styles.cartBtn}
-                                // Navigate to detail to select size/color
-                                onPress={() => navigation.navigate("ProductDetails", { id: item.productId })}
+                                style={[styles.cartBtn, { backgroundColor: isDark ? colors.iconBg : '#E5E7EB' }]}
+                                onPress={() => {
+                                    try {
+                                        const imageVal = typeof item.image === 'number' ? '' : item.image;
+                                        addItem({
+                                            productId: item.productId,
+                                            title: item.title,
+                                            price: item.price,
+                                            image: imageVal,
+                                            qty: 1,
+                                        });
+                                        navigation.navigate('MyCart' as any);
+                                    } catch (e) {
+                                        console.error('Add to cart error:', e);
+                                        Alert.alert('Error', 'Could not add item to cart. Please try again.');
+                                    }
+                                }}
                             >
-                                <Feather name="shopping-cart" size={16} color="#000" />
+                                <Feather name="shopping-cart" size={16} color={colors.text} />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -100,16 +122,16 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
             {/* Delete Confirmation Modal */}
             <Modal visible={!!deleteId} transparent animationType="fade">
                 <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
-                        <Text style={styles.modalTitle}>Delete product from wishlist?</Text>
-                        <Text style={styles.modalSub}>Are you sure you want to remove this item?</Text>
+                    <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+                        <Text style={[styles.modalTitle, { color: colors.text }]}>Delete product from wishlist?</Text>
+                        <Text style={[styles.modalSub, { color: colors.textMuted }]}>Are you sure you want to remove this item?</Text>
 
-                        <TouchableOpacity style={styles.modalDeleteBtn} onPress={confirmDelete}>
+                        <TouchableOpacity style={[styles.modalDeleteBtn, { backgroundColor: isDark ? '#EF4444' : '#111' }]} onPress={confirmDelete}>
                             <Text style={styles.modalDeleteText}>Delete Product</Text>
                         </TouchableOpacity>
 
                         <TouchableOpacity style={styles.modalCancelBtn} onPress={() => setDeleteId(null)}>
-                            <Text style={styles.modalCancelText}>Cancel</Text>
+                            <Text style={[styles.modalCancelText, { color: colors.text }]}>Cancel</Text>
                         </TouchableOpacity>
                     </View>
                 </View>

@@ -40,6 +40,9 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     const [qty, setQty] = useState(1);
     const [showSuccess, setShowSuccess] = useState(false);
     const [successMessage, setSuccessMessage] = useState("Successfully Added to Cart");
+    const [sizeGuideVisible, setSizeGuideVisible] = useState(false);
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [showReadMoreButton, setShowReadMoreButton] = useState(false);
 
     // Animation Values
     const buttonScale = useRef(new Animated.Value(1)).current;
@@ -186,10 +189,24 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                         </View>
                     </View>
 
-                    <Text style={styles.description}>
+                    <Text
+                        style={styles.description}
+                        numberOfLines={isExpanded ? undefined : 3}
+                        onTextLayout={(e) => {
+                            if (e.nativeEvent.lines.length > 3) {
+                                setShowReadMoreButton(true);
+                            }
+                        }}
+                    >
                         {fullProduct.description || "A stylish comfortable piece for your wardrobe. Made from premium materials designed to last."}
-                        <Text style={styles.readMore}> Read more</Text>
                     </Text>
+
+                    {/* Read More / Show Less Toggle only if needed */}
+                    {showReadMoreButton && (
+                        <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)} style={{ marginTop: 4 }}>
+                            <Text style={styles.readMore}>{isExpanded ? "Show less" : "Read more"}</Text>
+                        </TouchableOpacity>
+                    )}
 
                     <View style={styles.divider} />
 
@@ -217,7 +234,9 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                     <View style={styles.section}>
                         <View style={styles.sizeHeader}>
                             <Text style={styles.label}>Size</Text>
-                            <Text style={styles.sizeGuide}>Size Guide</Text>
+                            <TouchableOpacity onPress={() => setSizeGuideVisible(true)}>
+                                <Text style={styles.sizeGuide}>Size Guide</Text>
+                            </TouchableOpacity>
                         </View>
                         <View style={styles.optionsRow}>
                             {(fullProduct.sizes || ['S', 'M', 'L', 'XL']).map((s: string) => (
@@ -280,6 +299,50 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                     </View>
                 </Animated.View>
             )}
+
+            {/* Size Guide Modal */}
+            <Modal
+                visible={sizeGuideVisible}
+                animationType="fade"
+                transparent={true}
+                onRequestClose={() => setSizeGuideVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalContent}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Size Guide</Text>
+                            <TouchableOpacity onPress={() => setSizeGuideVisible(false)} style={{ padding: 4 }}>
+                                <Feather name="x" size={24} color="#111" />
+                            </TouchableOpacity>
+                        </View>
+                        <View style={styles.tableRow}>
+                            <Text style={[styles.tableCell, styles.tableHeader]}>Size</Text>
+                            <Text style={[styles.tableCell, styles.tableHeader]}>Chest (in)</Text>
+                            <Text style={[styles.tableCell, styles.tableHeader]}>Waist (in)</Text>
+                        </View>
+                        <View style={styles.tableRow}>
+                            <Text style={styles.tableCell}>S</Text>
+                            <Text style={styles.tableCell}>34-36</Text>
+                            <Text style={styles.tableCell}>28-30</Text>
+                        </View>
+                        <View style={styles.tableRow}>
+                            <Text style={styles.tableCell}>M</Text>
+                            <Text style={styles.tableCell}>38-40</Text>
+                            <Text style={styles.tableCell}>32-34</Text>
+                        </View>
+                        <View style={styles.tableRow}>
+                            <Text style={styles.tableCell}>L</Text>
+                            <Text style={styles.tableCell}>42-44</Text>
+                            <Text style={styles.tableCell}>36-38</Text>
+                        </View>
+                        <View style={styles.tableRow}>
+                            <Text style={styles.tableCell}>XL</Text>
+                            <Text style={styles.tableCell}>46-48</Text>
+                            <Text style={styles.tableCell}>40-42</Text>
+                        </View>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -397,7 +460,16 @@ const styles = StyleSheet.create({
         width: 40, height: 40, borderRadius: 20, backgroundColor: '#22c55e',
         justifyContent: 'center', alignItems: 'center', marginBottom: 10
     },
-    successText: { color: '#fff', fontSize: 16, fontWeight: '600' }
+    successText: { color: '#fff', fontSize: 16, fontWeight: '600' },
+
+    // Modal Styles
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
+    modalContent: { width: '85%', backgroundColor: '#fff', borderRadius: 16, padding: 20 },
+    modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
+    modalTitle: { fontSize: 18, fontWeight: '700', color: '#111' },
+    tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#F3F4F6', paddingVertical: 12 },
+    tableCell: { flex: 1, textAlign: 'center', fontSize: 14, color: '#333' },
+    tableHeader: { fontWeight: '700', color: '#111' }
 });
 
 export default ProductDetailsScreen;

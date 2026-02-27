@@ -21,6 +21,7 @@ type Props = NativeStackScreenProps<RootStackParamList, 'ImageSearch'>;
 const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [searching, setSearching] = useState(false);
+    const [checkingModel, setCheckingModel] = useState(false);
     const [searchResults, setSearchResults] = useState<any[]>([]);
 
     // Request camera permissions
@@ -150,6 +151,41 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
         }
     };
 
+    // Model Check API Call
+    const checkFitOnModel = async () => {
+        if (!selectedImage) {
+            Alert.alert('No Image', 'Please select or capture an image first.');
+            return;
+        }
+
+        setCheckingModel(true);
+
+        try {
+            const formData = new FormData();
+            const filename = selectedImage.split('/').pop() || 'image.jpg';
+            const match = /\.(\w+)$/.exec(filename);
+            const type = match ? `image/${match[1]}` : 'image/jpeg';
+
+            formData.append('image', {
+                uri: selectedImage,
+                name: filename,
+                type,
+            } as any);
+
+            const response = await api.post('/ai/model-check', formData, {
+                headers: { 'Content-Type': 'multipart/form-data' },
+            });
+
+            Alert.alert('Model Check', 'Fit analyzed successfully! ' + (response.data?.message || ''));
+        } catch (error: any) {
+            console.error('Model check error:', error);
+            const message = error.response?.data?.message || 'Unable to analyze fit.';
+            Alert.alert('Check Failed', message + ' Please try again.');
+        } finally {
+            setCheckingModel(false);
+        }
+    };
+
     return (
         <SafeAreaView style={styles.safe}>
             {/* Header */}
@@ -209,7 +245,7 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
                         <TouchableOpacity
                             style={styles.searchButton}
                             onPress={searchSimilarProducts}
-                            disabled={searching}
+                            disabled={searching || checkingModel}
                         >
                             {searching ? (
                                 <ActivityIndicator color="#fff" />
@@ -217,6 +253,22 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
                                 <>
                                     <Feather name="search" size={20} color="#fff" style={{ marginRight: 8 }} />
                                     <Text style={styles.searchButtonText}>Find Similar Products</Text>
+                                </>
+                            )}
+                        </TouchableOpacity>
+
+                        {/* Model Check Button */}
+                        <TouchableOpacity
+                            style={[styles.searchButton, { backgroundColor: '#10b981', marginTop: 10 }]}
+                            onPress={checkFitOnModel}
+                            disabled={checkingModel || searching}
+                        >
+                            {checkingModel ? (
+                                <ActivityIndicator color="#fff" />
+                            ) : (
+                                <>
+                                    <Feather name="user-check" size={20} color="#fff" style={{ marginRight: 8 }} />
+                                    <Text style={styles.searchButtonText}>Check Fit on Model</Text>
                                 </>
                             )}
                         </TouchableOpacity>

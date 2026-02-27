@@ -9,11 +9,16 @@ import {
     ScrollView,
     Switch,
     StatusBar,
+    Alert,
+    Modal,
+    TextInput,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useAuthStore } from "../store/useAuthStore";
+import { useProfileStore } from "../store/useProfileStore";
 import { useTheme } from "../context/ThemeContext";
+import * as ImagePicker from "expo-image-picker";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -23,6 +28,79 @@ const ProfileScreen = () => {
     const navigation = useNavigation<NavProp>();
     const { logout, user } = useAuthStore();
     const { isDark, toggleTheme, colors } = useTheme();
+    const { user: profileUser, updateUser: updateProfileAvatar } = useProfileStore();
+
+    const [isEditModalVisible, setIsEditModalVisible] = React.useState(false);
+    const [editName, setEditName] = React.useState(user?.name || "");
+    const [editEmail, setEditEmail] = React.useState(user?.email || "");
+    const { updateUser } = useAuthStore();
+
+    const handleSaveProfile = () => {
+        updateUser({ name: editName, email: editEmail });
+        setIsEditModalVisible(false);
+        Alert.alert("Success", "Profile updated successfully!");
+    };
+
+    const handleOpenEdit = () => {
+        setEditName(user?.name || (user?.email?.split('@')[0] || "Guest"));
+        setEditEmail(user?.email || "guest@example.com");
+        setIsEditModalVisible(true);
+    };
+
+    const [localAvatar, setLocalAvatar] = React.useState<string | null>(null);
+
+    const pickImageFromGallery = async () => {
+        const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
+        if (status !== "granted") {
+            Alert.alert("Permission Denied", "We need camera roll permissions to change your profile picture.");
+            return;
+        }
+        const result = await ImagePicker.launchImageLibraryAsync({
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.1,
+        });
+        if (!result.canceled && result.assets[0]) {
+            const uri = result.assets[0].uri;
+            setLocalAvatar(uri);
+            try {
+                updateProfileAvatar({ avatar: uri });
+            } catch (e) {
+                console.warn("Could not persist avatar to storage", e);
+            }
+        }
+    };
+
+    const pickImageFromCamera = async () => {
+        const { status } = await ImagePicker.requestCameraPermissionsAsync();
+        if (status !== "granted") {
+            Alert.alert("Permission Denied", "We need camera permissions to take a profile picture.");
+            return;
+        }
+        const result = await ImagePicker.launchCameraAsync({
+            allowsEditing: true,
+            aspect: [1, 1],
+            quality: 0.1,
+        });
+        if (!result.canceled && result.assets[0]) {
+            const uri = result.assets[0].uri;
+            setLocalAvatar(uri);
+            try {
+                updateProfileAvatar({ avatar: uri });
+            } catch (e) {
+                console.warn("Could not persist avatar to storage", e);
+            }
+        }
+    };
+
+    const handleChangeProfilePicture = () => {
+        Alert.alert("Change Profile Picture", "Choose an option", [
+            { text: "📷 Take Photo", onPress: pickImageFromCamera },
+            { text: "🖼️ Choose from Gallery", onPress: pickImageFromGallery },
+            { text: "Cancel", style: "cancel" },
+        ]);
+    };
 
     const personalItems = [
         { label: "Shipping Address", icon: "map-pin", action: () => navigation.navigate("ShippingAddress") },
@@ -50,24 +128,32 @@ const ProfileScreen = () => {
         <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
             <StatusBar barStyle="light-content" />
 
-            {/* Blue Gradient Header */}
-            <View style={styles.headerGradient}>
+            {/* Header */}
+            <View style={[styles.headerGradient, { backgroundColor: isDark ? colors.card : '#4A90D9', borderBottomColor: isDark ? colors.border : 'transparent', borderBottomWidth: isDark ? 1 : 0 }]}>
                 <View style={styles.headerRow}>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Feather name="arrow-left" size={24} color="#fff" />
+                        <Feather name="arrow-left" size={24} color={isDark ? colors.text : "#fff"} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Profile</Text>
+                    <Text style={[styles.headerTitle, { color: isDark ? colors.text : "#fff" }]}>Profile</Text>
                     <View style={{ width: 24 }} />
                 </View>
 
                 <View style={styles.profileRow}>
-                    <Image source={require("../../assets/images/clothing.png")} style={styles.avatar} />
+                    <TouchableOpacity onPress={handleChangeProfilePicture} activeOpacity={0.7}>
+                        <Image
+                            source={(localAvatar || profileUser?.avatar) ? { uri: localAvatar || profileUser?.avatar } : require("../../assets/images/clothing.png")}
+                            style={[styles.avatar, { borderColor: isDark ? colors.border : 'rgba(255,255,255,0.5)' }]}
+                        />
+                        <View style={[styles.cameraIcon, { backgroundColor: isDark ? colors.card : '#4A90D9', borderColor: isDark ? colors.border : '#fff' }]}>
+                            <Feather name="camera" size={12} color={isDark ? colors.text : "#fff"} />
+                        </View>
+                    </TouchableOpacity>
                     <View style={styles.profileInfo}>
-                        <Text style={styles.userName}>{user?.name || user?.email?.split('@')[0] || "Guest"}</Text>
-                        <Text style={styles.userEmail}>{user?.email || "guest@example.com"}</Text>
+                        <Text style={[styles.userName, { color: isDark ? colors.text : "#fff" }]}>{user?.name || user?.email?.split('@')[0] || "Guest"}</Text>
+                        <Text style={[styles.userEmail, { color: isDark ? colors.textMuted : "rgba(255,255,255,0.8)" }]}>{user?.email || "guest@example.com"}</Text>
                     </View>
-                    <TouchableOpacity style={styles.editBtn}>
-                        <Feather name="refresh-cw" size={18} color="#fff" />
+                    <TouchableOpacity style={[styles.editBtn, { backgroundColor: isDark ? colors.iconBg : 'rgba(255,255,255,0.2)' }]} onPress={handleOpenEdit}>
+                        <Feather name="edit-2" size={18} color={isDark ? colors.text : "#fff"} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -121,6 +207,73 @@ const ProfileScreen = () => {
 
                 <View style={{ height: 30 }} />
             </ScrollView>
+
+            <Modal
+                visible={isEditModalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setIsEditModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={[styles.modalCard, { backgroundColor: colors.card, shadowColor: isDark ? 'transparent' : '#000', borderColor: colors.border, borderWidth: 1 }]}>
+                        <View style={styles.modalHeader}>
+                            <Text style={[styles.modalTitle, { color: colors.text }]}>Edit Profile</Text>
+                            <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
+                                <Feather name="x" size={24} color={colors.text} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Profile Picture Changer */}
+                        <TouchableOpacity
+                            style={{ alignItems: 'center', marginBottom: 20 }}
+                            onPress={async () => {
+                                setIsEditModalVisible(false);
+                                setTimeout(() => pickImageFromGallery(), 400);
+                            }}
+                            activeOpacity={0.7}
+                        >
+                            <View>
+                                <Image
+                                    source={(localAvatar || profileUser?.avatar) ? { uri: localAvatar || profileUser?.avatar } : require("../../assets/images/clothing.png")}
+                                    style={{ width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: isDark ? colors.border : '#4A90D9' }}
+                                />
+                                <View style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: isDark ? '#3B5BFF' : '#4A90D9', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: isDark ? colors.card : '#fff' }}>
+                                    <Feather name="camera" size={13} color="#fff" />
+                                </View>
+                            </View>
+                            <Text style={{ marginTop: 8, fontSize: 14, fontWeight: '600', color: isDark ? '#60A5FA' : '#4A90D9' }}>Upload from Device</Text>
+                        </TouchableOpacity>
+
+                        <View style={styles.inputContainer}>
+                            <Text style={[styles.inputLabel, { color: colors.textMuted }]}>Name</Text>
+                            <TextInput
+                                style={[styles.input, { backgroundColor: isDark ? colors.background : '#F3F4F6', color: colors.text, borderColor: colors.border }]}
+                                value={editName}
+                                onChangeText={setEditName}
+                                placeholder="Enter your name"
+                                placeholderTextColor={colors.textMuted}
+                            />
+                        </View>
+
+                        <View style={styles.inputContainer}>
+                            <Text style={[styles.inputLabel, { color: colors.textMuted }]}>Email</Text>
+                            <TextInput
+                                style={[styles.input, { backgroundColor: isDark ? colors.background : '#F3F4F6', color: colors.text, borderColor: colors.border }]}
+                                value={editEmail}
+                                onChangeText={setEditEmail}
+                                placeholder="Enter your email"
+                                keyboardType="email-address"
+                                placeholderTextColor={colors.textMuted}
+                                autoCapitalize="none"
+                            />
+                        </View>
+
+                        <TouchableOpacity style={[styles.saveBtn, { backgroundColor: isDark ? '#3B5BFF' : '#4A90D9' }]} onPress={handleSaveProfile}>
+                            <Text style={styles.saveBtnText}>Save Changes</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -149,6 +302,12 @@ const styles = StyleSheet.create({
         width: 56, height: 56, borderRadius: 28,
         borderWidth: 2, borderColor: 'rgba(255,255,255,0.5)',
         backgroundColor: '#fff',
+    },
+    cameraIcon: {
+        position: 'absolute', bottom: 0, right: 0,
+        width: 22, height: 22, borderRadius: 11,
+        backgroundColor: '#4A90D9', alignItems: 'center', justifyContent: 'center',
+        borderWidth: 2, borderColor: '#fff',
     },
     profileInfo: { flex: 1, marginLeft: 14 },
     userName: { fontSize: 18, fontWeight: '700', color: '#fff', marginBottom: 2 },
@@ -187,6 +346,32 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
     logoutText: { fontSize: 15, fontWeight: '600', color: '#EF4444', marginLeft: 8 },
+
+    modalOverlay: {
+        flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center', alignItems: 'center'
+    },
+    modalCard: {
+        width: '85%', backgroundColor: '#fff',
+        borderRadius: 20, padding: 24,
+        shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, elevation: 10,
+    },
+    modalHeader: {
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        marginBottom: 20,
+    },
+    modalTitle: { fontSize: 20, fontWeight: '700', color: '#111' },
+    inputContainer: { marginBottom: 16 },
+    inputLabel: { fontSize: 13, fontWeight: '600', color: '#666', marginBottom: 8 },
+    input: {
+        backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 16,
+        paddingVertical: 14, fontSize: 15, color: '#111', borderWidth: 1, borderColor: '#E5E7EB',
+    },
+    saveBtn: {
+        backgroundColor: '#4A90D9', borderRadius: 12, paddingVertical: 14,
+        alignItems: 'center', marginTop: 10,
+    },
+    saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });
 
 export default ProfileScreen;

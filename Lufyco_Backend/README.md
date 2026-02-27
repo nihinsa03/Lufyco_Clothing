@@ -44,3 +44,45 @@ npm run dev
 ```bash
 npm start
 ```
+
+## Seed Sample Data
+
+Before using the app, you need to populate the database with sample data.
+
+### Seed Products (Clothing Catalog)
+Inserts ~30 sample clothing products (Men, Women, Kids, Shoes, Accessories):
+```bash
+node seed_products_v2.js
+```
+
+### Seed Closet Items (My Closet)
+Inserts 10 sample closet items across all categories:
+```bash
+node seed_closet.js
+```
+
+> **Note:** These scripts will connect to MongoDB using the `MONGO_URI` in your `.env` file. Make sure the connection string is correct before running.
+
+## API Endpoints
+
+### Products
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/products` | Get all products (supports `?gender=`, `?category=`, `?search=` filters) |
+| POST | `/api/products` | Create a new product |
+
+### Closet
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| GET | `/api/closet` | Get all closet items (supports `?category=`, `?search=` filters) |
+| POST | `/api/closet` | Add item to closet |
+| DELETE | `/api/closet/:id` | Permanently delete a closet item |
+
+### Users
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| POST | `/api/users/register` | Register new user |
+| POST | `/api/users/login` | Login |
+| POST | `/api/users/verify-email` | Verify email with OTP |
+| POST | `/api/users/forgot-password` | Request password reset |
+| POST | `/api/users/reset-password` | Reset password |

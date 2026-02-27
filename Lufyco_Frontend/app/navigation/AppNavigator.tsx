@@ -54,6 +54,7 @@ import CheckoutPaymentScreen from "../screens/Checkout/CheckoutPaymentScreen";
 import CheckoutReviewScreen from "../screens/Checkout/CheckoutReviewScreen";
 import OrderSuccessScreen from "../screens/Checkout/OrderSuccessScreen";
 import OrderDetailsScreen from "../screens/Checkout/OrderDetailsScreen";
+import TrackOrderScreen from "../screens/TrackOrderScreen";
 
 // Profile Flow
 import ShippingAddressScreen from "../screens/Profile/ShippingAddressScreen";
@@ -137,6 +138,7 @@ export type RootStackParamList = {
   CheckoutReview: undefined;
   OrderSuccess: undefined;
   OrderDetails: { orderId: string };
+  TrackOrder: undefined;
 
   // Profile
   ShippingAddress: undefined;
@@ -214,6 +216,7 @@ export default function AppNavigator() {
           <Stack.Screen name="CheckoutReview" component={CheckoutReviewScreen} />
           <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} />
           <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
+          <Stack.Screen name="TrackOrder" component={TrackOrderScreen} />
 
           {/* Profile Flow */}
           <Stack.Screen name="ShippingAddress" component={ShippingAddressScreen} />

@@ -117,21 +117,7 @@ const UpcomingEventsScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </TouchableOpacity>
 
-      {/* Bottom Tab (matches your AI Stylist flow) */}
-      <View style={styles.bottomBar}>
-        {[
-          { key: "home", label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
-          { key: "stylist", label: "AI Stylist", icon: "grid", onPress: () => navigation.navigate("AIStylist") },
-          { key: "cart", label: "My Cart", icon: "shopping-cart", onPress: () => navigation.navigate("MyCart") },
-          { key: "wish", label: "Wishlist", icon: "heart", onPress: () => navigation.navigate("Wishlist") },
-          { key: "profile", label: "Profile", icon: "user", onPress: () => navigation.navigate("Profile") },
-        ].map((t) => (
-          <TouchableOpacity key={t.key} style={styles.tabBtn} onPress={t.onPress}>
-            <Feather name={t.icon as any} size={22} color={t.key === 'stylist' ? "#1E90FF" : "#777"} />
-            <Text style={[styles.tabLabel, { color: t.key === 'stylist' ? "#1E90FF" : "#777" }]}>{t.label}</Text>
-          </TouchableOpacity>
-        ))}
-      </View>
+
     </SafeAreaView>
   );
 };
@@ -191,22 +177,7 @@ const styles = StyleSheet.create({
     justifyContent: "center",
   },
 
-  bottomBar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 84,
-    borderTopWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "#fff",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    paddingBottom: 8,
-  },
-  tabBtn: { alignItems: "center" },
-  tabLabel: { fontSize: 12, marginTop: 2, fontWeight: "500" },
+
 });
 
 export default UpcomingEventsScreen;

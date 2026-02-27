@@ -22,11 +22,21 @@ const CheckoutPaymentScreen = () => {
     const navigation = useNavigation<NavProp>();
     const { setPaymentMethod } = useCheckoutStore();
 
-    const [selectedMethod, setSelectedMethod] = useState<'visa' | 'mastercard' | 'paypal' | 'applepay'>('visa');
+    const [selectedMethod, setSelectedMethod] = useState<'visa' | 'mastercard' | 'paypal' | 'googlepay'>('visa');
     const [cardName, setCardName] = useState("");
     const [cardNumber, setCardNumber] = useState("");
     const [expiry, setExpiry] = useState("");
     const [cvv, setCvv] = useState("");
+
+    const handleExpiryChange = (text: string) => {
+        // Strip non-digits, then rebuild MM/YY
+        const digits = text.replace(/\D/g, '').slice(0, 4);
+        if (digits.length <= 2) {
+            setExpiry(digits);
+        } else {
+            setExpiry(`${digits.slice(0, 2)}/${digits.slice(2)}`);
+        }
+    };
 
     const onContinue = () => {
         // Basic validation
@@ -47,23 +57,27 @@ const CheckoutPaymentScreen = () => {
         navigation.navigate("CheckoutReview");
     };
 
-    const renderMethodIcon = (id: 'visa' | 'mastercard' | 'paypal' | 'applepay') => {
-        const iconColor = selectedMethod === id ? '#2563EB' : '#6B7280';
-        const iconSize = id === 'visa' || id === 'mastercard' ? 32 : 28;
-
+    const renderMethodIcon = (id: 'visa' | 'mastercard' | 'paypal' | 'googlepay') => {
+        let source;
         switch (id) {
             case 'visa':
-                return <FontAwesome5 name="cc-visa" size={iconSize} color={iconColor} />;
+                source = require('../../../assets/images/visa.png');
+                break;
             case 'mastercard':
-                return <FontAwesome5 name="cc-mastercard" size={iconSize} color={iconColor} />;
+                source = require('../../../assets/images/mastercard.png');
+                break;
             case 'paypal':
-                return <FontAwesome5 name="cc-paypal" size={iconSize} color={iconColor} />;
-            case 'applepay':
-                return <FontAwesome5 name="apple-pay" size={iconSize} color={iconColor} />;
+                source = require('../../../assets/images/paypal.png');
+                break;
+            case 'googlepay':
+                source = require('../../../assets/images/googlepay.png');
+                break;
         }
+
+        return <Image source={source} style={{ width: 44, height: 28, resizeMode: 'contain', opacity: selectedMethod === id ? 1 : 0.6 }} />;
     };
 
-    const renderMethod = (id: 'visa' | 'mastercard' | 'paypal' | 'applepay') => (
+    const renderMethod = (id: 'visa' | 'mastercard' | 'paypal' | 'googlepay') => (
         <TouchableOpacity
             style={[styles.payOption, selectedMethod === id && styles.payOptionActive]}
             onPress={() => setSelectedMethod(id)}
@@ -118,7 +132,7 @@ const CheckoutPaymentScreen = () => {
                     {renderMethod('visa')}
                     {renderMethod('mastercard')}
                     {renderMethod('paypal')}
-                    {renderMethod('applepay')}
+                    {renderMethod('googlepay')}
                 </View>
 
                 {/* Card Form */}
@@ -145,7 +159,8 @@ const CheckoutPaymentScreen = () => {
                                 <TextInput
                                     style={styles.input}
                                     placeholder="MM/YY"
-                                    value={expiry} onChangeText={setExpiry}
+                                    value={expiry} onChangeText={handleExpiryChange}
+                                    maxLength={5} keyboardType="numeric"
                                 />
                             </View>
                             <View style={{ flex: 1 }}>
@@ -162,7 +177,7 @@ const CheckoutPaymentScreen = () => {
                     </View>
                 )}
 
-                {(selectedMethod === 'paypal' || selectedMethod === 'applepay') && (
+                {(selectedMethod === 'paypal' || selectedMethod === 'googlepay') && (
                     <View style={styles.infoBox}>
                         <Text style={{ color: '#666' }}>You will be redirected to complete payment securely.</Text>
                     </View>

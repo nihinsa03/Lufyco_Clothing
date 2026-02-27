@@ -16,25 +16,33 @@ type Props = NativeStackScreenProps<RootStackParamList, "AddToClosetPreview">;
 
 const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const { uri } = route.params;
+  const [status, setStatus] = React.useState<"idle" | "saving" | "processed" | "error">("idle");
 
   const handleSave = async () => {
     try {
-      // In a real app, upload image to a cloud storage (Cloudinary/S3) and get URL.
-      // For this demo, we'll just send the local URI (it won't persist across devices but works for demo).
-      // Or if using base64.
-
+      setStatus("saving");
       const payload = {
         name: "New Upload",
-        category: "Tops", // Defaulting for now
+        category: "Tops",
         image: uri,
+        color: "#000000",
       };
 
-      await api.post("/closet", payload);
-      alert("Added to closet!");
-      navigation.navigate("MyCloset");
-    } catch (e) {
-      console.error(e);
-      alert("Failed to save.");
+      console.log("Saving to closet:", JSON.stringify(payload).substring(0, 200));
+      const res = await api.post("/closet", payload);
+      console.log("Save response:", res.data);
+
+      try {
+        await api.post("/closet/train", { itemId: res.data._id || res.data.id });
+      } catch (err) {
+        console.warn("Training endpoint error:", err);
+      }
+
+      setStatus("processed");
+    } catch (e: any) {
+      const errorMsg = e.response?.data?.message || e.message || "Unknown error";
+      console.error("Save to closet failed:", errorMsg, e);
+      setStatus("error");
     }
   };
 
@@ -53,19 +61,50 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         <View style={styles.previewCard}>
           <Image source={{ uri }} style={styles.previewImage} />
           <View style={styles.btnRow}>
-            <TouchableOpacity
-              style={styles.blackBtn}
-              onPress={handleSave}
-            >
-              <Text style={styles.blackBtnText}>Add to Closet</Text>
-            </TouchableOpacity>
+            {status === "idle" && (
+              <>
+                <TouchableOpacity style={styles.blackBtn} onPress={handleSave}>
+                  <Text style={styles.blackBtnText}>Add to Closet</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.blackBtn, { backgroundColor: "#444" }]}
+                  onPress={() => navigation.replace("AddToCloset")}
+                >
+                  <Text style={styles.blackBtnText}>Retake</Text>
+                </TouchableOpacity>
+              </>
+            )}
 
-            <TouchableOpacity
-              style={styles.blackBtn}
-              onPress={() => navigation.replace("AddToCloset")}
-            >
-              <Text style={styles.blackBtnText}>Retake</Text>
-            </TouchableOpacity>
+            {status === "saving" && (
+              <TouchableOpacity style={[styles.blackBtn, { opacity: 0.7 }]} disabled>
+                <Text style={styles.blackBtnText}>Processing...</Text>
+              </TouchableOpacity>
+            )}
+
+            {status === "processed" && (
+              <>
+                <View style={[styles.blackBtn, { backgroundColor: "#10b981", opacity: 0.8 }]}>
+                  <Text style={styles.blackBtnText}>Processed</Text>
+                </View>
+                <TouchableOpacity style={[styles.blackBtn, { backgroundColor: "#111" }]} onPress={() => navigation.navigate("MyCloset")}>
+                  <Text style={styles.blackBtnText}>Go to Closet</Text>
+                </TouchableOpacity>
+              </>
+            )}
+
+            {status === "error" && (
+              <>
+                <TouchableOpacity style={[styles.blackBtn, { backgroundColor: "#ef4444" }]} onPress={handleSave}>
+                  <Text style={styles.blackBtnText}>Retry</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.blackBtn, { backgroundColor: "#444" }]}
+                  onPress={() => navigation.replace("AddToCloset")}
+                >
+                  <Text style={styles.blackBtnText}>Retake</Text>
+                </TouchableOpacity>
+              </>
+            )}
           </View>
         </View>
       </View>

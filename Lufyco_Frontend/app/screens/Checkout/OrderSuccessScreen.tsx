@@ -35,14 +35,14 @@ const OrderSuccessScreen = () => {
                 <View style={styles.btnGroup}>
                     <TouchableOpacity
                         style={styles.primaryBtn}
-                        onPress={() => navigation.navigate("Home")} // Go to Home
+                        onPress={() => navigation.reset({ index: 0, routes: [{ name: "Main" }] })}
                     >
                         <Text style={styles.primaryText}>Continue Shopping</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
                         style={styles.secondaryBtn}
-                        onPress={() => navigation.navigate("OrderHistory")}
+                        onPress={() => navigation.navigate("TrackOrder")}
                     >
                         <Text style={styles.secondaryText}>Track Order</Text>
                     </TouchableOpacity>

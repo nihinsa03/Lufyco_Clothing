@@ -34,20 +34,21 @@ export const useCartStore = create<CartState>()(
             addItem: (item) => {
                 console.log('Adding item:', item);
                 const currentItems = get().items;
-                const uniqueId = `${item.productId}-${item.size || 'def'}-${item.color || 'def'}`;
-                const qtyToAdd = item.qty || 1;
+                // Sanitize image - require() returns a number which can't be serialized
+                const safeImage = typeof item.image === 'number' ? '' : (item.image || '');
+                const safeItem = { ...item, image: safeImage };
+                const uniqueId = `${safeItem.productId}-${safeItem.size || 'def'}-${safeItem.color || 'def'}`;
+                const qtyToAdd = safeItem.qty || 1;
 
                 const existingIndex = currentItems.findIndex((i) => i.id === uniqueId);
 
                 if (existingIndex >= 0) {
-                    // Increment quantity immutably
                     const updated = currentItems.map((i, index) =>
                         index === existingIndex ? { ...i, qty: i.qty + qtyToAdd } : i
                     );
                     set({ items: updated });
                 } else {
-                    // Add new
-                    set({ items: [...currentItems, { ...item, id: uniqueId, qty: qtyToAdd }] });
+                    set({ items: [...currentItems, { ...safeItem, id: uniqueId, qty: qtyToAdd }] });
                 }
             },
 

@@ -22,6 +22,11 @@ const closetItemSchema = new mongoose.Schema(
         notes: {
             type: String,
             required: false,
+        },
+        color: {
+            type: String,
+            required: false,
+            default: '#000000',
         }
     },
     {

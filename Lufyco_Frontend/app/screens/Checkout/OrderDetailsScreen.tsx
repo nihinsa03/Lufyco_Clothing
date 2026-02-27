@@ -51,16 +51,79 @@ const OrderDetailsScreen = () => {
             <ScrollView contentContainerStyle={{ padding: 20 }}>
                 {/* Header Info */}
                 <View style={styles.rowBetween}>
-                    <View>
-                        <Text style={styles.orderId}>Order #{order.id.split('-')[1]}</Text>
-                        <Text style={styles.date}>{new Date(order.date).toDateString()}</Text>
-                    </View>
+                    <Text style={styles.orderId}>Order #{order.id.split('-')[1]}</Text>
                     <View style={styles.statusBadge}>
                         <Text style={styles.statusText}>{order.status}</Text>
                     </View>
                 </View>
 
-                <View style={styles.divider} />
+                {/* Dates */}
+                <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 6, marginBottom: 24 }}>
+                    <Text style={{ fontSize: 13, color: '#666' }}>
+                        Order date: <Text style={{ fontWeight: '600', color: '#111' }}>{new Date(order.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</Text>
+                    </Text>
+                    <View style={{ width: 1, height: 12, backgroundColor: '#D1D5DB', marginHorizontal: 10 }} />
+                    <Feather name="file-text" size={12} color="#3B82F6" style={{ marginRight: 4 }} />
+                    <Text style={{ fontSize: 13, color: '#3B82F6', fontWeight: '600' }}>
+                        Estimated delivery: {new Date(new Date(order.date).getTime() + 5 * 24 * 60 * 60 * 1000).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </Text>
+                </View>
+
+                {/* Tracking Progress Bar */}
+                <View style={{ marginBottom: 30 }}>
+                    <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', paddingHorizontal: 10 }}>
+                        {["Order\nConfirmed", "Packing\nCompleted", "Out For\nDelivery", "Delivered"].map((step, index, arr) => {
+                            let currentIndex = 0;
+                            const s = order.status.toLowerCase();
+                            if (s.includes('deliver')) currentIndex = 3;
+                            else if (s.includes('ship') || s.includes('out')) currentIndex = 2;
+                            else if (s.includes('pack')) currentIndex = 1;
+
+                            const isActive = index <= currentIndex;
+                            const isLast = index === arr.length - 1;
+
+                            return (
+                                <View key={step.replace('\n', ' ')} style={{ alignItems: 'center', flex: 1, position: 'relative' }}>
+
+                                    {/* Connecting Line */}
+                                    {!isLast && (
+                                        <View style={{
+                                            position: 'absolute',
+                                            top: 41,
+                                            left: '50%',
+                                            width: '100%',
+                                            height: 3,
+                                            backgroundColor: index < currentIndex ? '#10B981' : '#E5E7EB',
+                                            zIndex: 1
+                                        }} />
+                                    )}
+
+                                    {/* Step Label */}
+                                    <Text style={{ fontSize: 11, color: isActive ? '#111' : '#9ca3af', textAlign: 'center', height: 32, fontWeight: isActive ? '500' : '400', lineHeight: 16 }}>
+                                        {step}
+                                    </Text>
+
+                                    {/* Dot */}
+                                    <View style={{
+                                        width: 14,
+                                        height: 14,
+                                        borderRadius: 7,
+                                        backgroundColor: isActive ? '#10B981' : '#D1D5DB',
+                                        marginTop: 8,
+                                        zIndex: 2
+                                    }} />
+
+                                    {/* Step Date */}
+                                    <Text style={{ fontSize: 10, color: '#6b7280', marginTop: 12, textAlign: 'center', lineHeight: 14 }}>
+                                        {new Date(new Date(order.date).getTime() + (index * 24 * 60 * 60 * 1000)).toLocaleDateString('en-US', { weekday: 'short', day: 'numeric', month: 'short' }).replace(',', '\n')}
+                                    </Text>
+                                </View>
+                            );
+                        })}
+                    </View>
+                </View>
+
+                <View style={[styles.divider, { marginTop: 0 }]} />
 
                 {/* Items */}
                 <Text style={styles.sectionTitle}>Items ({order.items.length})</Text>

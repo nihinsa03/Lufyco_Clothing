@@ -28,35 +28,38 @@ const moodEmoji: Record<string, string> = {
 // import api from "../api/api";
 // import { ClothingItem } from "../models";
 import { MOCK_PRODUCTS } from "../data/mockProducts";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // ... (keep props and emoji map)
 
 const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
   const { mood, weather, occasion } = route.params;
-  // Removed unused state
-  // const [closetItems, setClosetItems] = React.useState<ClothingItem[]>([]);
 
   const [generatedOutfit, setGeneratedOutfit] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
-  const [retry, setRetry] = React.useState(0);
+
+  const [history, setHistory] = React.useState<any[][]>([]);
+  const [currentIndex, setCurrentIndex] = React.useState(-1);
 
   React.useEffect(() => {
     generateLook();
-  }, [retry, mood, weather, occasion]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mood, weather, occasion]);
+
+  const handleRegenerate = () => {
+    // Slice off any future history if we are currently undo'd
+    setHistory(prev => prev.slice(0, currentIndex + 1));
+    generateLook();
+  };
 
   const generateLook = () => {
     setLoading(true);
 
-    // 1. Filter by Occasion & Weather logic
     let relevantItems = [...MOCK_PRODUCTS];
 
-    // Simple heuristic for weather:
-    // If 'Rain', avoid white/light shoes? Or maybe just suggest Jackets.
-    // If 'Snow', suggest Outerwear.
-    // If 'Sunny', suggest T-Shirts/Dresses.
-
-    const isCold = weather.includes("Rain") || weather.includes("Snow") || weather.includes("Fog") || weather.includes("Cloud");
-    const isHot = weather.includes("Sunny") || weather.includes("Clear");
+    const w = weather.toLowerCase();
+    const isCold = w.includes("rain") || w.includes("snow") || w.includes("fog") || w.includes("cloud") || w.includes("cool");
+    const isHot = w.includes("sun") || w.includes("clear") || w.includes("warm") || w.includes("hot");
 
     // -- Gender assumption: For now, let's mix or pick based on a user profile if we had one.
     // Since we don't have gender in props, let's just use all relevant items or maybe filter if we knew.
@@ -125,16 +128,49 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
     }
 
     setTimeout(() => {
+      setHistory(prev => {
+        const newHistory = [...prev, outfit];
+        setCurrentIndex(newHistory.length - 1);
+        return newHistory;
+      });
       setGeneratedOutfit(outfit);
       setLoading(false);
     }, 600);
   };
 
-  const handleSave = () => {
-    // In a real app, POST /api/outfits
-    // Here we simulate saving and going back
-    alert("Outfit Saved!");
-    navigation.navigate("AIStylist");
+  const handleUndo = () => {
+    if (currentIndex > 0) {
+      const prevIdx = currentIndex - 1;
+      setCurrentIndex(prevIdx);
+      setGeneratedOutfit(history[prevIdx]);
+    }
+  };
+
+  const handleRedo = () => {
+    if (currentIndex < history.length - 1) {
+      const nextIdx = currentIndex + 1;
+      setCurrentIndex(nextIdx);
+      setGeneratedOutfit(history[nextIdx]);
+    }
+  };
+
+  const handleSave = async () => {
+    try {
+      const existingStr = await AsyncStorage.getItem('saved_looks');
+      const existing = existingStr ? JSON.parse(existingStr) : [];
+      const newLook = {
+        id: Date.now().toString(),
+        mood, weather, occasion,
+        items: generatedOutfit,
+        date: new Date().toISOString()
+      };
+      await AsyncStorage.setItem('saved_looks', JSON.stringify([newLook, ...existing]));
+      alert("Outfit Saved!");
+      navigation.navigate("AIStylist");
+    } catch (e) {
+      console.error(e);
+      alert("Failed to save outfit");
+    }
   };
 
   return (
@@ -216,10 +252,38 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
 
         {/* Actions */}
         <View style={styles.actionsRow}>
-          <TouchableOpacity style={[styles.actionBtn, styles.actionGhost]} onPress={() => setRetry(r => r + 1)}>
-            <Text style={[styles.actionText, { color: "#111" }]}>Try Again</Text>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.actionGhost, { flex: 0.5, marginRight: 5, opacity: currentIndex > 0 ? 1 : 0.4 }]}
+            onPress={handleUndo}
+            disabled={currentIndex <= 0}
+          >
+            <Feather name="corner-up-left" size={20} color="#111" />
           </TouchableOpacity>
-          <TouchableOpacity style={[styles.actionBtn, styles.actionPrimary]} onPress={handleSave}>
+
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.actionGhost, { flex: 1, marginHorizontal: 5 }]}
+            onPress={handleRegenerate}
+          >
+            <Feather name="thumbs-down" size={20} color="#111" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.actionGhost, { flex: 1, marginHorizontal: 5 }]}
+            onPress={handleRegenerate}
+          >
+            <Feather name="repeat" size={20} color="#111" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.actionGhost, { flex: 0.5, marginLeft: 5, opacity: currentIndex < history.length - 1 ? 1 : 0.4 }]}
+            onPress={handleRedo}
+            disabled={currentIndex >= history.length - 1}
+          >
+            <Feather name="corner-up-right" size={20} color="#111" />
+          </TouchableOpacity>
+        </View>
+        <View style={[styles.actionsRow, { marginTop: 10 }]}>
+          <TouchableOpacity style={[styles.actionBtn, styles.actionPrimary, { flex: 1, marginLeft: 0 }]} onPress={handleSave}>
             <Text style={[styles.actionText, { color: "#fff" }]}>Save This Look</Text>
           </TouchableOpacity>
         </View>

@@ -22,31 +22,47 @@ const SIDEBAR_ITEMS = [
 const getSubCategories = (sidebarId: string) => {
   switch (sidebarId) {
     case 'men':
-      return mockCategories.filter(c => c.gender === 'men' && !c.id.includes('shoes'));
+      return mockCategories.filter(c => c.gender === 'men');
     case 'women':
-      return mockCategories.filter(c => c.gender === 'women' && !c.id.includes('heels'));
+      return mockCategories.filter(c => c.gender === 'women');
     case 'footwear':
-      return mockCategories.filter(c => c.id.includes('shoes') || c.id.includes('heels'));
-    // Fallbacks for categories where we might not have 'mock' data yet, returning empty or generic
+      return mockCategories.filter(c =>
+        c.id.includes('shoes') || c.id.includes('heels') || c.name.toLowerCase().includes('shoe')
+      );
+    case 'kids':
+    case 'beauty':
+    case 'jewellery':
+    case 'accessories':
+      // Show all categories as browseable options when specific ones aren't available
+      return mockCategories.slice(0, 6);
     default:
-      // For demo purposes, if no specific match, show some random categories to populate the grid
-      if (['kids', 'beauty', 'jewellery', 'accessories'].includes(sidebarId)) {
-        // In a real app, you'd fetch specific data. Here distinct filtered lists or empty.
-        return [];
-      }
-      return [];
+      return mockCategories;
   }
 };
 
 const CategoriesScreen = () => {
-  const { setFilter } = useShopStore();
+  const { setFilter, resetFilters } = useShopStore();
   const navigation = useNavigation<any>();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // Start with nothing selected
+  const [selectedCategory, setSelectedCategory] = useState<string>('men');
 
-  const subCategories = selectedCategory ? getSubCategories(selectedCategory) : []; // Only show if something is selected
+  const subCategories = getSubCategories(selectedCategory);
 
   const handleSubCategoryPress = (catId: string) => {
-    setFilter({ categoryId: catId });
+    // Single atomic update: reset all flags + set the category in one go
+    // This prevents the persisted store from overriding partial updates
+    setFilter({
+      query: '',
+      newArrivals: false,
+      popularThisWeek: false,
+      priceDropping: false,
+      discountOnly: false,
+      popularity: false,
+      priceLowToHigh: false,
+      priceHighToLow: false,
+      priceMin: undefined,
+      priceMax: undefined,
+      categoryId: catId,
+    });
     navigation.navigate('CategoryProducts');
   };
 
