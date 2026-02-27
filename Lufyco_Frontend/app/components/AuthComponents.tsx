@@ -90,7 +90,7 @@ export const OTPInput = ({ otp, setOtp }: { otp: string, setOtp: (s: string) => 
 export const SocialRow = () => (
     <View style={styles.socialRow}>
         <TouchableOpacity style={styles.socialBtn}>
-            <Ionicons name="logo-facebook" size={24} color="#1877F2" />
+            <Image source={require('../../assets/images/facebook_icon.png')} style={{ width: 28, height: 28, borderRadius: 6 }} />
         </TouchableOpacity>
         <TouchableOpacity style={styles.socialBtn}>
             <Image source={require('../../assets/images/instagram_icon.png')} style={{ width: 28, height: 28, borderRadius: 6 }} />
