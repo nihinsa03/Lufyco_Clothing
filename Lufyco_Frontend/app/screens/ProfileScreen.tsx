@@ -47,6 +47,8 @@ const ProfileScreen = () => {
         setIsEditModalVisible(true);
     };
 
+    const [localAvatar, setLocalAvatar] = React.useState<string | null>(null);
+
     const pickImageFromGallery = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
         if (status !== "granted") {
@@ -57,10 +59,16 @@ const ProfileScreen = () => {
             mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 0.8,
+            quality: 0.1,
         });
         if (!result.canceled && result.assets[0]) {
-            updateProfileAvatar({ avatar: result.assets[0].uri });
+            const uri = result.assets[0].uri;
+            setLocalAvatar(uri);
+            try {
+                updateProfileAvatar({ avatar: uri });
+            } catch (e) {
+                console.warn("Could not persist avatar to storage", e);
+            }
         }
     };
 
@@ -73,10 +81,16 @@ const ProfileScreen = () => {
         const result = await ImagePicker.launchCameraAsync({
             allowsEditing: true,
             aspect: [1, 1],
-            quality: 0.8,
+            quality: 0.1,
         });
         if (!result.canceled && result.assets[0]) {
-            updateProfileAvatar({ avatar: result.assets[0].uri });
+            const uri = result.assets[0].uri;
+            setLocalAvatar(uri);
+            try {
+                updateProfileAvatar({ avatar: uri });
+            } catch (e) {
+                console.warn("Could not persist avatar to storage", e);
+            }
         }
     };
 
@@ -127,7 +141,7 @@ const ProfileScreen = () => {
                 <View style={styles.profileRow}>
                     <TouchableOpacity onPress={handleChangeProfilePicture} activeOpacity={0.7}>
                         <Image
-                            source={profileUser?.avatar ? { uri: profileUser.avatar } : require("../../assets/images/clothing.png")}
+                            source={(localAvatar || profileUser?.avatar) ? { uri: localAvatar || profileUser?.avatar } : require("../../assets/images/clothing.png")}
                             style={[styles.avatar, { borderColor: isDark ? colors.border : 'rgba(255,255,255,0.5)' }]}
                         />
                         <View style={[styles.cameraIcon, { backgroundColor: isDark ? colors.card : '#4A90D9', borderColor: isDark ? colors.border : '#fff' }]}>
@@ -212,22 +226,22 @@ const ProfileScreen = () => {
                         {/* Profile Picture Changer */}
                         <TouchableOpacity
                             style={{ alignItems: 'center', marginBottom: 20 }}
-                            onPress={() => {
+                            onPress={async () => {
                                 setIsEditModalVisible(false);
-                                setTimeout(() => handleChangeProfilePicture(), 400);
+                                setTimeout(() => pickImageFromGallery(), 400);
                             }}
                             activeOpacity={0.7}
                         >
                             <View>
                                 <Image
-                                    source={profileUser?.avatar ? { uri: profileUser.avatar } : require("../../assets/images/clothing.png")}
+                                    source={(localAvatar || profileUser?.avatar) ? { uri: localAvatar || profileUser?.avatar } : require("../../assets/images/clothing.png")}
                                     style={{ width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: isDark ? colors.border : '#4A90D9' }}
                                 />
                                 <View style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: isDark ? '#3B5BFF' : '#4A90D9', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: isDark ? colors.card : '#fff' }}>
                                     <Feather name="camera" size={13} color="#fff" />
                                 </View>
                             </View>
-                            <Text style={{ marginTop: 8, fontSize: 14, fontWeight: '600', color: isDark ? '#60A5FA' : '#4A90D9' }}>Change Profile Photo</Text>
+                            <Text style={{ marginTop: 8, fontSize: 14, fontWeight: '600', color: isDark ? '#60A5FA' : '#4A90D9' }}>Upload from Device</Text>
                         </TouchableOpacity>
 
                         <View style={styles.inputContainer}>
