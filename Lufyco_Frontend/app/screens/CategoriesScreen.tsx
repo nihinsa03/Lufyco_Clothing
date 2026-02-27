@@ -41,9 +41,9 @@ const getSubCategories = (sidebarId: string) => {
 const CategoriesScreen = () => {
   const { setFilter } = useShopStore();
   const navigation = useNavigation<any>();
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // Start with nothing selected
+  const [selectedCategory, setSelectedCategory] = useState<string>('men');
 
-  const subCategories = selectedCategory ? getSubCategories(selectedCategory) : []; // Only show if something is selected
+  const subCategories = getSubCategories(selectedCategory);
 
   const handleSubCategoryPress = (catId: string) => {
     setFilter({ categoryId: catId });

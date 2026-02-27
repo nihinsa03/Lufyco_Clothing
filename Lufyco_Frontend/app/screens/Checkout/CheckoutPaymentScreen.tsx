@@ -22,11 +22,20 @@ const CheckoutPaymentScreen = () => {
     const navigation = useNavigation<NavProp>();
     const { setPaymentMethod } = useCheckoutStore();
 
-    const [selectedMethod, setSelectedMethod] = useState<'visa' | 'mastercard' | 'paypal' | 'applepay'>('visa');
+    const [selectedMethod, setSelectedMethod] = useState<'visa' | 'mastercard' | 'paypal' | 'googlepay'>('visa');
     const [cardName, setCardName] = useState("");
     const [cardNumber, setCardNumber] = useState("");
     const [expiry, setExpiry] = useState("");
     const [cvv, setCvv] = useState("");
+
+    const handleExpiryChange = (text: string) => {
+        const cleaned = text.replace(/[^0-9]/g, '');
+        if (cleaned.length >= 3) {
+            setExpiry(`${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`);
+        } else {
+            setExpiry(cleaned);
+        }
+    };
 
     const onContinue = () => {
         // Basic validation
@@ -47,7 +56,7 @@ const CheckoutPaymentScreen = () => {
         navigation.navigate("CheckoutReview");
     };
 
-    const renderMethodIcon = (id: 'visa' | 'mastercard' | 'paypal' | 'applepay') => {
+    const renderMethodIcon = (id: 'visa' | 'mastercard' | 'paypal' | 'googlepay') => {
         const iconColor = selectedMethod === id ? '#2563EB' : '#6B7280';
         const iconSize = id === 'visa' || id === 'mastercard' ? 32 : 28;
 
@@ -58,12 +67,12 @@ const CheckoutPaymentScreen = () => {
                 return <FontAwesome5 name="cc-mastercard" size={iconSize} color={iconColor} />;
             case 'paypal':
                 return <FontAwesome5 name="cc-paypal" size={iconSize} color={iconColor} />;
-            case 'applepay':
-                return <FontAwesome5 name="apple-pay" size={iconSize} color={iconColor} />;
+            case 'googlepay':
+                return <FontAwesome5 name="google-pay" size={iconSize} color={iconColor} />;
         }
     };
 
-    const renderMethod = (id: 'visa' | 'mastercard' | 'paypal' | 'applepay') => (
+    const renderMethod = (id: 'visa' | 'mastercard' | 'paypal' | 'googlepay') => (
         <TouchableOpacity
             style={[styles.payOption, selectedMethod === id && styles.payOptionActive]}
             onPress={() => setSelectedMethod(id)}
@@ -118,7 +127,7 @@ const CheckoutPaymentScreen = () => {
                     {renderMethod('visa')}
                     {renderMethod('mastercard')}
                     {renderMethod('paypal')}
-                    {renderMethod('applepay')}
+                    {renderMethod('googlepay')}
                 </View>
 
                 {/* Card Form */}
@@ -145,7 +154,8 @@ const CheckoutPaymentScreen = () => {
                                 <TextInput
                                     style={styles.input}
                                     placeholder="MM/YY"
-                                    value={expiry} onChangeText={setExpiry}
+                                    value={expiry} onChangeText={handleExpiryChange}
+                                    maxLength={5} keyboardType="numeric"
                                 />
                             </View>
                             <View style={{ flex: 1 }}>
@@ -162,7 +172,7 @@ const CheckoutPaymentScreen = () => {
                     </View>
                 )}
 
-                {(selectedMethod === 'paypal' || selectedMethod === 'applepay') && (
+                {(selectedMethod === 'paypal' || selectedMethod === 'googlepay') && (
                     <View style={styles.infoBox}>
                         <Text style={{ color: '#666' }}>You will be redirected to complete payment securely.</Text>
                     </View>

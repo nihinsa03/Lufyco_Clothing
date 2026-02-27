@@ -72,14 +72,19 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
             <ScrollView contentContainerStyle={{ padding: 16 }}>
                 {items.map((item) => (
                     <View key={item.id} style={styles.card}>
-                        <Image
-                            source={typeof item.image === 'string' ? { uri: item.image } : item.image}
-                            style={styles.itemThumb}
-                        />
-                        <View style={styles.itemInfo}>
-                            <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
-                            <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
-                        </View>
+                        <TouchableOpacity
+                            style={{ flexDirection: 'row', flex: 1, alignItems: 'center' }}
+                            onPress={() => navigation.navigate("ProductDetails", { id: item.productId, product: item } as any)}
+                        >
+                            <Image
+                                source={typeof item.image === 'string' ? { uri: item.image } : item.image}
+                                style={styles.itemThumb}
+                            />
+                            <View style={styles.itemInfo}>
+                                <Text style={styles.itemTitle} numberOfLines={2}>{item.title}</Text>
+                                <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
+                            </View>
+                        </TouchableOpacity>
 
                         <View style={styles.actions}>
                             <TouchableOpacity style={styles.delBtn} onPress={() => setDeleteId(item.productId)}>
@@ -87,8 +92,7 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
                             </TouchableOpacity>
                             <TouchableOpacity
                                 style={styles.cartBtn}
-                                // Navigate to detail to select size/color
-                                onPress={() => navigation.navigate("ProductDetails", { id: item.productId })}
+                                onPress={() => navigation.navigate("ProductDetails", { id: item.productId, product: item } as any)}
                             >
                                 <Feather name="shopping-cart" size={16} color="#000" />
                             </TouchableOpacity>

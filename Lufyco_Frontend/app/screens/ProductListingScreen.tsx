@@ -9,13 +9,14 @@ import {
     SafeAreaView,
     ActivityIndicator,
 } from "react-native";
-import { Feather } from "@expo/vector-icons";
+import { Feather, Ionicons } from "@expo/vector-icons";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import FilterSheet, { FilterKey } from "./FilterSheet";
 import SearchOverlay from "./SearchOverlay";
 import api from "../api/api";
 import { MOCK_PRODUCTS } from "../data/mockProducts";
+import { useWishlistStore } from "../store/useWishlistStore";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductListing">;
 
@@ -57,6 +58,8 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
     const [filterVisible, setFilterVisible] = useState(false);
     const [searchVisible, setSearchVisible] = useState(false);
     const [selectedFilter, setSelectedFilter] = useState<FilterKey | null>("whats_new");
+
+    const { toggleWishlist, isInWishlist } = useWishlistStore();
 
     useEffect(() => {
         fetchProducts();
@@ -100,6 +103,20 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                 data = MOCK_PRODUCTS.filter((p: Product) => p.gender === "Women" || (p.gender === "Unisex" && p.category !== "Men"));
             } else if (params.gender === "Kids") {
                 data = MOCK_PRODUCTS.filter((p: Product) => p.gender === "Kids" || p.category === "Kids");
+            }
+
+            // Apply sorting & filtering from selectedFilter
+            if (selectedFilter === "price_low_to_high") {
+                data.sort((a, b) => a.price - b.price);
+            } else if (selectedFilter === "price_high_to_low") {
+                data.sort((a, b) => b.price - a.price);
+            } else if (selectedFilter === "discount") {
+                data = data.filter((p: any) => p.compareAtPrice && p.compareAtPrice > p.price);
+            } else if (selectedFilter === "popularity") {
+                data.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
+            } else if (selectedFilter === "whats_new") {
+                const newArrivals = data.filter((p: any) => p.isNewArrival);
+                data = newArrivals.length > 0 ? newArrivals : data.reverse();
             }
 
             // Simulate delay
@@ -165,8 +182,23 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                                 source={item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png")}
                                 style={styles.image}
                             />
-                            <TouchableOpacity style={styles.wishBtn}>
-                                <Feather name="heart" size={18} color="#111" />
+                            <TouchableOpacity
+                                style={styles.wishBtn}
+                                onPress={() => {
+                                    toggleWishlist({
+                                        id: item._id,
+                                        productId: item._id,
+                                        title: item.name,
+                                        price: item.price,
+                                        image: item.image,
+                                    });
+                                }}
+                            >
+                                <Ionicons
+                                    name={isInWishlist(item._id) ? "heart" : "heart-outline"}
+                                    size={18}
+                                    color={isInWishlist(item._id) ? "red" : "#111"}
+                                />
                             </TouchableOpacity>
 
                             <View style={styles.colorRowWrap}>

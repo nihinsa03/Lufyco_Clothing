@@ -49,7 +49,7 @@ const HomeScreen = ({ navigation }: Props) => {
   };
 
   // Filter for Latest Products (New Arrivals)
-  const latestProducts = products.filter(p => p.isNewArrival).slice(0, 4);
+  const latestProducts = products.filter(p => p.isNewArrival);
 
   const handleCategoryPress = (catId: string) => {
     setFilter({ categoryId: catId });
@@ -158,12 +158,12 @@ const HomeScreen = ({ navigation }: Props) => {
 
           <FlatList
             data={latestProducts}
-            numColumns={2}
-            scrollEnabled={false}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 4 }}
             keyExtractor={(item) => item.id}
-            columnWrapperStyle={{ justifyContent: "space-between" }}
             renderItem={({ item }) => (
-              <TouchableOpacity style={styles.productCard} onPress={() => handleProductPress(item)}>
+              <TouchableOpacity style={[styles.productCard, { width: 160, marginRight: 16, marginBottom: 0 }]} onPress={() => handleProductPress(item)}>
                 <View style={styles.imageWrapper}>
                   <Image
                     source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}

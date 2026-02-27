@@ -12,7 +12,7 @@ export interface Address {
 }
 
 export interface PaymentMethod {
-    method: 'visa' | 'mastercard' | 'paypal' | 'applepay';
+    method: 'visa' | 'mastercard' | 'paypal' | 'googlepay';
     cardHolder?: string;
     last4?: string;
 }

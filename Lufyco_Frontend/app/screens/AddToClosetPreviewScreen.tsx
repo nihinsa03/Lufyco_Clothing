@@ -16,9 +16,11 @@ type Props = NativeStackScreenProps<RootStackParamList, "AddToClosetPreview">;
 
 const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const { uri } = route.params;
+  const [status, setStatus] = React.useState<"idle" | "saving" | "processed" | "error">("idle");
 
   const handleSave = async () => {
     try {
+      setStatus("saving");
       const payload = {
         name: "New Upload",
         category: "Tops",
@@ -29,12 +31,18 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
       console.log("Saving to closet:", JSON.stringify(payload).substring(0, 200));
       const res = await api.post("/closet", payload);
       console.log("Save response:", res.data);
-      alert("Added to closet!");
-      navigation.navigate("MyCloset");
+
+      try {
+        await api.post("/closet/train", { itemId: res.data._id || res.data.id });
+      } catch (err) {
+        console.warn("Training endpoint error:", err);
+      }
+
+      setStatus("processed");
     } catch (e: any) {
       const errorMsg = e.response?.data?.message || e.message || "Unknown error";
       console.error("Save to closet failed:", errorMsg, e);
-      alert(`Failed to save: ${errorMsg}`);
+      setStatus("error");
     }
   };
 
@@ -53,15 +61,32 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         <View style={styles.previewCard}>
           <Image source={{ uri }} style={styles.previewImage} />
           <View style={styles.btnRow}>
-            <TouchableOpacity
-              style={styles.blackBtn}
-              onPress={handleSave}
-            >
-              <Text style={styles.blackBtnText}>Add to Closet</Text>
-            </TouchableOpacity>
+            {status === "idle" && (
+              <TouchableOpacity style={styles.blackBtn} onPress={handleSave}>
+                <Text style={styles.blackBtnText}>Add to Closet</Text>
+              </TouchableOpacity>
+            )}
+
+            {status === "saving" && (
+              <TouchableOpacity style={[styles.blackBtn, { opacity: 0.7 }]} disabled>
+                <Text style={styles.blackBtnText}>Processing...</Text>
+              </TouchableOpacity>
+            )}
+
+            {status === "processed" && (
+              <TouchableOpacity style={[styles.blackBtn, { backgroundColor: "#10b981" }]} onPress={() => navigation.navigate("MyCloset")}>
+                <Text style={styles.blackBtnText}>Processed (Go to Closet)</Text>
+              </TouchableOpacity>
+            )}
+
+            {status === "error" && (
+              <TouchableOpacity style={[styles.blackBtn, { backgroundColor: "#ef4444" }]} onPress={handleSave}>
+                <Text style={styles.blackBtnText}>Retry</Text>
+              </TouchableOpacity>
+            )}
 
             <TouchableOpacity
-              style={styles.blackBtn}
+              style={[styles.blackBtn, { backgroundColor: "#444" }]}
               onPress={() => navigation.replace("AddToCloset")}
             >
               <Text style={styles.blackBtnText}>Retake</Text>

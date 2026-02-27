@@ -27,6 +27,7 @@ type RootStackParamList = {
   MyCart?: undefined;
   Wishlist?: undefined;
   Profile?: undefined;
+  Notifications?: undefined;
 };
 
 type Props = NativeStackScreenProps<RootStackParamList, "AIStylist">;
@@ -39,15 +40,29 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
   // const [weather, setWeather] = useState<{ temp: number, condition: string } | null>(null);
   // const [locationError, setLocationError] = useState<string | null>(null); ...
 
-  // Mock upcoming look data
-  const upcomingLook = {
-    title: "Office Meeting",
-    date: "Fri, Aug 8",
-    items: [
-      { id: '1', name: "Blue Shirt", image: require("../../assets/images/shirt.png") },
-      { id: '2', name: "Casual Shoe", image: require("../../assets/images/shoe.png") }
-    ]
-  };
+  const upcomingLooks = [
+    {
+      title: "Office Meeting",
+      date: "Fri, Aug 8",
+      items: [
+        { id: '1', name: "Blue Shirt", image: require("../../assets/images/shirt.png") },
+        { id: '2', name: "Casual Shoe", image: require("../../assets/images/shoe.png") }
+      ]
+    },
+    {
+      title: "Weekend Party",
+      date: "Sat, Aug 9",
+      items: [
+        { id: '3', name: "White Polo", image: { uri: "https://images.unsplash.com/photo-1596755094514-f87e32f85e2c?w=400&q=80" } },
+        { id: '4', name: "Sneakers", image: { uri: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&q=80" } }
+      ]
+    }
+  ];
+
+  const [currentLookIndex, setCurrentLookIndex] = React.useState(0);
+  const handlePrev = () => setCurrentLookIndex(prev => (prev > 0 ? prev - 1 : upcomingLooks.length - 1));
+  const handleNext = () => setCurrentLookIndex(prev => (prev < upcomingLooks.length - 1 ? prev + 1 : 0));
+  const currentLook = upcomingLooks[currentLookIndex];
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -60,7 +75,7 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={styles.greet}>Hello, {user?.name?.split(" ")[0] || "User"}</Text>
         </View>
         <View style={styles.headerIcons}>
-          <Feather name="bell" size={22} style={styles.hIcon} />
+          <Feather name="bell" size={22} style={styles.hIcon} onPress={() => navigation.navigate("Notifications")} />
           <Feather name="heart" size={22} style={styles.hIcon} onPress={() => navigation.navigate("Wishlist")} />
           <Feather name="user" size={22} style={styles.hIcon} onPress={() => navigation.navigate("Profile")} />
         </View>
@@ -98,37 +113,37 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
 
         {/* Upcoming looks */}
         <Text style={styles.sectionTitle}>Your Upcoming Looks</Text>
-        <TouchableOpacity style={styles.lookCard} onPress={() => navigation.navigate("UpcomingEvents")}>
-          <View style={styles.lookHeader}>
+        <View style={styles.lookCard}>
+          <TouchableOpacity style={styles.lookHeader} onPress={() => navigation.navigate("UpcomingEvents")}>
             <View>
-              <Text style={styles.lookTitle}>{upcomingLook.title}</Text>
-              <Text style={styles.lookSub}>{upcomingLook.date}</Text>
+              <Text style={styles.lookTitle}>{currentLook.title}</Text>
+              <Text style={styles.lookSub}>{currentLook.date}</Text>
             </View>
             <Feather name="more-horizontal" size={20} color="#999" />
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.separator} />
 
-          <View style={styles.lookItems}>
-            {upcomingLook.items.map(item => (
+          <TouchableOpacity style={styles.lookItems} onPress={() => navigation.navigate("UpcomingEvents")}>
+            {currentLook.items.map(item => (
               <LookItem key={item.id} image={item.image} label={item.name} />
             ))}
-          </View>
+          </TouchableOpacity>
 
           <View style={styles.separator} />
 
           <View style={styles.lookFooter}>
-            <TouchableOpacity style={styles.navBtn}>
+            <TouchableOpacity style={styles.navBtn} onPress={handlePrev}>
               <Feather name="chevron-left" size={20} />
             </TouchableOpacity>
 
-            <Text style={styles.pageText}>1 of 2</Text>
+            <Text style={styles.pageText}>{currentLookIndex + 1} of {upcomingLooks.length}</Text>
 
-            <TouchableOpacity style={styles.navBtn}>
+            <TouchableOpacity style={styles.navBtn} onPress={handleNext}>
               <Feather name="chevron-right" size={20} />
             </TouchableOpacity>
           </View>
-        </TouchableOpacity>
+        </View>
 
         {/* Weather */}
         <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Today’s Weather</Text>

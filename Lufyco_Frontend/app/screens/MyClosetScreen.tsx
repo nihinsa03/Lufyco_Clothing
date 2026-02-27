@@ -12,6 +12,7 @@ import {
   ActivityIndicator,
   Alert,
   RefreshControl,
+  Modal,
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -40,6 +41,10 @@ const MyClosetScreen = ({ navigation }: Props) => {
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [editItem, setEditItem] = useState<ClosetItem | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editCategory, setEditCategory] = useState("Tops");
 
   // Fetch items from backend API
   const fetchItems = useCallback(async () => {
@@ -180,7 +185,11 @@ const MyClosetScreen = ({ navigation }: Props) => {
               <View style={styles.separator} />
 
               <View style={styles.actions}>
-                <TouchableOpacity style={styles.actionBtn}>
+                <TouchableOpacity style={styles.actionBtn} onPress={() => {
+                  setEditItem(item);
+                  setEditName(item.name);
+                  setEditCategory(item.category || "Tops");
+                }}>
                   <Feather name="edit-2" size={18} color="#000" />
                 </TouchableOpacity>
                 <TouchableOpacity
@@ -205,6 +214,49 @@ const MyClosetScreen = ({ navigation }: Props) => {
           <Feather name="plus" size={32} color="#fff" />
         </View>
       </TouchableOpacity>
+
+      {/* Edit Modal */}
+      <Modal visible={!!editItem} transparent animationType="slide">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Edit Item</Text>
+
+            <Text style={styles.label}>Name</Text>
+            <TextInput style={styles.input} value={editName} onChangeText={setEditName} />
+
+            <Text style={styles.label}>Category</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16, maxHeight: 40 }}>
+              {["Tops", "Bottoms", "Dresses", "Outerwear", "Accessories", "Shoes"].map(cat => (
+                <TouchableOpacity
+                  key={cat}
+                  style={[styles.catChip, editCategory === cat && styles.catChipActive]}
+                  onPress={() => setEditCategory(cat)}
+                >
+                  <Text style={[styles.catChipText, editCategory === cat && styles.catChipTextActive]}>{cat}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
+              <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#E5E7EB' }]} onPress={() => setEditItem(null)}>
+                <Text style={{ fontWeight: '700', color: '#111' }}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#2563EB' }]} onPress={async () => {
+                if (!editItem) return;
+                try {
+                  await api.put(`/closet/${editItem._id}`, { name: editName, category: editCategory });
+                  setItems(prev => prev.map(i => i._id === editItem._id ? { ...i, name: editName, category: editCategory } : i));
+                  setEditItem(null);
+                } catch (e) {
+                  Alert.alert("Error", "Could not update item.");
+                }
+              }}>
+                <Text style={{ color: '#fff', fontWeight: '700' }}>Save</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 };
@@ -311,6 +363,25 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
+  },
+
+  // Edit Modal Styles
+  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
+  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24 },
+  modalTitle: { fontSize: 20, fontWeight: '700', color: '#111', marginBottom: 16 },
+  label: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
+  input: {
+    height: 48, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 10,
+    paddingHorizontal: 16, fontSize: 15, color: '#111', marginBottom: 16
+  },
+  catChip: {
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#F3F4F6', marginRight: 8, height: 36, justifyContent: 'center'
+  },
+  catChipActive: { backgroundColor: '#2563EB' },
+  catChipText: { fontSize: 13, fontWeight: '600', color: '#4B5563' },
+  catChipTextActive: { color: '#fff' },
+  modalBtn: {
+    flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center'
   },
 });
 

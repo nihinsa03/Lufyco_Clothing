@@ -1,6 +1,6 @@
 import React from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Dimensions } from 'react-native';
-import { Feather } from '@expo/vector-icons';
+import { Feather, Ionicons } from '@expo/vector-icons';
 
 const { width } = Dimensions.get('window');
 
@@ -89,10 +89,15 @@ export const OTPInput = ({ otp, setOtp }: { otp: string, setOtp: (s: string) => 
 
 export const SocialRow = () => (
     <View style={styles.socialRow}>
-        <TouchableOpacity style={styles.socialBtn}><Feather name="facebook" size={24} color="#1877F2" /></TouchableOpacity>
-        <TouchableOpacity style={styles.socialBtn}><Feather name="github" size={24} color="#000" /></TouchableOpacity>
-        {/* Apple icon mock */}
-        <TouchableOpacity style={styles.socialBtn}><Feather name="globe" size={24} color="#000" /></TouchableOpacity>
+        <TouchableOpacity style={styles.socialBtn}>
+            <Ionicons name="logo-google" size={24} color="#DB4437" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.socialBtn}>
+            <Ionicons name="logo-apple" size={24} color="#000" />
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.socialBtn}>
+            <Ionicons name="logo-facebook" size={24} color="#1877F2" />
+        </TouchableOpacity>
     </View>
 );
 
