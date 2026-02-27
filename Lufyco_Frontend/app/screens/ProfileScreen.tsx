@@ -54,7 +54,7 @@ const ProfileScreen = () => {
             return;
         }
         const result = await ImagePicker.launchImageLibraryAsync({
-            mediaTypes: ["images"],
+            mediaTypes: ImagePicker.MediaTypeOptions.Images,
             allowsEditing: true,
             aspect: [1, 1],
             quality: 0.8,
@@ -114,13 +114,13 @@ const ProfileScreen = () => {
         <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
             <StatusBar barStyle="light-content" />
 
-            {/* Blue Gradient Header */}
-            <View style={styles.headerGradient}>
+            {/* Header */}
+            <View style={[styles.headerGradient, { backgroundColor: isDark ? colors.card : '#4A90D9', borderBottomColor: isDark ? colors.border : 'transparent', borderBottomWidth: isDark ? 1 : 0 }]}>
                 <View style={styles.headerRow}>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
-                        <Feather name="arrow-left" size={24} color="#fff" />
+                        <Feather name="arrow-left" size={24} color={isDark ? colors.text : "#fff"} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>Profile</Text>
+                    <Text style={[styles.headerTitle, { color: isDark ? colors.text : "#fff" }]}>Profile</Text>
                     <View style={{ width: 24 }} />
                 </View>
 
@@ -128,18 +128,18 @@ const ProfileScreen = () => {
                     <TouchableOpacity onPress={handleChangeProfilePicture} activeOpacity={0.7}>
                         <Image
                             source={profileUser?.avatar ? { uri: profileUser.avatar } : require("../../assets/images/clothing.png")}
-                            style={styles.avatar}
+                            style={[styles.avatar, { borderColor: isDark ? colors.border : 'rgba(255,255,255,0.5)' }]}
                         />
-                        <View style={styles.cameraIcon}>
-                            <Feather name="camera" size={12} color="#fff" />
+                        <View style={[styles.cameraIcon, { backgroundColor: isDark ? colors.card : '#4A90D9', borderColor: isDark ? colors.border : '#fff' }]}>
+                            <Feather name="camera" size={12} color={isDark ? colors.text : "#fff"} />
                         </View>
                     </TouchableOpacity>
                     <View style={styles.profileInfo}>
-                        <Text style={styles.userName}>{user?.name || user?.email?.split('@')[0] || "Guest"}</Text>
-                        <Text style={styles.userEmail}>{user?.email || "guest@example.com"}</Text>
+                        <Text style={[styles.userName, { color: isDark ? colors.text : "#fff" }]}>{user?.name || user?.email?.split('@')[0] || "Guest"}</Text>
+                        <Text style={[styles.userEmail, { color: isDark ? colors.textMuted : "rgba(255,255,255,0.8)" }]}>{user?.email || "guest@example.com"}</Text>
                     </View>
-                    <TouchableOpacity style={styles.editBtn} onPress={handleOpenEdit}>
-                        <Feather name="edit-2" size={18} color="#fff" />
+                    <TouchableOpacity style={[styles.editBtn, { backgroundColor: isDark ? colors.iconBg : 'rgba(255,255,255,0.2)' }]} onPress={handleOpenEdit}>
+                        <Feather name="edit-2" size={18} color={isDark ? colors.text : "#fff"} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -201,39 +201,39 @@ const ProfileScreen = () => {
                 onRequestClose={() => setIsEditModalVisible(false)}
             >
                 <View style={styles.modalOverlay}>
-                    <View style={styles.modalCard}>
+                    <View style={[styles.modalCard, { backgroundColor: colors.card, shadowColor: isDark ? 'transparent' : '#000', borderColor: colors.border, borderWidth: 1 }]}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Edit Profile</Text>
+                            <Text style={[styles.modalTitle, { color: colors.text }]}>Edit Profile</Text>
                             <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
-                                <Feather name="x" size={24} color="#333" />
+                                <Feather name="x" size={24} color={colors.text} />
                             </TouchableOpacity>
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <Text style={styles.inputLabel}>Name</Text>
+                            <Text style={[styles.inputLabel, { color: colors.textMuted }]}>Name</Text>
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { backgroundColor: isDark ? colors.background : '#F3F4F6', color: colors.text, borderColor: colors.border }]}
                                 value={editName}
                                 onChangeText={setEditName}
                                 placeholder="Enter your name"
-                                placeholderTextColor="#999"
+                                placeholderTextColor={colors.textMuted}
                             />
                         </View>
 
                         <View style={styles.inputContainer}>
-                            <Text style={styles.inputLabel}>Email</Text>
+                            <Text style={[styles.inputLabel, { color: colors.textMuted }]}>Email</Text>
                             <TextInput
-                                style={styles.input}
+                                style={[styles.input, { backgroundColor: isDark ? colors.background : '#F3F4F6', color: colors.text, borderColor: colors.border }]}
                                 value={editEmail}
                                 onChangeText={setEditEmail}
                                 placeholder="Enter your email"
                                 keyboardType="email-address"
-                                placeholderTextColor="#999"
+                                placeholderTextColor={colors.textMuted}
                                 autoCapitalize="none"
                             />
                         </View>
 
-                        <TouchableOpacity style={styles.saveBtn} onPress={handleSaveProfile}>
+                        <TouchableOpacity style={[styles.saveBtn, { backgroundColor: isDark ? '#3B5BFF' : '#4A90D9' }]} onPress={handleSaveProfile}>
                             <Text style={styles.saveBtnText}>Save Changes</Text>
                         </TouchableOpacity>
                     </View>
