@@ -42,6 +42,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     const [successMessage, setSuccessMessage] = useState("Successfully Added to Cart");
     const [sizeGuideVisible, setSizeGuideVisible] = useState(false);
     const [isExpanded, setIsExpanded] = useState(false);
+    const [showReadMoreButton, setShowReadMoreButton] = useState(false);
 
     // Animation Values
     const buttonScale = useRef(new Animated.Value(1)).current;
@@ -191,12 +192,21 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                     <Text
                         style={styles.description}
                         numberOfLines={isExpanded ? undefined : 3}
+                        onTextLayout={(e) => {
+                            if (e.nativeEvent.lines.length > 3) {
+                                setShowReadMoreButton(true);
+                            }
+                        }}
                     >
                         {fullProduct.description || "A stylish comfortable piece for your wardrobe. Made from premium materials designed to last."}
                     </Text>
-                    <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)} style={{ marginTop: 4 }}>
-                        <Text style={styles.readMore}>{isExpanded ? "Show less" : "Read more"}</Text>
-                    </TouchableOpacity>
+
+                    {/* Read More / Show Less Toggle only if needed */}
+                    {showReadMoreButton && (
+                        <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)} style={{ marginTop: 4 }}>
+                            <Text style={styles.readMore}>{isExpanded ? "Show less" : "Read more"}</Text>
+                        </TouchableOpacity>
+                    )}
 
                     <View style={styles.divider} />
 
