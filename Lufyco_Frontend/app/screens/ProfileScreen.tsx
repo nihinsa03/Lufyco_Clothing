@@ -10,6 +10,8 @@ import {
     Switch,
     StatusBar,
     Alert,
+    Modal,
+    TextInput,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
@@ -26,7 +28,24 @@ const ProfileScreen = () => {
     const navigation = useNavigation<NavProp>();
     const { logout, user } = useAuthStore();
     const { isDark, toggleTheme, colors } = useTheme();
-    const { user: profileUser, updateUser } = useProfileStore();
+    const { user: profileUser, updateUser: updateProfileAvatar } = useProfileStore();
+
+    const [isEditModalVisible, setIsEditModalVisible] = React.useState(false);
+    const [editName, setEditName] = React.useState(user?.name || "");
+    const [editEmail, setEditEmail] = React.useState(user?.email || "");
+    const { updateUser } = useAuthStore();
+
+    const handleSaveProfile = () => {
+        updateUser({ name: editName, email: editEmail });
+        setIsEditModalVisible(false);
+        Alert.alert("Success", "Profile updated successfully!");
+    };
+
+    const handleOpenEdit = () => {
+        setEditName(user?.name || (user?.email?.split('@')[0] || "Guest"));
+        setEditEmail(user?.email || "guest@example.com");
+        setIsEditModalVisible(true);
+    };
 
     const pickImageFromGallery = async () => {
         const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
@@ -41,7 +60,7 @@ const ProfileScreen = () => {
             quality: 0.8,
         });
         if (!result.canceled && result.assets[0]) {
-            updateUser({ avatar: result.assets[0].uri });
+            updateProfileAvatar({ avatar: result.assets[0].uri });
         }
     };
 
@@ -57,7 +76,7 @@ const ProfileScreen = () => {
             quality: 0.8,
         });
         if (!result.canceled && result.assets[0]) {
-            updateUser({ avatar: result.assets[0].uri });
+            updateProfileAvatar({ avatar: result.assets[0].uri });
         }
     };
 
@@ -119,8 +138,8 @@ const ProfileScreen = () => {
                         <Text style={styles.userName}>{user?.name || user?.email?.split('@')[0] || "Guest"}</Text>
                         <Text style={styles.userEmail}>{user?.email || "guest@example.com"}</Text>
                     </View>
-                    <TouchableOpacity style={styles.editBtn} onPress={handleChangeProfilePicture}>
-                        <Feather name="camera" size={18} color="#fff" />
+                    <TouchableOpacity style={styles.editBtn} onPress={handleOpenEdit}>
+                        <Feather name="edit-2" size={18} color="#fff" />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -174,6 +193,52 @@ const ProfileScreen = () => {
 
                 <View style={{ height: 30 }} />
             </ScrollView>
+
+            <Modal
+                visible={isEditModalVisible}
+                transparent={true}
+                animationType="fade"
+                onRequestClose={() => setIsEditModalVisible(false)}
+            >
+                <View style={styles.modalOverlay}>
+                    <View style={styles.modalCard}>
+                        <View style={styles.modalHeader}>
+                            <Text style={styles.modalTitle}>Edit Profile</Text>
+                            <TouchableOpacity onPress={() => setIsEditModalVisible(false)}>
+                                <Feather name="x" size={24} color="#333" />
+                            </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.inputLabel}>Name</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={editName}
+                                onChangeText={setEditName}
+                                placeholder="Enter your name"
+                                placeholderTextColor="#999"
+                            />
+                        </View>
+
+                        <View style={styles.inputContainer}>
+                            <Text style={styles.inputLabel}>Email</Text>
+                            <TextInput
+                                style={styles.input}
+                                value={editEmail}
+                                onChangeText={setEditEmail}
+                                placeholder="Enter your email"
+                                keyboardType="email-address"
+                                placeholderTextColor="#999"
+                                autoCapitalize="none"
+                            />
+                        </View>
+
+                        <TouchableOpacity style={styles.saveBtn} onPress={handleSaveProfile}>
+                            <Text style={styles.saveBtnText}>Save Changes</Text>
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </Modal>
         </SafeAreaView>
     );
 };
@@ -246,6 +311,32 @@ const styles = StyleSheet.create({
         borderWidth: 1,
     },
     logoutText: { fontSize: 15, fontWeight: '600', color: '#EF4444', marginLeft: 8 },
+
+    modalOverlay: {
+        flex: 1, backgroundColor: 'rgba(0,0,0,0.5)',
+        justifyContent: 'center', alignItems: 'center'
+    },
+    modalCard: {
+        width: '85%', backgroundColor: '#fff',
+        borderRadius: 20, padding: 24,
+        shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 10, elevation: 10,
+    },
+    modalHeader: {
+        flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
+        marginBottom: 20,
+    },
+    modalTitle: { fontSize: 20, fontWeight: '700', color: '#111' },
+    inputContainer: { marginBottom: 16 },
+    inputLabel: { fontSize: 13, fontWeight: '600', color: '#666', marginBottom: 8 },
+    input: {
+        backgroundColor: '#F3F4F6', borderRadius: 12, paddingHorizontal: 16,
+        paddingVertical: 14, fontSize: 15, color: '#111', borderWidth: 1, borderColor: '#E5E7EB',
+    },
+    saveBtn: {
+        backgroundColor: '#4A90D9', borderRadius: 12, paddingVertical: 14,
+        alignItems: 'center', marginTop: 10,
+    },
+    saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 });
 
 export default ProfileScreen;

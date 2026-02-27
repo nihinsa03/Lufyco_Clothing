@@ -26,6 +26,7 @@ interface AuthState {
     resendOTP: (email: string) => Promise<boolean>;
     verifyOtp: (otp: string) => Promise<boolean>;
     logout: () => void;
+    updateUser: (updates: Partial<User>) => void;
     requestPasswordReset: (email: string) => Promise<boolean>;
     verifyResetOTP: (email: string, otp: string) => Promise<boolean>;
     resetPassword: (email: string, otp: string, newPassword: string) => Promise<boolean>;
@@ -145,6 +146,13 @@ export const useAuthStore = create<AuthState>()(
 
             logout: () => {
                 set({ user: null, token: null, isAuthenticated: false });
+            },
+
+            updateUser: (updates) => {
+                const { user } = get();
+                if (user) {
+                    set({ user: { ...user, ...updates } });
+                }
             },
 
             // Forgot Password Methods

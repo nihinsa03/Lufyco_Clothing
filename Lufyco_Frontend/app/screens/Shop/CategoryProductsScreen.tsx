@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, SafeAreaView, Dimensions } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useShopStore } from '../../store/useShopStore';
+import { useWishlistStore } from '../../store/useWishlistStore';
 import { useNavigation } from '@react-navigation/native';
 import { Product } from '../../data/mockData';
 
@@ -11,6 +12,7 @@ const COLUMN_WIDTH = (width - 45) / 2;
 const CategoryProductsScreen = () => {
     const navigation = useNavigation<any>();
     const { getFilteredProducts, activeFilters } = useShopStore();
+    const { toggleWishlist, isInWishlist } = useWishlistStore();
     const products = getFilteredProducts();
 
     let headerTitle = "Products";
@@ -28,8 +30,21 @@ const CategoryProductsScreen = () => {
                     style={styles.image}
                     resizeMode="cover"
                 />
-                <TouchableOpacity style={styles.favIcon}>
-                    <Feather name="heart" size={16} color="#000" />
+                <TouchableOpacity
+                    style={styles.favIcon}
+                    onPress={() => toggleWishlist({
+                        id: item.id,
+                        productId: item.id,
+                        title: item.title,
+                        price: item.price,
+                        image: item.images[0]
+                    })}
+                >
+                    <Feather
+                        name={isInWishlist(item.id) ? 'heart' : 'heart'}
+                        size={16}
+                        color={isInWishlist(item.id) ? '#EF4444' : '#000'}
+                    />
                 </TouchableOpacity>
             </View>
 

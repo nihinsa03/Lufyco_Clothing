@@ -13,6 +13,7 @@ import {
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useCartStore } from "../store/useCartStore";
+import { useTheme } from "../context/ThemeContext";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -21,6 +22,8 @@ const { width } = Dimensions.get("window");
 
 const MyCartScreen: React.FC<Props> = ({ navigation }) => {
   const { items, incrementQty, decrementQty, removeItem, getTotalPrice, clearCart } = useCartStore();
+  const { colors, isDark } = useTheme();
+
   const [voucher, setVoucher] = useState("");
   const [discount, setDiscount] = useState(0);
 
@@ -43,26 +46,26 @@ const MyCartScreen: React.FC<Props> = ({ navigation }) => {
 
   if (items.length === 0) {
     return (
-      <SafeAreaView style={styles.safe}>
-        <View style={styles.header}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { borderColor: colors.border }]}>
           <TouchableOpacity onPress={() => navigation.goBack()}>
-            <Feather name="arrow-left" size={24} />
+            <Feather name="arrow-left" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.headerTitle}>My Cart</Text>
+          <Text style={[styles.headerTitle, { color: colors.text }]}>My Cart</Text>
           <View style={{ width: 24 }} />
         </View>
 
         <View style={styles.emptyContainer}>
-          <View style={styles.emptyCircle}>
+          <View style={[styles.emptyCircle, { backgroundColor: isDark ? colors.iconBg : '#F3F4F6' }]}>
             <Image
               source={require("../../assets/images/bag.png")} // Fallback or use placeholder
               style={styles.emptyImg}
             />
           </View>
-          <Text style={styles.emptyTitle}>Your cart is empty</Text>
-          <Text style={styles.emptySub}>Looks like you haven't added anything to your cart yet.</Text>
+          <Text style={[styles.emptyTitle, { color: colors.text }]}>Your cart is empty</Text>
+          <Text style={[styles.emptySub, { color: colors.textMuted }]}>Looks like you haven't added anything to your cart yet.</Text>
 
-          <TouchableOpacity style={styles.exploreBtn} onPress={() => navigation.navigate("Home")}>
+          <TouchableOpacity style={[styles.exploreBtn, { backgroundColor: isDark ? '#3B5BFF' : '#111' }]} onPress={() => navigation.navigate("Home")}>
             <Text style={styles.exploreText}>Explore Categories</Text>
           </TouchableOpacity>
         </View>
@@ -71,12 +74,12 @@ const MyCartScreen: React.FC<Props> = ({ navigation }) => {
   }
 
   return (
-    <SafeAreaView style={styles.safe}>
-      <View style={styles.header}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+      <View style={[styles.header, { borderColor: colors.border }]}>
         <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Feather name="arrow-left" size={24} color="#111" />
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Cart</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>My Cart</Text>
         <TouchableOpacity>
           <Text style={styles.voucherLink}>Voucher Code</Text>
         </TouchableOpacity>
@@ -84,18 +87,18 @@ const MyCartScreen: React.FC<Props> = ({ navigation }) => {
 
       <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 120 }}>
         {items.map((item) => (
-          <View key={item.id} style={styles.cartItem}>
+          <View key={item.id} style={[styles.cartItem, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }]}>
             <Image
               source={typeof item.image === 'string' ? { uri: item.image } : item.image}
-              style={styles.itemThumb}
+              style={[styles.itemThumb, { backgroundColor: isDark ? colors.iconBg : '#eee' }]}
             />
             <View style={styles.itemInfo}>
-              <Text style={styles.itemTitle} numberOfLines={1}>{item.title}</Text>
+              <Text style={[styles.itemTitle, { color: colors.text }]} numberOfLines={1}>{item.title}</Text>
               <View style={styles.variantRow}>
-                <Text style={styles.variantText}>Size: {item.size || 'N/A'}</Text>
-                <View style={[styles.variantColor, { backgroundColor: item.color || '#000' }]} />
+                <Text style={[styles.variantText, { color: colors.textMuted }]}>Size: {item.size || 'N/A'}</Text>
+                <View style={[styles.variantColor, { backgroundColor: item.color || '#000', borderColor: colors.border }]} />
               </View>
-              <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
+              <Text style={[styles.itemPrice, { color: colors.text }]}>${item.price.toFixed(2)}</Text>
             </View>
 
             <View style={styles.rightCol}>
@@ -103,60 +106,64 @@ const MyCartScreen: React.FC<Props> = ({ navigation }) => {
                 <Feather name="trash-2" size={18} color="#EF4444" />
               </TouchableOpacity>
 
-              <View style={styles.stepper}>
+              <View style={[styles.stepper, { backgroundColor: colors.card, borderColor: colors.border }]}>
                 <TouchableOpacity onPress={() => decrementQty(item.id)} style={styles.stepBtn}>
-                  <Feather name="minus" size={14} />
+                  <Feather name="minus" size={14} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.qtyText}>{item.qty}</Text>
+                <Text style={[styles.qtyText, { color: colors.text }]}>{item.qty}</Text>
                 <TouchableOpacity onPress={() => incrementQty(item.id)} style={styles.stepBtn}>
-                  <Feather name="plus" size={14} />
+                  <Feather name="plus" size={14} color={colors.text} />
                 </TouchableOpacity>
               </View>
             </View>
           </View>
         ))}
 
-        <View style={styles.divider} />
+        <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
-        <Text style={styles.sectionTitle}>Order Info</Text>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Order Info</Text>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Subtotal</Text>
-          <Text style={styles.summaryVal}>${subtotal.toFixed(2)}</Text>
+          <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Subtotal</Text>
+          <Text style={[styles.summaryVal, { color: colors.text }]}>${subtotal.toFixed(2)}</Text>
         </View>
         <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Shipping Cost</Text>
-          <Text style={styles.summaryVal}>${shipping.toFixed(2)}</Text>
+          <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Shipping Cost</Text>
+          <Text style={[styles.summaryVal, { color: colors.text }]}>${shipping.toFixed(2)}</Text>
         </View>
         {discount > 0 && (
           <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Discount</Text>
-            <Text style={[styles.summaryVal, { color: 'green' }]}>-${discount.toFixed(2)}</Text>
+            <Text style={[styles.summaryLabel, { color: colors.textMuted }]}>Discount</Text>
+            <Text style={[styles.summaryVal, { color: '#10B981' }]}>-${discount.toFixed(2)}</Text>
           </View>
         )}
         <View style={[styles.summaryRow, { marginTop: 12 }]}>
-          <Text style={styles.totalLabel}>Total</Text>
-          <Text style={styles.totalVal}>${total.toFixed(2)}</Text>
+          <Text style={[styles.totalLabel, { color: colors.text }]}>Total</Text>
+          <Text style={[styles.totalVal, { color: colors.text }]}>${total.toFixed(2)}</Text>
         </View>
 
         {/* Voucher Input */}
         <View style={styles.voucherBox}>
-          <Text style={styles.voucherLabel}>Voucher Code</Text>
+          <Text style={[styles.voucherLabel, { color: colors.textMuted }]}>Voucher Code</Text>
           <View style={styles.voucherInputRow}>
             <TextInput
-              style={styles.voucherInput}
+              style={[
+                styles.voucherInput,
+                { backgroundColor: colors.card, borderColor: colors.border, color: colors.text }
+              ]}
               placeholder="Enter voucher code"
+              placeholderTextColor={colors.textMuted}
               value={voucher}
               onChangeText={setVoucher}
             />
-            <TouchableOpacity style={styles.applyBtn} onPress={handleApplyVoucher}>
+            <TouchableOpacity style={[styles.applyBtn, { backgroundColor: isDark ? '#3B5BFF' : '#111' }]} onPress={handleApplyVoucher}>
               <Text style={styles.applyText}>APPLY</Text>
             </TouchableOpacity>
           </View>
         </View>
       </ScrollView>
 
-      <View style={styles.footer}>
-        <TouchableOpacity style={styles.checkoutBtn} onPress={handleCheckout}>
+      <View style={[styles.footer, { backgroundColor: colors.background, borderColor: colors.border }]}>
+        <TouchableOpacity style={[styles.checkoutBtn, { backgroundColor: isDark ? '#3B5BFF' : '#111' }]} onPress={handleCheckout}>
           <Text style={styles.checkoutText}>Checkout (${total.toFixed(2)})</Text>
         </TouchableOpacity>
       </View>

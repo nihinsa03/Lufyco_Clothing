@@ -12,8 +12,7 @@ import {
 import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useWeather } from "../hooks/useWeather";
-// import * as Location from 'expo-location'; // Removed
-// import { useState, useEffect } from "react"; // Removed unnecessary imports
+import { useTheme } from "../context/ThemeContext";
 
 type RootStackParamList = {
   Home: undefined;
@@ -35,10 +34,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "AIStylist">;
 const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
   const { user } = useAuth(); // <--- Get real user
   const { weather, loading, error } = useWeather();
-
-  // Removed inline optional logic as it is now in useWeather hook
-  // const [weather, setWeather] = useState<{ temp: number, condition: string } | null>(null);
-  // const [locationError, setLocationError] = useState<string | null>(null); ...
+  const { colors, isDark } = useTheme();
 
   const upcomingLooks = [
     {
@@ -65,19 +61,25 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
   const currentLook = upcomingLooks[currentLookIndex];
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       {/* Header */}
       <View style={styles.header}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 10 }}>
-            <Ionicons name="arrow-back" size={24} color="#000" />
+          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 10 }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Ionicons name="arrow-back" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.greet}>Hello, {user?.name?.split(" ")[0] || "User"}</Text>
+          <Text style={[styles.greet, { color: colors.text }]}>Hello, {user?.name?.split(" ")[0] || "User"}</Text>
         </View>
         <View style={styles.headerIcons}>
-          <Feather name="bell" size={22} style={styles.hIcon} onPress={() => navigation.navigate("Notifications")} />
-          <Feather name="heart" size={22} style={styles.hIcon} onPress={() => navigation.navigate("Wishlist")} />
-          <Feather name="user" size={22} style={styles.hIcon} onPress={() => navigation.navigate("Profile")} />
+          <TouchableOpacity onPress={() => navigation.navigate("Notifications")} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Feather name="bell" size={22} style={[styles.hIcon, { color: colors.text }]} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("Wishlist")} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Feather name="heart" size={22} style={[styles.hIcon, { color: colors.text }]} />
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => navigation.navigate("Profile")} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+            <Feather name="user" size={22} style={[styles.hIcon, { color: colors.text }]} />
+          </TouchableOpacity>
         </View>
       </View>
 
@@ -100,29 +102,29 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
         <View style={styles.tileRow}>
           <Tile
             label="Shop New Styles"
-            icon={<Feather name="briefcase" size={22} color="#1EA672" />}
+            icon={<Feather name="briefcase" size={22} color={isDark ? "#2ED194" : "#1EA672"} />}
             onPress={() => navigation.navigate("ShopNewStyles")}
           />
 
           <Tile
             label="Upcoming Events"
-            icon={<Feather name="calendar" size={22} color="#7B61FF" />}
+            icon={<Feather name="calendar" size={22} color={isDark ? "#A38CFF" : "#7B61FF"} />}
             onPress={() => navigation.navigate("UpcomingEvents")}
           />
         </View>
 
         {/* Upcoming looks */}
-        <Text style={styles.sectionTitle}>Your Upcoming Looks</Text>
-        <View style={styles.lookCard}>
+        <Text style={[styles.sectionTitle, { color: isDark ? '#60A5FA' : '#2C63FF' }]}>Your Upcoming Looks</Text>
+        <View style={[styles.lookCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <TouchableOpacity style={styles.lookHeader} onPress={() => navigation.navigate("UpcomingEvents")}>
             <View>
-              <Text style={styles.lookTitle}>{currentLook.title}</Text>
-              <Text style={styles.lookSub}>{currentLook.date}</Text>
+              <Text style={[styles.lookTitle, { color: colors.text }]}>{currentLook.title}</Text>
+              <Text style={[styles.lookSub, { color: colors.textMuted }]}>{currentLook.date}</Text>
             </View>
-            <Feather name="more-horizontal" size={20} color="#999" />
+            <Feather name="more-horizontal" size={20} color={colors.textMuted} />
           </TouchableOpacity>
 
-          <View style={styles.separator} />
+          <View style={[styles.separator, { backgroundColor: colors.border }]} />
 
           <TouchableOpacity style={styles.lookItems} onPress={() => navigation.navigate("UpcomingEvents")}>
             {currentLook.items.map(item => (
@@ -130,34 +132,34 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
             ))}
           </TouchableOpacity>
 
-          <View style={styles.separator} />
+          <View style={[styles.separator, { backgroundColor: colors.border }]} />
 
           <View style={styles.lookFooter}>
-            <TouchableOpacity style={styles.navBtn} onPress={handlePrev}>
-              <Feather name="chevron-left" size={20} />
+            <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handlePrev} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+              <Feather name="chevron-left" size={20} color={colors.text} />
             </TouchableOpacity>
 
-            <Text style={styles.pageText}>{currentLookIndex + 1} of {upcomingLooks.length}</Text>
+            <Text style={[styles.pageText, { color: colors.text }]}>{currentLookIndex + 1} of {upcomingLooks.length}</Text>
 
-            <TouchableOpacity style={styles.navBtn} onPress={handleNext}>
-              <Feather name="chevron-right" size={20} />
+            <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handleNext} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+              <Feather name="chevron-right" size={20} color={colors.text} />
             </TouchableOpacity>
           </View>
         </View>
 
         {/* Weather */}
-        <Text style={[styles.sectionTitle, { marginTop: 16 }]}>Today’s Weather</Text>
-        <View style={styles.weatherCard}>
+        <Text style={[styles.sectionTitle, { marginTop: 16, color: isDark ? '#60A5FA' : '#2C63FF' }]}>Today’s Weather</Text>
+        <View style={[styles.weatherCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
           <Ionicons
             name={weather?.condition === "Sunny" ? "sunny-outline" : "cloud-outline"}
             size={28}
             color={weather?.condition === "Sunny" ? "#FF4D4D" : "#555"}
           />
           <View style={{ marginLeft: 12 }}>
-            <Text style={styles.weatherMain}>
+            <Text style={[styles.weatherMain, { color: colors.text }]}>
               {loading ? "Loading..." : (weather ? `${weather.temp}°F` : "N/A")}
             </Text>
-            <Text style={styles.weatherSub}>
+            <Text style={[styles.weatherSub, { color: colors.textMuted }]}>
               {error || (loading ? "Fetching weather..." : (weather ? weather.condition : "Unknown"))}
             </Text>
           </View>
@@ -182,19 +184,21 @@ const Tile = ({
   dim?: boolean;
   onPress?: () => void;
 }) => {
+  const { colors, isDark } = useTheme();
   return (
-    <TouchableOpacity style={[styles.tile, dim && styles.tileDim]} onPress={onPress}>
-      <View style={styles.tileIconWrap}>{icon}</View>
-      <Text style={styles.tileText}>{label}</Text>
+    <TouchableOpacity style={[styles.tile, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }, dim && styles.tileDim]} onPress={onPress}>
+      <View style={[styles.tileIconWrap, { backgroundColor: isDark ? colors.iconBg : '#fff' }]}>{icon}</View>
+      <Text style={[styles.tileText, { color: colors.text }]}>{label}</Text>
     </TouchableOpacity>
   );
 };
 
 const LookItem = ({ image, label }: { image: any; label: string }) => {
+  const { colors } = useTheme();
   return (
     <View style={styles.lookItem}>
       <Image source={image} style={styles.lookImg} />
-      <Text style={styles.lookItemText}>{label}</Text>
+      <Text style={[styles.lookItemText, { color: colors.text }]}>{label}</Text>
     </View>
   );
 };

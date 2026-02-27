@@ -29,11 +29,12 @@ const CheckoutPaymentScreen = () => {
     const [cvv, setCvv] = useState("");
 
     const handleExpiryChange = (text: string) => {
-        const cleaned = text.replace(/[^0-9]/g, '');
-        if (cleaned.length >= 3) {
-            setExpiry(`${cleaned.slice(0, 2)}/${cleaned.slice(2, 4)}`);
+        // Strip non-digits, then rebuild MM/YY
+        const digits = text.replace(/\D/g, '').slice(0, 4);
+        if (digits.length <= 2) {
+            setExpiry(digits);
         } else {
-            setExpiry(cleaned);
+            setExpiry(`${digits.slice(0, 2)}/${digits.slice(2)}`);
         }
     };
 

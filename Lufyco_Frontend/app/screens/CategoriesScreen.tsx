@@ -22,19 +22,21 @@ const SIDEBAR_ITEMS = [
 const getSubCategories = (sidebarId: string) => {
   switch (sidebarId) {
     case 'men':
-      return mockCategories.filter(c => c.gender === 'men' && !c.id.includes('shoes'));
+      return mockCategories.filter(c => c.gender === 'men');
     case 'women':
-      return mockCategories.filter(c => c.gender === 'women' && !c.id.includes('heels'));
+      return mockCategories.filter(c => c.gender === 'women');
     case 'footwear':
-      return mockCategories.filter(c => c.id.includes('shoes') || c.id.includes('heels'));
-    // Fallbacks for categories where we might not have 'mock' data yet, returning empty or generic
+      return mockCategories.filter(c =>
+        c.id.includes('shoes') || c.id.includes('heels') || c.name.toLowerCase().includes('shoe')
+      );
+    case 'kids':
+    case 'beauty':
+    case 'jewellery':
+    case 'accessories':
+      // Show all categories as browseable options when specific ones aren't available
+      return mockCategories.slice(0, 6);
     default:
-      // For demo purposes, if no specific match, show some random categories to populate the grid
-      if (['kids', 'beauty', 'jewellery', 'accessories'].includes(sidebarId)) {
-        // In a real app, you'd fetch specific data. Here distinct filtered lists or empty.
-        return [];
-      }
-      return [];
+      return mockCategories;
   }
 };
 

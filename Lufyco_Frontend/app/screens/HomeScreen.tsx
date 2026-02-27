@@ -130,7 +130,12 @@ const HomeScreen = ({ navigation }: Props) => {
               style={{ borderRadius: 20 }}
             >
               {banners.map((banner, index) => (
-                <View key={index} style={[styles.bannerSlide, { width: bannerWidth }]}>
+                <TouchableOpacity
+                  key={index}
+                  style={[styles.bannerSlide, { width: bannerWidth }]}
+                  activeOpacity={0.9}
+                  onPress={() => navigation.navigate("Sale")}
+                >
                   <Image source={banner.image} style={styles.banner} resizeMode="cover" />
                   <View style={styles.bannerOverlay}>
                     <View style={styles.discountTag}>
@@ -139,7 +144,7 @@ const HomeScreen = ({ navigation }: Props) => {
                     <Text style={styles.bannerTitle}>{banner.title}</Text>
                     <Text style={styles.bannerSubtitle}>{banner.subtitle}</Text>
                   </View>
-                </View>
+                </TouchableOpacity>
               ))}
             </ScrollView>
             {/* Pagination Dots */}

@@ -62,9 +62,17 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
           <Image source={{ uri }} style={styles.previewImage} />
           <View style={styles.btnRow}>
             {status === "idle" && (
-              <TouchableOpacity style={styles.blackBtn} onPress={handleSave}>
-                <Text style={styles.blackBtnText}>Add to Closet</Text>
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity style={styles.blackBtn} onPress={handleSave}>
+                  <Text style={styles.blackBtnText}>Add to Closet</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.blackBtn, { backgroundColor: "#444" }]}
+                  onPress={() => navigation.replace("AddToCloset")}
+                >
+                  <Text style={styles.blackBtnText}>Retake</Text>
+                </TouchableOpacity>
+              </>
             )}
 
             {status === "saving" && (
@@ -74,23 +82,29 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
             )}
 
             {status === "processed" && (
-              <TouchableOpacity style={[styles.blackBtn, { backgroundColor: "#10b981" }]} onPress={() => navigation.navigate("MyCloset")}>
-                <Text style={styles.blackBtnText}>Processed (Go to Closet)</Text>
-              </TouchableOpacity>
+              <>
+                <View style={[styles.blackBtn, { backgroundColor: "#10b981", opacity: 0.8 }]}>
+                  <Text style={styles.blackBtnText}>Processed</Text>
+                </View>
+                <TouchableOpacity style={[styles.blackBtn, { backgroundColor: "#111" }]} onPress={() => navigation.navigate("MyCloset")}>
+                  <Text style={styles.blackBtnText}>Go to Closet</Text>
+                </TouchableOpacity>
+              </>
             )}
 
             {status === "error" && (
-              <TouchableOpacity style={[styles.blackBtn, { backgroundColor: "#ef4444" }]} onPress={handleSave}>
-                <Text style={styles.blackBtnText}>Retry</Text>
-              </TouchableOpacity>
+              <>
+                <TouchableOpacity style={[styles.blackBtn, { backgroundColor: "#ef4444" }]} onPress={handleSave}>
+                  <Text style={styles.blackBtnText}>Retry</Text>
+                </TouchableOpacity>
+                <TouchableOpacity
+                  style={[styles.blackBtn, { backgroundColor: "#444" }]}
+                  onPress={() => navigation.replace("AddToCloset")}
+                >
+                  <Text style={styles.blackBtnText}>Retake</Text>
+                </TouchableOpacity>
+              </>
             )}
-
-            <TouchableOpacity
-              style={[styles.blackBtn, { backgroundColor: "#444" }]}
-              onPress={() => navigation.replace("AddToCloset")}
-            >
-              <Text style={styles.blackBtnText}>Retake</Text>
-            </TouchableOpacity>
           </View>
         </View>
       </View>

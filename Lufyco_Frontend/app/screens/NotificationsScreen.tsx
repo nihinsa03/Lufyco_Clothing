@@ -171,7 +171,7 @@ const NotificationsScreen = ({ navigation }: Props) => {
                     <View style={styles.unreadBanner}>
                         <Feather name="bell" size={16} color="#3B82F6" />
                         <Text style={styles.unreadBannerText}>
-                            You have {unreadCount} unread notification{unreadCount > 1 ? 's' : ''}
+                            {`You have ${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`}
                         </Text>
                     </View>
                 )}

@@ -257,11 +257,21 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
             onPress={handleUndo}
             disabled={currentIndex <= 0}
           >
-            <Feather name="corner-down-left" size={20} color="#111" />
+            <Feather name="corner-up-left" size={20} color="#111" />
           </TouchableOpacity>
 
-          <TouchableOpacity style={[styles.actionBtn, styles.actionGhost, { flex: 1.5, marginHorizontal: 5 }]} onPress={handleRegenerate}>
-            <Text style={[styles.actionText, { color: "#111" }]}>Regenerate</Text>
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.actionGhost, { flex: 1, marginHorizontal: 5 }]}
+            onPress={handleRegenerate}
+          >
+            <Feather name="thumbs-down" size={20} color="#111" />
+          </TouchableOpacity>
+
+          <TouchableOpacity
+            style={[styles.actionBtn, styles.actionGhost, { flex: 1, marginHorizontal: 5 }]}
+            onPress={handleRegenerate}
+          >
+            <Feather name="repeat" size={20} color="#111" />
           </TouchableOpacity>
 
           <TouchableOpacity
@@ -269,7 +279,7 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
             onPress={handleRedo}
             disabled={currentIndex >= history.length - 1}
           >
-            <Feather name="corner-down-right" size={20} color="#111" />
+            <Feather name="corner-up-right" size={20} color="#111" />
           </TouchableOpacity>
         </View>
         <View style={[styles.actionsRow, { marginTop: 10 }]}>
