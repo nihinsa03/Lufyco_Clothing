@@ -41,14 +41,28 @@ const getSubCategories = (sidebarId: string) => {
 };
 
 const CategoriesScreen = () => {
-  const { setFilter } = useShopStore();
+  const { setFilter, resetFilters } = useShopStore();
   const navigation = useNavigation<any>();
   const [selectedCategory, setSelectedCategory] = useState<string>('men');
 
   const subCategories = getSubCategories(selectedCategory);
 
   const handleSubCategoryPress = (catId: string) => {
-    setFilter({ categoryId: catId });
+    // Single atomic update: reset all flags + set the category in one go
+    // This prevents the persisted store from overriding partial updates
+    setFilter({
+      query: '',
+      newArrivals: false,
+      popularThisWeek: false,
+      priceDropping: false,
+      discountOnly: false,
+      popularity: false,
+      priceLowToHigh: false,
+      priceHighToLow: false,
+      priceMin: undefined,
+      priceMax: undefined,
+      categoryId: catId,
+    });
     navigation.navigate('CategoryProducts');
   };
 

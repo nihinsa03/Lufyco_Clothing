@@ -11,13 +11,17 @@ const COLUMN_WIDTH = (width - 45) / 2;
 
 const CategoryProductsScreen = () => {
     const navigation = useNavigation<any>();
-    const { getFilteredProducts, activeFilters } = useShopStore();
+    const { getFilteredProducts, activeFilters, categories } = useShopStore();
     const { toggleWishlist, isInWishlist } = useWishlistStore();
     const products = getFilteredProducts();
 
     let headerTitle = "Products";
     if (activeFilters.query) headerTitle = `"${activeFilters.query}"`;
     else if (activeFilters.discountOnly) headerTitle = "Exclusive Sale";
+    else if (activeFilters.categoryId) {
+        const cat = categories.find(c => c.id === activeFilters.categoryId);
+        if (cat) headerTitle = cat.name;
+    }
 
     const renderItem = ({ item }: { item: Product }) => (
         <TouchableOpacity

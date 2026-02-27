@@ -52,7 +52,19 @@ const HomeScreen = ({ navigation }: Props) => {
   const latestProducts = products.filter(p => p.isNewArrival);
 
   const handleCategoryPress = (catId: string) => {
-    setFilter({ categoryId: catId });
+    setFilter({
+      query: '',
+      newArrivals: false,
+      popularThisWeek: false,
+      priceDropping: false,
+      discountOnly: false,
+      popularity: false,
+      priceLowToHigh: false,
+      priceHighToLow: false,
+      priceMin: undefined,
+      priceMax: undefined,
+      categoryId: catId,
+    });
     navigation.navigate("CategoryProducts");
   };
 
