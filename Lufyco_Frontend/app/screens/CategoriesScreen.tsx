@@ -14,7 +14,7 @@ const SIDEBAR_ITEMS = [
   { id: 'kids', name: "Kids's Wear", image: require('../../assets/images/categories/women/kurtas.jpg') }, // Using kurtas as placeholder for kids
   { id: 'footwear', name: "Foot Wear", image: require('../../assets/images/categories/men/casual-shoes.jpg') },
   { id: 'beauty', name: "Beauty Products", image: require('../../assets/images/categories/women/perfume.jpg') },
-  { id: 'jewellery', name: "Jewellery", image: require('../../assets/images/categories/women/handbags.jpg') },
+  { id: 'jewellery', name: "Jewellery", image: require('../../assets/images/categories/jewellery/jewellery.png') },
   { id: 'accessories', name: "Accessories", image: require('../../assets/images/categories/women/handbags.jpg') },
 ];
 

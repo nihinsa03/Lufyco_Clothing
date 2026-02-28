@@ -77,7 +77,7 @@ const categoryData = [
   },
   {
     label: "Jewellery",
-    image: require("../../assets/images/menu/jewellery.jpg"),
+    image: require("../../assets/images/categories/jewellery/jewellery.png"),
     sections: [],
   },
   {

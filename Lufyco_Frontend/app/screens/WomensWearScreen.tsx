@@ -21,7 +21,7 @@ const LEFT_MENU = [
   { label: "Kids’ Wear", image: require("../../assets/images/menu/kids-wear.jpg"), route: undefined },
   { label: "Foot Wear", image: require("../../assets/images/menu/foot-wear.jpg"), route: undefined },
   { label: "Beauty Products", image: require("../../assets/images/menu/beauty-products.jpg"), route: undefined },
-  { label: "Jewellery", image: require("../../assets/images/menu/jewellery.jpg"), route: undefined },
+  { label: "Jewellery", image: require("../../assets/images/categories/jewellery/jewellery.png"), route: undefined },
   { label: "Accessories", image: require("../../assets/images/menu/accessories.jpg"), route: undefined },
 ];
 
@@ -86,7 +86,7 @@ const WomensWearScreen: React.FC<Props> = ({ navigation }) => {
                 style={[styles.railBtn, active && styles.railBtnActive]}
                 activeOpacity={0.8}
                 onPress={() => {
-                  if (!active && m.route) navigation.navigate(m.route);
+                  if (!active && m.route) navigation.navigate(m.route as any);
                 }}
               >
                 <Image source={m.image} style={styles.railImg} />
@@ -116,7 +116,7 @@ const WomensWearScreen: React.FC<Props> = ({ navigation }) => {
                     style={styles.itemBox}
                     onPress={() => {
                       if (it.route) {
-                        navigation.navigate(it.route);
+                        navigation.navigate(it.route as any);
                       }
                     }}
                     activeOpacity={0.75}
