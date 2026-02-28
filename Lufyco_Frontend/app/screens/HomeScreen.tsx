@@ -119,17 +119,32 @@ const HomeScreen = ({ navigation }: Props) => {
             </TouchableOpacity>
           </View>
 
-          {/* Categories Grid */}
-          <View style={styles.categoriesGrid}>
-            {categories.map((item, index) => (
-              <TouchableOpacity key={index} style={styles.categoryItem} onPress={() => handleCategoryPress(item.id)}>
-                <View style={styles.categoryImageContainer}>
-                  <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
+          {/* Categories - 2-row Horizontal Slider */}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 0, marginBottom: 20 }}
+          >
+            {(() => {
+              // Arrange categories into columns of 2 (top and bottom row)
+              const columns: any[][] = [];
+              for (let i = 0; i < categories.length; i += 2) {
+                columns.push(categories.slice(i, i + 2));
+              }
+              return columns.map((col, colIndex) => (
+                <View key={colIndex} style={{ marginRight: 8 }}>
+                  {col.map((item, rowIndex) => (
+                    <TouchableOpacity key={rowIndex} style={styles.sliderCategoryItem} onPress={() => handleCategoryPress(item.id)}>
+                      <View style={styles.categoryImageContainer}>
+                        <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
+                      </View>
+                      <Text style={styles.categoryName}>{item.name}</Text>
+                    </TouchableOpacity>
+                  ))}
                 </View>
-                <Text style={styles.categoryName}>{item.name}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
+              ));
+            })()}
+          </ScrollView>
 
           {/* Banner Carousel */}
           <View style={styles.bannerContainer}>
@@ -245,6 +260,14 @@ const styles = StyleSheet.create({
   },
   categoryImage: { width: '100%', height: '100%' },
   categoryName: { fontSize: 10, fontWeight: '600', textAlign: 'center', color: '#333' },
+
+  // Slider categories (remaining items beyond 2 rows)
+  sliderCategoryItem: { width: 65, alignItems: 'center', marginRight: 12 },
+  sliderCategoryImageContainer: {
+    width: 50, height: 50, borderRadius: 12, overflow: 'hidden', marginBottom: 5, backgroundColor: '#f9f9f9',
+    justifyContent: 'center', alignItems: 'center'
+  },
+  sliderCategoryName: { fontSize: 10, fontWeight: '600', textAlign: 'center', color: '#333' },
 
   bannerContainer: { height: 180, borderRadius: 20, overflow: 'hidden', marginBottom: 25, position: 'relative' },
   bannerSlide: { height: 180, borderRadius: 20, overflow: 'hidden' },
