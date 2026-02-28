@@ -30,11 +30,22 @@ const getSubCategories = (sidebarId: string) => {
         c.id.includes('shoes') || c.id.includes('heels') || c.name.toLowerCase().includes('shoe')
       );
     case 'kids':
+      // Show a curated mix for kids
+      return mockCategories.filter(c =>
+        ['cat_tshirts', 'cat_jeans', 'cat_dresses', 'cat_sports_shoes', 'cat_jackets', 'cat_sweater'].includes(c.id)
+      );
     case 'beauty':
+      return mockCategories.filter(c =>
+        ['cat_skincare', 'cat_makeup', 'cat_haircare', 'cat_nailpolish', 'cat_perfume'].includes(c.id)
+      );
     case 'jewellery':
+      return mockCategories.filter(c =>
+        ['cat_necklaces', 'cat_rings', 'cat_earrings', 'cat_bracelets'].includes(c.id)
+      );
     case 'accessories':
-      // Show all categories as browseable options when specific ones aren't available
-      return mockCategories.slice(0, 6);
+      return mockCategories.filter(c =>
+        ['cat_handbags', 'cat_watches', 'cat_belts', 'cat_sunglasses'].includes(c.id)
+      );
     default:
       return mockCategories;
   }
