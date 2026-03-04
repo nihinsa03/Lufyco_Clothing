@@ -7,6 +7,7 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCart } from "../context/CartContext";
 import { useShopStore } from "../store/useShopStore";
+import { useWishlistStore } from "../store/useWishlistStore";
 import { useTheme } from "../context/ThemeContext";
 import { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -16,6 +17,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 const HomeScreen = ({ navigation }: Props) => {
   const { products, categories, setFilter } = useShopStore();
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
   const { colors } = useTheme();
 
   // Banner carousel data
@@ -115,20 +117,43 @@ const HomeScreen = ({ navigation }: Props) => {
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.gridIcon} onPress={() => navigation.navigate("Categories")}>
-              <Ionicons name="grid-outline" size={20} color="#000" />
+              <Ionicons name="grid-outline" size={20} color={colors.text} />
             </TouchableOpacity>
           </View>
 
-          {/* Categories Grid */}
-          <View style={styles.categoriesGrid}>
-            {categories.map((item, index) => (
-              <TouchableOpacity key={index} style={styles.categoryItem} onPress={() => handleCategoryPress(item.id)}>
-                <View style={styles.categoryImageContainer}>
-                  <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
-                </View>
-                <Text style={styles.categoryName}>{item.name}</Text>
-              </TouchableOpacity>
-            ))}
+          {/* Categories - 2 separate scrolling rows */}
+          <View style={{ marginBottom: 32 }}>
+            {/* Top Row */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 0, marginBottom: 12 }}
+            >
+              {categories.filter((_, i) => i % 2 === 0).map((item) => (
+                <TouchableOpacity key={item.id} style={[styles.sliderCategoryItem, { marginRight: 8 }]} onPress={() => handleCategoryPress(item.id)}>
+                  <View style={styles.categoryImageContainer}>
+                    <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
+                  </View>
+                  <Text style={[styles.categoryName, { color: colors.text }]}>{item.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Bottom Row */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 0 }}
+            >
+              {categories.filter((_, i) => i % 2 === 1).map((item) => (
+                <TouchableOpacity key={item.id} style={[styles.sliderCategoryItem, { marginRight: 8 }]} onPress={() => handleCategoryPress(item.id)}>
+                  <View style={styles.categoryImageContainer}>
+                    <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
+                  </View>
+                  <Text style={[styles.categoryName, { color: colors.text }]}>{item.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
           </View>
 
           {/* Banner Carousel */}
@@ -169,25 +194,44 @@ const HomeScreen = ({ navigation }: Props) => {
 
           {/* Latest Products */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Latest Products</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Latest Products</Text>
             <TouchableOpacity onPress={() => navigation.navigate("ShopNewStyles")}><Text style={styles.seeAll}>SEE ALL</Text></TouchableOpacity>
           </View>
 
           <FlatList
+            key={'2col'}
             data={latestProducts}
-            horizontal
-            showsHorizontalScrollIndicator={false}
+            scrollEnabled={false}
+            numColumns={2}
+            columnWrapperStyle={{ justifyContent: 'space-between' }}
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 4 }}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <TouchableOpacity style={[styles.productCard, { width: 160, marginRight: 16, marginBottom: 0 }]} onPress={() => handleProductPress(item)}>
+              <TouchableOpacity style={styles.productCard} onPress={() => handleProductPress(item)}>
                 <View style={styles.imageWrapper}>
                   <Image
                     source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}
                     style={styles.productImage}
                   />
-                  <TouchableOpacity style={styles.wishlistBtn}>
-                    <Feather name="heart" size={16} color="#000" />
+                  <TouchableOpacity
+                    style={styles.wishlistBtn}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      toggleWishlist({
+                        id: item.id,
+                        productId: item.id,
+                        title: item.title,
+                        price: item.price,
+                        image: item.images[0],
+                      });
+                    }}
+                  >
+                    <Feather
+                      name="heart"
+                      size={16}
+                      color={isInWishlist(item.id) ? "#ef4444" : "#000"}
+                    />
                   </TouchableOpacity>
                 </View>
 
@@ -196,10 +240,10 @@ const HomeScreen = ({ navigation }: Props) => {
                     <View style={[styles.colorCircle, { backgroundColor: '#000' }]} />
                     <View style={[styles.colorCircle, { backgroundColor: '#2ba' }]} />
                     <View style={[styles.colorCircle, { backgroundColor: '#0f0' }]} />
-                    <Text style={styles.moreColors}>All 5 Colors</Text>
+                    <Text style={[styles.moreColors, { color: colors.textSecondary }]}>All 5 Colors</Text>
                   </View>
-                  <Text numberOfLines={1} style={styles.productName}>{item.title}</Text>
-                  <Text style={styles.productPrice}>LKR {item.price * 300}.00</Text>
+                  <Text numberOfLines={1} style={[styles.productName, { color: colors.text }]}>{item.title}</Text>
+                  <Text style={[styles.productPrice, { color: colors.text }]}>LKR {item.price * 300}.00</Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -233,7 +277,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#eee', marginRight: 10, backgroundColor: '#fff'
   },
   activeTab: { backgroundColor: '#000', borderColor: '#000' },
-  tabText: { fontSize: 14, fontWeight: '600', color: '#000' },
+  tabText: { fontSize: 14, fontWeight: '600', color: '#555' },
   activeTabText: { color: '#fff' },
   gridIcon: { padding: 8 },
 
@@ -244,9 +288,17 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center'
   },
   categoryImage: { width: '100%', height: '100%' },
-  categoryName: { fontSize: 10, fontWeight: '600', textAlign: 'center', color: '#333' },
+  categoryName: { fontSize: 10, fontWeight: '600', textAlign: 'center', color: '#888' },
 
-  bannerContainer: { height: 180, borderRadius: 20, overflow: 'hidden', marginBottom: 25, position: 'relative' },
+  // Slider categories (remaining items beyond 2 rows)
+  sliderCategoryItem: { width: 65, alignItems: 'center', marginRight: 12 },
+  sliderCategoryImageContainer: {
+    width: 50, height: 50, borderRadius: 12, overflow: 'hidden', marginBottom: 5, backgroundColor: '#f9f9f9',
+    justifyContent: 'center', alignItems: 'center'
+  },
+  sliderCategoryName: { fontSize: 10, fontWeight: '600', textAlign: 'center', color: '#333' },
+
+  bannerContainer: { height: 180, borderRadius: 20, overflow: 'hidden', marginBottom: 36, position: 'relative' },
   bannerSlide: { height: 180, borderRadius: 20, overflow: 'hidden' },
   banner: { width: "100%", height: "100%" },
   bannerOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 20, justifyContent: 'center' },
@@ -258,8 +310,8 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)', marginHorizontal: 3 },
   activeDot: { backgroundColor: '#3b82f6' }, // Blue active dot to match image
 
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", color: '#000' },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
+  sectionTitle: { fontSize: 18, fontWeight: "bold", color: '#000' }, // overridden inline with colors.text
   seeAll: { color: "#2DD4BF", fontSize: 12, fontWeight: '600' }, // Teal color matching image
 
   productCard: { backgroundColor: "#fff", width: (screenWidth - 48) / 2, marginBottom: 20 },
@@ -268,13 +320,25 @@ const styles = StyleSheet.create({
     overflow: 'hidden', position: 'relative'
   },
   productImage: { width: "100%", height: "100%" },
-  wishlistBtn: { position: "absolute", top: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.2)', padding: 6, borderRadius: 20 },
+  wishlistBtn: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: 8,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2
+  },
   productInfo: { paddingHorizontal: 4 },
   cardColorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   colorCircle: { width: 10, height: 10, borderRadius: 5, marginRight: -3, borderWidth: 1, borderColor: '#fff' },
   moreColors: { fontSize: 9, color: '#666', marginLeft: 8, textDecorationLine: 'underline' },
-  productName: { fontSize: 13, fontWeight: "500", marginBottom: 4, color: "#333" },
-  productPrice: { fontSize: 13, fontWeight: "bold", color: "#000" },
+  productName: { fontSize: 13, fontWeight: "500", marginBottom: 4, color: "#333" }, // overridden inline
+  productPrice: { fontSize: 13, fontWeight: "bold", color: "#000" }, // overridden inline
 });
 
 export default HomeScreen;

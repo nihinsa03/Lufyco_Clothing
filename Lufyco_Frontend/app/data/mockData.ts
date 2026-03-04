@@ -2,7 +2,7 @@ export interface Category {
     id: string;
     name: string;
     image: any;
-    gender: 'men' | 'women';
+    gender: 'men' | 'women' | 'unisex';
 }
 
 export interface Product {
@@ -28,18 +28,36 @@ export interface Product {
 import { MOCK_PRODUCTS } from './mockProducts';
 
 export const mockCategories: Category[] = [
+    // Men's Wear
     { id: 'cat_shirts', name: 'Shirts', image: require('../../assets/images/categories/men/shirts.png'), gender: 'men' },
     { id: 'cat_jeans', name: 'Jeans', image: require('../../assets/images/categories/men/jeans.jpg'), gender: 'men' },
     { id: 'cat_tshirts', name: 'Tshirts', image: require('../../assets/images/categories/men/tshirts.jpg'), gender: 'men' },
     { id: 'cat_casual_shoes', name: 'Casual Shoes', image: require('../../assets/images/categories/men/casual-shoes.jpg'), gender: 'men' },
     { id: 'cat_sweater', name: 'Sweater', image: require('../../assets/images/categories/men/sweater.jpg'), gender: 'men' },
     { id: 'cat_sports_shoes', name: 'Sports Shoes', image: require('../../assets/images/categories/men/sports-shoes.jpg'), gender: 'men' },
+    // Women's Wear
     { id: 'cat_dresses', name: 'Dresses', image: require('../../assets/images/categories/women/dresses.jpg'), gender: 'women' },
     { id: 'cat_tops', name: 'Tops', image: require('../../assets/images/categories/women/tops.jpg'), gender: 'women' },
     { id: 'cat_trousers', name: 'Trousers', image: require('../../assets/images/categories/men/trousers.jpg'), gender: 'men' },
     { id: 'cat_heels', name: 'Heels', image: require('../../assets/images/categories/women/heels.jpg'), gender: 'women' },
     { id: 'cat_jackets', name: 'Jackets', image: require('../../assets/images/categories/men/jackets.jpg'), gender: 'men' },
     { id: 'cat_kurtas', name: 'Kurtas', image: require('../../assets/images/categories/women/kurtas.jpg'), gender: 'women' },
+    // Beauty Products
+    { id: 'cat_skincare', name: 'Skincare', image: require('../../assets/images/categories/beauty/skincare.png'), gender: 'unisex' },
+    { id: 'cat_makeup', name: 'Makeup', image: require('../../assets/images/categories/beauty/makeup.png'), gender: 'unisex' },
+    { id: 'cat_haircare', name: 'Hair Care', image: require('../../assets/images/categories/beauty/haircare.png'), gender: 'unisex' },
+    { id: 'cat_nailpolish', name: 'Nail Polish', image: require('../../assets/images/categories/beauty/nailpolish.png'), gender: 'unisex' },
+    { id: 'cat_perfume', name: 'Perfume', image: require('../../assets/images/categories/beauty/perfume.jpg'), gender: 'unisex' },
+    // Jewellery
+    { id: 'cat_necklaces', name: 'Necklaces', image: require('../../assets/images/categories/jewellery/necklaces.png'), gender: 'unisex' },
+    { id: 'cat_rings', name: 'Rings', image: require('../../assets/images/categories/jewellery/rings.png'), gender: 'unisex' },
+    { id: 'cat_earrings', name: 'Earrings', image: require('../../assets/images/categories/jewellery/earrings.jpg'), gender: 'unisex' },
+    { id: 'cat_bracelets', name: 'Bracelets', image: require('../../assets/images/categories/jewellery/bracelets.jpg'), gender: 'unisex' },
+    // Accessories
+    { id: 'cat_handbags', name: 'Handbags', image: require('../../assets/images/categories/accessories/handbags.jpg'), gender: 'unisex' },
+    { id: 'cat_watches', name: 'Watches', image: require('../../assets/images/categories/accessories/watches.jpg'), gender: 'unisex' },
+    { id: 'cat_belts', name: 'Belts', image: require('../../assets/images/categories/accessories/belts.jpg'), gender: 'unisex' },
+    { id: 'cat_sunglasses', name: 'Sunglasses', image: require('../../assets/images/categories/accessories/sunglasses.jpg'), gender: 'unisex' },
 ];
 
 // Helper to map category name to ID

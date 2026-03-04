@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, SafeAreaView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, SafeAreaView, Dimensions, ScrollView } from 'react-native';
 import { useShopStore } from '../store/useShopStore';
 import { useNavigation } from '@react-navigation/native';
 import { Feather, Ionicons } from '@expo/vector-icons';
@@ -9,13 +9,13 @@ const { width } = Dimensions.get('window');
 
 // Sidebar categories data with actual product images
 const SIDEBAR_ITEMS = [
-  { id: 'men', name: "Men's Wear", image: require('../../assets/images/categories/men/shirts.png') },
-  { id: 'women', name: "Women's Wear", image: require('../../assets/images/categories/women/dresses.jpg') },
-  { id: 'kids', name: "Kids's Wear", image: require('../../assets/images/categories/women/kurtas.jpg') }, // Using kurtas as placeholder for kids
-  { id: 'footwear', name: "Foot Wear", image: require('../../assets/images/categories/men/casual-shoes.jpg') },
-  { id: 'beauty', name: "Beauty Products", image: require('../../assets/images/categories/women/perfume.jpg') },
-  { id: 'jewellery', name: "Jewellery", image: require('../../assets/images/categories/women/handbags.jpg') },
-  { id: 'accessories', name: "Accessories", image: require('../../assets/images/categories/women/handbags.jpg') },
+  { id: 'men', name: "Men's Wear", image: require('../../assets/images/categories/men/mens_wear_hero.png') },
+  { id: 'women', name: "Women's Wear", image: require('../../assets/images/categories/women/womens_wear_hero.png') },
+  { id: 'kids', name: "Kids's Wear", image: require('../../assets/images/categories/kids_wear_hero.png') },
+  { id: 'footwear', name: "Foot Wear", image: require('../../assets/images/categories/footwear/footwear_hero_new.jpg') },
+  { id: 'beauty', name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
+  { id: 'jewellery', name: "Jewellery", image: require('../../assets/images/categories/jewellery/jewellery.png') },
+  { id: 'accessories', name: "Accessories", image: require('../../assets/images/categories/accessories/handbag_hero.png') },
 ];
 
 // Map sidebar ID to mockCategories filter or specific subcategories
@@ -30,11 +30,22 @@ const getSubCategories = (sidebarId: string) => {
         c.id.includes('shoes') || c.id.includes('heels') || c.name.toLowerCase().includes('shoe')
       );
     case 'kids':
+      // Show a curated mix for kids
+      return mockCategories.filter(c =>
+        ['cat_tshirts', 'cat_jeans', 'cat_dresses', 'cat_sports_shoes', 'cat_jackets', 'cat_sweater'].includes(c.id)
+      );
     case 'beauty':
+      return mockCategories.filter(c =>
+        ['cat_skincare', 'cat_makeup', 'cat_haircare', 'cat_nailpolish', 'cat_perfume'].includes(c.id)
+      );
     case 'jewellery':
+      return mockCategories.filter(c =>
+        ['cat_necklaces', 'cat_rings', 'cat_earrings', 'cat_bracelets'].includes(c.id)
+      );
     case 'accessories':
-      // Show all categories as browseable options when specific ones aren't available
-      return mockCategories.slice(0, 6);
+      return mockCategories.filter(c =>
+        ['cat_handbags', 'cat_watches', 'cat_belts', 'cat_sunglasses'].includes(c.id)
+      );
     default:
       return mockCategories;
   }
@@ -46,6 +57,10 @@ const CategoriesScreen = () => {
   const [selectedCategory, setSelectedCategory] = useState<string>('men');
 
   const subCategories = getSubCategories(selectedCategory);
+
+  // Split into grid items (first 4 = 2 rows) and slider items (the rest)
+  const gridItems = subCategories.slice(0, 4);
+  const sliderItems = subCategories.slice(4);
 
   const handleSubCategoryPress = (catId: string) => {
     // Single atomic update: reset all flags + set the category in one go
@@ -77,7 +92,7 @@ const CategoriesScreen = () => {
           <Image
             source={item.image}
             style={styles.sidebarImage}
-            resizeMode="cover"
+            resizeMode="contain"
           />
         </View>
         <Text style={styles.sidebarText}>
@@ -86,6 +101,24 @@ const CategoriesScreen = () => {
       </TouchableOpacity>
     );
   };
+
+  const renderGridItem = (item: Category) => (
+    <TouchableOpacity key={item.id} style={styles.subCategoryItem} onPress={() => handleSubCategoryPress(item.id)}>
+      <View style={styles.subCategoryImageContainer}>
+        <Image source={item.image} style={styles.subCategoryImage} resizeMode="cover" />
+      </View>
+      <Text style={styles.subCategoryName}>{item.name}</Text>
+    </TouchableOpacity>
+  );
+
+  const renderSliderItem = (item: Category) => (
+    <TouchableOpacity key={item.id} style={styles.sliderItem} onPress={() => handleSubCategoryPress(item.id)}>
+      <View style={styles.sliderImageContainer}>
+        <Image source={item.image} style={styles.sliderImage} resizeMode="cover" />
+      </View>
+      <Text style={styles.sliderName}>{item.name}</Text>
+    </TouchableOpacity>
+  );
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -125,21 +158,26 @@ const CategoriesScreen = () => {
         {/* Right Content Area */}
         <View style={styles.mainContent}>
           {subCategories.length > 0 ? (
-            <FlatList
-              data={subCategories}
-              keyExtractor={item => item.id}
-              numColumns={2}
-              columnWrapperStyle={{ justifyContent: 'space-between' }}
-              contentContainerStyle={{ padding: 20 }}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.subCategoryItem} onPress={() => handleSubCategoryPress(item.id)}>
-                  <View style={styles.subCategoryImageContainer}>
-                    <Image source={item.image} style={styles.subCategoryImage} resizeMode="cover" />
-                  </View>
-                  <Text style={styles.subCategoryName}>{item.name}</Text>
-                </TouchableOpacity>
+            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 15 }}>
+              {/* Grid: First 2 rows (4 items) */}
+              <View style={styles.gridContainer}>
+                {gridItems.map(item => renderGridItem(item))}
+              </View>
+
+              {/* Horizontal Slider: Remaining items */}
+              {sliderItems.length > 0 && (
+                <View style={styles.sliderSection}>
+                  <Text style={styles.sliderSectionTitle}>More</Text>
+                  <ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={{ paddingVertical: 5 }}
+                  >
+                    {sliderItems.map(item => renderSliderItem(item))}
+                  </ScrollView>
+                </View>
               )}
-            />
+            </ScrollView>
           ) : (
             <View style={styles.emptyState}>
               <Feather name="package" size={40} color="#ccc" />
@@ -189,10 +227,46 @@ const styles = StyleSheet.create({
 
   // Main Content
   mainContent: { flex: 1, backgroundColor: '#fff' },
-  subCategoryItem: { width: '47%', marginBottom: 20, alignItems: 'center' },
+
+  // Grid (first 2 rows)
+  gridContainer: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  subCategoryItem: { width: '47%', marginBottom: 15, alignItems: 'center' },
   subCategoryImageContainer: { width: '100%', aspectRatio: 1, borderRadius: 12, overflow: 'hidden', marginBottom: 8, backgroundColor: '#F9FAFB' },
   subCategoryImage: { width: '100%', height: '100%' },
   subCategoryName: { fontSize: 13, fontWeight: '500', color: '#111', textAlign: 'center' },
+
+  // Slider section
+  sliderSection: {
+    marginTop: 10,
+    paddingTop: 10,
+    borderTopWidth: 1,
+    borderTopColor: '#F3F4F6',
+  },
+  sliderSectionTitle: {
+    fontSize: 15,
+    fontWeight: '600',
+    color: '#111',
+    marginBottom: 10,
+  },
+  sliderItem: {
+    width: 100,
+    marginRight: 12,
+    alignItems: 'center',
+  },
+  sliderImageContainer: {
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    overflow: 'hidden',
+    marginBottom: 6,
+    backgroundColor: '#F9FAFB',
+  },
+  sliderImage: { width: '100%', height: '100%' },
+  sliderName: { fontSize: 11, fontWeight: '500', color: '#4B5563', textAlign: 'center' },
 
   emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center' },
   emptyText: { marginTop: 10, color: '#999', fontSize: 14 },
