@@ -9,13 +9,13 @@ const { width } = Dimensions.get('window');
 
 // Sidebar categories data with actual product images
 const SIDEBAR_ITEMS = [
-  { id: 'men', name: "Men's Wear", image: require('../../assets/images/categories/men/shirts.png') },
-  { id: 'women', name: "Women's Wear", image: require('../../assets/images/categories/women/dresses.jpg') },
-  { id: 'kids', name: "Kids's Wear", image: require('../../assets/images/categories/women/kurtas.jpg') }, // Using kurtas as placeholder for kids
-  { id: 'footwear', name: "Foot Wear", image: require('../../assets/images/categories/men/casual-shoes.jpg') },
-  { id: 'beauty', name: "Beauty Products", image: require('../../assets/images/categories/women/perfume.jpg') },
+  { id: 'men', name: "Men's Wear", image: require('../../assets/images/categories/men/mens_wear_hero.png') },
+  { id: 'women', name: "Women's Wear", image: require('../../assets/images/categories/women/womens_wear_hero.png') },
+  { id: 'kids', name: "Kids's Wear", image: require('../../assets/images/categories/kids_wear_hero.png') },
+  { id: 'footwear', name: "Foot Wear", image: require('../../assets/images/categories/footwear/footwear_hero_new.jpg') },
+  { id: 'beauty', name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
   { id: 'jewellery', name: "Jewellery", image: require('../../assets/images/categories/jewellery/jewellery.png') },
-  { id: 'accessories', name: "Accessories", image: require('../../assets/images/categories/women/handbags.jpg') },
+  { id: 'accessories', name: "Accessories", image: require('../../assets/images/categories/accessories/handbag_hero.png') },
 ];
 
 // Map sidebar ID to mockCategories filter or specific subcategories
@@ -92,7 +92,7 @@ const CategoriesScreen = () => {
           <Image
             source={item.image}
             style={styles.sidebarImage}
-            resizeMode="cover"
+            resizeMode="contain"
           />
         </View>
         <Text style={styles.sidebarText}>
