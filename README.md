@@ -4,12 +4,22 @@
 
 ---
 
+## 👤 Developer Info
+
+| Field         | Value                  |
+|---------------|------------------------|
+| **Name**      | Nihinsa Bandara        |
+| **Project**   | Lufyco Clothing App    |
+
+---
+
 ## 📁 Project Structure
 
 ```
 Lufyco_Clothing/
 ├── Lufyco_Backend/      # Node.js + Express REST API + ML services
 ├── Lufyco_Frontend/     # Expo / React Native mobile app
+├── Documents/           # Project proposals, architecture docs & handouts
 └── datasets/            # Product & ML training datasets
 ```
 
@@ -26,37 +36,38 @@ Lufyco_Clothing/
 - Intro / Splash screen onboarding
 
 ### 🏠 Home & Discovery
-- **Home Screen** – Featured banners, trending products, category highlights
-- **Search Overlay** – Real-time product search
-- **Categories Screen** – Browse by category (Men, Women, etc.)
-- **Offers Screen** – Active promotions and discounts
+- **Home Screen** – Featured banner carousel (auto-scroll with pagination dots), category rows, latest products grid
+- **Search Overlay** – Real-time product search with image search (camera icon)
+- **Categories Screen** – Browse all categories in a scrollable grid
+- **Offers/Sale Screen** – Active promotions and discounts
 - **Upcoming Events Screen** – Fashion events and sale calendars
+- **Notifications Screen** – In-app notification centre with dark theme support
 
 ### 👗 Shopping
 - **Product Listing Screen** – Paginated product grid with filters
 - **Filter Sheet** – Filter by size, color, price range, and category
 - **Product Details Screen** – Full-screen product view with size picker, color selection, image gallery, and reviews
 - **Men's Wear / Women's Wear** screens with dedicated category browsing
-- **Men's Casual Shirts / Women's Tops** sub-category screens
 - **Shop New Styles** curated collection screen
+- **Category Products Screen** – Auto-filtered by selected category, header shows category name
 
 ### 🛒 Cart & Checkout
 | Screen | Description |
 |---|---|
 | `MyCartScreen` | View cart, update quantities, remove items |
 | `CheckoutShippingScreen` | Enter / select delivery address |
-| `CheckoutPaymentScreen` | Choose payment method (card, wallet, COD) with custom icons |
+| `CheckoutPaymentScreen` | Choose payment method (card, wallet, COD) with custom payment icons |
 | `CheckoutReviewScreen` | Review order before placing |
 | `OrderSuccessScreen` | Confirmation page after successful order |
 
 ### 📦 Orders & Tracking
-- **Order History Screen** – View all past orders with status
+- **Order History Screen** – View all past orders with status badges
 - **Order Details Screen** – Detailed order info with a **visual tracking progress bar** (Confirmed → Packed → Shipped → Out for Delivery → Delivered)
 - **Track Order Screen** – Live order tracking
 
 ### ❤️ Wishlist
-- **Wishlist Screen** – Saved favourite products with dark theme support
-- Add-to-cart directly from wishlist, with cart navigation
+- **Wishlist Screen** – Saved favourite products with full dark theme support
+- Add-to-cart directly from wishlist, with automatic cart navigation
 
 ### 🤖 AI Stylist Features
 | Feature | Description |
@@ -73,12 +84,11 @@ Lufyco_Clothing/
 
 ### 👤 Profile & Settings
 - **Profile Screen** – View and edit profile with **profile picture upload** (Cloudinary-backed)
-- **Notifications Screen** – In-app notification centre with dark theme support
-- **Payments Screen** – Manage saved payment methods
+- **Payments Screen** – Manage saved payment methods with custom icons
 - Profile sub-screens for editing personal info
 
 ### 🌙 Dark Mode
-Full dark theme support across all screens including Cart, Wishlist, AI Stylist, Notifications, and Profile.
+Full dark theme support across **all** screens — Home, Cart, Wishlist, AI Stylist, Notifications, Profile, and more. All text colors dynamically adapt to the active theme for maximum readability.
 
 ---
 
@@ -248,7 +258,7 @@ npm run dev
 # Terminal 2 – Frontend
 cd Lufyco_Frontend
 npm install   # First time only
-npx expo start
+npm run start
 ```
 
 ### macOS / Linux
@@ -258,7 +268,7 @@ npx expo start
 cd Lufyco_Backend && npm install && npm run dev
 
 # Terminal 2 – Frontend
-cd Lufyco_Frontend && npm install && npx expo start
+cd Lufyco_Frontend && npm install && npm run start
 ```
 
 ---
@@ -274,22 +284,22 @@ cd Lufyco_Frontend && npm install && npx expo start
 | OTP not received | Check spam/junk folder. OTPs expire after **10 minutes** – request a new one if needed. |
 | Cloudinary upload fails | Verify `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET` are correctly set. |
 | Image search not working | Ensure the TensorFlow.js ML model is loaded in the backend. Check `mlFeatureExtractor.js` logs. |
+| Dark mode text unreadable | Ensure all text components use `colors.text` from `ThemeContext` instead of hardcoded color values. |
 
 ---
 
-## 🧪 Default Test Account
+## 🕘 Recent Updates (March 2026)
 
-For quick testing without a database connection:
-
-| Field | Value |
-|---|---|
-| Username | `user` |
-| Password | `user` |
-
-> **Note:** This bypasses email verification and all database checks.
+- 🎨 **Dark Mode Text Fix** – All screen text now dynamically uses theme colors (`colors.text`, `colors.textSecondary`) ensuring readability in both light and dark mode
+- 📐 **Home Screen Spacing** – Increased gap between categories, banner carousel, and product sections for a more breathable layout
+- 🧹 **Codebase Cleanup** – Removed unused images, dependencies, and redundant code
+- 🏷️ **Category Products** – Category screen now resets filters correctly and displays the right category name in the header
+- 🛒 **Wishlist Cart** – "Add to Cart" from Wishlist now correctly adds items and navigates to cart
+- 🖼️ **Profile Picture** – Profile picture upload with Cloudinary persistence and graceful error handling for storage limits
+- 📊 **Order Tracking Bar** – Visual step-by-step progress bar added to Order Details screen
 
 ---
 
 ## 📄 License
 
-This project is proprietary. All rights reserved © Lufyco.
+This project is proprietary. All rights reserved © Nihinsa Bandara / Lufyco.
