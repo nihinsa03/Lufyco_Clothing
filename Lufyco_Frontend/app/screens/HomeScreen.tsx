@@ -122,7 +122,7 @@ const HomeScreen = ({ navigation }: Props) => {
           </View>
 
           {/* Categories - 2 separate scrolling rows */}
-          <View style={{ marginBottom: 20 }}>
+          <View style={{ marginBottom: 32 }}>
             {/* Top Row */}
             <ScrollView
               horizontal
@@ -298,7 +298,7 @@ const styles = StyleSheet.create({
   },
   sliderCategoryName: { fontSize: 10, fontWeight: '600', textAlign: 'center', color: '#333' },
 
-  bannerContainer: { height: 180, borderRadius: 20, overflow: 'hidden', marginBottom: 25, position: 'relative' },
+  bannerContainer: { height: 180, borderRadius: 20, overflow: 'hidden', marginBottom: 36, position: 'relative' },
   bannerSlide: { height: 180, borderRadius: 20, overflow: 'hidden' },
   banner: { width: "100%", height: "100%" },
   bannerOverlay: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, padding: 20, justifyContent: 'center' },
@@ -310,7 +310,7 @@ const styles = StyleSheet.create({
   dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)', marginHorizontal: 3 },
   activeDot: { backgroundColor: '#3b82f6' }, // Blue active dot to match image
 
-  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 15 },
+  sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
   sectionTitle: { fontSize: 18, fontWeight: "bold", color: '#000' },
   seeAll: { color: "#2DD4BF", fontSize: 12, fontWeight: '600' }, // Teal color matching image
 
