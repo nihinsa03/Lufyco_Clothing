@@ -117,7 +117,7 @@ const HomeScreen = ({ navigation }: Props) => {
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.gridIcon} onPress={() => navigation.navigate("Categories")}>
-              <Ionicons name="grid-outline" size={20} color="#000" />
+              <Ionicons name="grid-outline" size={20} color={colors.text} />
             </TouchableOpacity>
           </View>
 
@@ -134,7 +134,7 @@ const HomeScreen = ({ navigation }: Props) => {
                   <View style={styles.categoryImageContainer}>
                     <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
                   </View>
-                  <Text style={styles.categoryName}>{item.name}</Text>
+                  <Text style={[styles.categoryName, { color: colors.text }]}>{item.name}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -150,7 +150,7 @@ const HomeScreen = ({ navigation }: Props) => {
                   <View style={styles.categoryImageContainer}>
                     <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
                   </View>
-                  <Text style={styles.categoryName}>{item.name}</Text>
+                  <Text style={[styles.categoryName, { color: colors.text }]}>{item.name}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -194,7 +194,7 @@ const HomeScreen = ({ navigation }: Props) => {
 
           {/* Latest Products */}
           <View style={styles.sectionHeader}>
-            <Text style={styles.sectionTitle}>Latest Products</Text>
+            <Text style={[styles.sectionTitle, { color: colors.text }]}>Latest Products</Text>
             <TouchableOpacity onPress={() => navigation.navigate("ShopNewStyles")}><Text style={styles.seeAll}>SEE ALL</Text></TouchableOpacity>
           </View>
 
@@ -240,10 +240,10 @@ const HomeScreen = ({ navigation }: Props) => {
                     <View style={[styles.colorCircle, { backgroundColor: '#000' }]} />
                     <View style={[styles.colorCircle, { backgroundColor: '#2ba' }]} />
                     <View style={[styles.colorCircle, { backgroundColor: '#0f0' }]} />
-                    <Text style={styles.moreColors}>All 5 Colors</Text>
+                    <Text style={[styles.moreColors, { color: colors.textSecondary }]}>All 5 Colors</Text>
                   </View>
-                  <Text numberOfLines={1} style={styles.productName}>{item.title}</Text>
-                  <Text style={styles.productPrice}>LKR {item.price * 300}.00</Text>
+                  <Text numberOfLines={1} style={[styles.productName, { color: colors.text }]}>{item.title}</Text>
+                  <Text style={[styles.productPrice, { color: colors.text }]}>LKR {item.price * 300}.00</Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -277,7 +277,7 @@ const styles = StyleSheet.create({
     borderWidth: 1, borderColor: '#eee', marginRight: 10, backgroundColor: '#fff'
   },
   activeTab: { backgroundColor: '#000', borderColor: '#000' },
-  tabText: { fontSize: 14, fontWeight: '600', color: '#000' },
+  tabText: { fontSize: 14, fontWeight: '600', color: '#555' },
   activeTabText: { color: '#fff' },
   gridIcon: { padding: 8 },
 
@@ -288,7 +288,7 @@ const styles = StyleSheet.create({
     justifyContent: 'center', alignItems: 'center'
   },
   categoryImage: { width: '100%', height: '100%' },
-  categoryName: { fontSize: 10, fontWeight: '600', textAlign: 'center', color: '#333' },
+  categoryName: { fontSize: 10, fontWeight: '600', textAlign: 'center', color: '#888' },
 
   // Slider categories (remaining items beyond 2 rows)
   sliderCategoryItem: { width: 65, alignItems: 'center', marginRight: 12 },
@@ -311,7 +311,7 @@ const styles = StyleSheet.create({
   activeDot: { backgroundColor: '#3b82f6' }, // Blue active dot to match image
 
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", color: '#000' },
+  sectionTitle: { fontSize: 18, fontWeight: "bold", color: '#000' }, // overridden inline with colors.text
   seeAll: { color: "#2DD4BF", fontSize: 12, fontWeight: '600' }, // Teal color matching image
 
   productCard: { backgroundColor: "#fff", width: (screenWidth - 48) / 2, marginBottom: 20 },
@@ -337,8 +337,8 @@ const styles = StyleSheet.create({
   cardColorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   colorCircle: { width: 10, height: 10, borderRadius: 5, marginRight: -3, borderWidth: 1, borderColor: '#fff' },
   moreColors: { fontSize: 9, color: '#666', marginLeft: 8, textDecorationLine: 'underline' },
-  productName: { fontSize: 13, fontWeight: "500", marginBottom: 4, color: "#333" },
-  productPrice: { fontSize: 13, fontWeight: "bold", color: "#000" },
+  productName: { fontSize: 13, fontWeight: "500", marginBottom: 4, color: "#333" }, // overridden inline
+  productPrice: { fontSize: 13, fontWeight: "bold", color: "#000" }, // overridden inline
 });
 
 export default HomeScreen;
