@@ -7,6 +7,7 @@ import { Ionicons, Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCart } from "../context/CartContext";
 import { useShopStore } from "../store/useShopStore";
+import { useWishlistStore } from "../store/useWishlistStore";
 import { useTheme } from "../context/ThemeContext";
 import { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -16,6 +17,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 const HomeScreen = ({ navigation }: Props) => {
   const { products, categories, setFilter } = useShopStore();
+  const { toggleWishlist, isInWishlist } = useWishlistStore();
   const { colors } = useTheme();
 
   // Banner carousel data
@@ -119,32 +121,40 @@ const HomeScreen = ({ navigation }: Props) => {
             </TouchableOpacity>
           </View>
 
-          {/* Categories - 2-row Horizontal Slider */}
-          <ScrollView
-            horizontal
-            showsHorizontalScrollIndicator={false}
-            contentContainerStyle={{ paddingHorizontal: 0, marginBottom: 20 }}
-          >
-            {(() => {
-              // Arrange categories into columns of 2 (top and bottom row)
-              const columns: any[][] = [];
-              for (let i = 0; i < categories.length; i += 2) {
-                columns.push(categories.slice(i, i + 2));
-              }
-              return columns.map((col, colIndex) => (
-                <View key={colIndex} style={{ marginRight: 8 }}>
-                  {col.map((item, rowIndex) => (
-                    <TouchableOpacity key={rowIndex} style={styles.sliderCategoryItem} onPress={() => handleCategoryPress(item.id)}>
-                      <View style={styles.categoryImageContainer}>
-                        <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
-                      </View>
-                      <Text style={styles.categoryName}>{item.name}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              ));
-            })()}
-          </ScrollView>
+          {/* Categories - 2 separate scrolling rows */}
+          <View style={{ marginBottom: 20 }}>
+            {/* Top Row */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 0, marginBottom: 12 }}
+            >
+              {categories.filter((_, i) => i % 2 === 0).map((item) => (
+                <TouchableOpacity key={item.id} style={[styles.sliderCategoryItem, { marginRight: 8 }]} onPress={() => handleCategoryPress(item.id)}>
+                  <View style={styles.categoryImageContainer}>
+                    <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
+                  </View>
+                  <Text style={styles.categoryName}>{item.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Bottom Row */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 0 }}
+            >
+              {categories.filter((_, i) => i % 2 === 1).map((item) => (
+                <TouchableOpacity key={item.id} style={[styles.sliderCategoryItem, { marginRight: 8 }]} onPress={() => handleCategoryPress(item.id)}>
+                  <View style={styles.categoryImageContainer}>
+                    <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
+                  </View>
+                  <Text style={styles.categoryName}>{item.name}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
 
           {/* Banner Carousel */}
           <View style={styles.bannerContainer}>
@@ -189,20 +199,39 @@ const HomeScreen = ({ navigation }: Props) => {
           </View>
 
           <FlatList
+            key={'2col'}
             data={latestProducts}
-            horizontal
-            showsHorizontalScrollIndicator={false}
+            scrollEnabled={false}
+            numColumns={2}
+            columnWrapperStyle={{ justifyContent: 'space-between' }}
+            showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 4 }}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <TouchableOpacity style={[styles.productCard, { width: 160, marginRight: 16, marginBottom: 0 }]} onPress={() => handleProductPress(item)}>
+              <TouchableOpacity style={styles.productCard} onPress={() => handleProductPress(item)}>
                 <View style={styles.imageWrapper}>
                   <Image
                     source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}
                     style={styles.productImage}
                   />
-                  <TouchableOpacity style={styles.wishlistBtn}>
-                    <Feather name="heart" size={16} color="#000" />
+                  <TouchableOpacity
+                    style={styles.wishlistBtn}
+                    onPress={(e) => {
+                      e.stopPropagation();
+                      toggleWishlist({
+                        id: item.id,
+                        productId: item.id,
+                        title: item.title,
+                        price: item.price,
+                        image: item.images[0],
+                      });
+                    }}
+                  >
+                    <Feather
+                      name="heart"
+                      size={16}
+                      color={isInWishlist(item.id) ? "#ef4444" : "#000"}
+                    />
                   </TouchableOpacity>
                 </View>
 
@@ -291,7 +320,19 @@ const styles = StyleSheet.create({
     overflow: 'hidden', position: 'relative'
   },
   productImage: { width: "100%", height: "100%" },
-  wishlistBtn: { position: "absolute", top: 10, right: 10, backgroundColor: 'rgba(0,0,0,0.2)', padding: 6, borderRadius: 20 },
+  wishlistBtn: {
+    position: "absolute",
+    top: 10,
+    right: 10,
+    backgroundColor: 'rgba(255, 255, 255, 0.9)',
+    padding: 8,
+    borderRadius: 20,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 2
+  },
   productInfo: { paddingHorizontal: 4 },
   cardColorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   colorCircle: { width: 10, height: 10, borderRadius: 5, marginRight: -3, borderWidth: 1, borderColor: '#fff' },
