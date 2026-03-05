@@ -181,7 +181,10 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
           <Feather name="arrow-left" size={22} />
         </TouchableOpacity>
         <Text style={styles.headerTitle}>Suggested Outfit</Text>
-        <View style={{ width: 22 }} />
+        {/* Button to view saved looks */}
+        <TouchableOpacity onPress={() => navigation.navigate('SavedLooks')} style={{ paddingLeft: 8 }}>
+          <Feather name="bookmark" size={22} />
+        </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>

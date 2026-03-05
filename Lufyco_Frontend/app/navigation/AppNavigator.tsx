@@ -31,6 +31,7 @@ import AIStylistScreen from "../screens/AIStylistScreen";
 import MyClosetScreen from "../screens/MyClosetScreen";
 import PlanMyLookScreen from "../screens/PlanMyLookScreen";
 import SuggestedOutfitScreen from "../screens/SuggestedOutfitScreen";
+import SavedLooksScreen from "../screens/SavedLooksScreen";
 import ShopNewStylesScreen from "../screens/ShopNewStylesScreen";
 import UpcomingEventsScreen from "../screens/UpcomingEventsScreen";
 import AddToClosetScreen from "../screens/AddToClosetScreen";
@@ -106,6 +107,7 @@ export type RootStackParamList = {
   UpcomingEvents: undefined;
   AddToCloset: undefined;
   AddToClosetPreview: { uri: string };
+  SavedLooks: undefined;
   WomensWear: undefined;
   WomenTops: undefined;
   WomenTopDetails: {
@@ -197,6 +199,7 @@ export default function AppNavigator() {
           <Stack.Screen name="MyCloset" component={MyClosetScreen} />
           <Stack.Screen name="PlanMyLook" component={PlanMyLookScreen} />
           <Stack.Screen name="SuggestedOutfit" component={SuggestedOutfitScreen} />
+          <Stack.Screen name="SavedLooks" component={SavedLooksScreen} />
           <Stack.Screen name="ShopNewStyles" component={ShopNewStylesScreen} />
           <Stack.Screen name="UpcomingEvents" component={UpcomingEventsScreen} />
           <Stack.Screen name="AddToCloset" component={AddToClosetScreen} />
