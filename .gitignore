@@ -38,6 +38,9 @@ DeepFashion/
 deepfashion/
 dataset/
 datasets/
+# Exception: keep the outfit ML training scripts and generated model
+!datasets/outfit_training/
+!datasets/outfit_training/**
 *.zip
 *.tar.gz
 *.rar
@@ -49,6 +52,9 @@ tmp/
 
 # ML Models (large files)
 models/
+# Exception: keep the exported TF.js outfit recommendation model
+!Lufyco_Backend/models/outfit-recommendation-model_tfjs/
+!Lufyco_Backend/models/outfit-recommendation-model_tfjs/**
 *.h5
 *.pb
 *.pth
