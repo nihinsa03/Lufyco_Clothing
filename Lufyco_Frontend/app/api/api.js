@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 
-// Use your machine's local IP address so physical phones can connect over Wi-Fi
-const IP_ADDRESS = '10.89.61.230'; // Automatically found via ipconfig
+// Running on same laptop — use localhost directly
+const IP_ADDRESS = 'localhost';
 const API_URL = `http://${IP_ADDRESS}:5001/api`;
 
 const api = axios.create({

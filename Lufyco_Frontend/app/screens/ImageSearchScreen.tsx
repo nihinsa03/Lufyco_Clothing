@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import {
     View,
     Text,
@@ -23,6 +23,7 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
     const [searching, setSearching] = useState(false);
     const [checkingModel, setCheckingModel] = useState(false);
     const [searchResults, setSearchResults] = useState<any[]>([]);
+    const scrollViewRef = useRef<ScrollView>(null);
 
     // Request camera permissions
     const requestCameraPermission = async () => {
@@ -142,6 +143,16 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
             }));
 
             setSearchResults(formattedResults);
+
+            if (formattedResults.length > 0) {
+                Alert.alert('Search Complete', `Found ${formattedResults.length} similar products! Scroll down to see them.`);
+                // Scroll down after a short delay to allow rendering
+                setTimeout(() => {
+                    scrollViewRef.current?.scrollToEnd({ animated: true });
+                }, 500);
+            } else {
+                Alert.alert('No Results', 'No similar products found in our database.');
+            }
         } catch (error: any) {
             console.error('Search error:', error);
             const message = error.response?.data?.message || error.message || 'Unable to search for similar products.';
@@ -197,7 +208,10 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
                 <View style={{ width: 22 }} />
             </View>
 
-            <ScrollView contentContainerStyle={{ paddingBottom: 30 }}>
+            <ScrollView
+                ref={scrollViewRef}
+                contentContainerStyle={{ paddingBottom: 30 }}
+            >
                 {/* Instructions */}
                 <View style={styles.instructionsCard}>
                     <Ionicons name="camera-outline" size={32} color="#667eea" />
