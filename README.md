@@ -250,26 +250,46 @@ npx expo start
 ### Windows
 
 ```powershell
-# Terminal 1 – Backend
+# Terminal 1 – Backend (Local Development)
 cd Lufyco_Backend
 npm install   # First time only
 npm run dev
 
-# Terminal 2 – Frontend
+# Terminal 2 – Frontend (Local Development)
 cd Lufyco_Frontend
 npm install   # First time only
-npm run start
+npx expo start
 ```
 
 ### macOS / Linux
 
 ```bash
-# Terminal 1 – Backend
+# Terminal 1 – Backend (Local Development)
 cd Lufyco_Backend && npm install && npm run dev
 
-# Terminal 2 – Frontend
-cd Lufyco_Frontend && npm install && npm run start
+# Terminal 2 – Frontend (Local Development)
+cd Lufyco_Frontend && npm install && npx expo start
 ```
+
+### 🌍 Running on Physical Devices (External Networks)
+
+If you want to test the app on a physical device that is **not** on the same Wi-Fi network as your computer, you need to expose both the backend and frontend to the internet.
+
+**Step 1. Expose the Backend**
+1. Keep your Node.js backend running in Terminal 1.
+2. Open a new terminal and run Localtunnel to expose port 5001:
+   ```bash
+   npx localtunnel --port 5001
+   ```
+3. Copy the generated URL (e.g., `https://some-url.loca.lt`) and update `API_URL` in `Lufyco_Frontend/app/api/api.js`.
+
+**Step 2. Expose the Frontend (Expo)**
+1. Open a new terminal and start Expo with the `--tunnel` flag:
+   ```bash
+   cd Lufyco_Frontend
+   npx expo start --tunnel
+   ```
+2. Scan the provided QR code using the **Expo Go** app on your phone.
 
 ---
 
