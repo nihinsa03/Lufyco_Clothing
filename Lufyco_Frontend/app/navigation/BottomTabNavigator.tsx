@@ -42,14 +42,14 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
                     });
                 };
 
-                let iconName: any = "home";
-                let IconComp: any = Feather;
+                let iconName: any = "home-outline";
+                let IconComp: any = Ionicons;
 
-                if (route.name === 'Home') iconName = 'home';
-                else if (route.name === 'AIStylist') iconName = 'command'; // or 'loader', 'star'
-                else if (route.name === 'MyCart') { iconName = 'shopping-cart'; }
-                else if (route.name === 'Wishlist') iconName = 'heart';
-                else if (route.name === 'Profile') iconName = 'user';
+                if (route.name === 'Home') iconName = isFocused ? 'home' : 'home-outline';
+                else if (route.name === 'AIStylist') iconName = isFocused ? 'grid' : 'grid-outline';
+                else if (route.name === 'MyCart') iconName = isFocused ? 'cart' : 'cart-outline';
+                else if (route.name === 'Wishlist') iconName = isFocused ? 'heart' : 'heart-outline';
+                else if (route.name === 'Profile') iconName = isFocused ? 'person' : 'person-outline';
 
                 const label = options.tabBarLabel !== undefined
                     ? options.tabBarLabel
@@ -69,14 +69,12 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
                         style={styles.tabItem}
                     >
                         <View>
-                            <IconComp name={iconName} size={22} color={isFocused ? colors.tabActive : colors.tabInactive} />
+                            <IconComp name={iconName} size={24} color={isFocused ? (colors.tabActive || '#0066FF') : (colors.tabInactive || '#8E8E93')} />
                             {route.name === 'MyCart' && count > 0 && (
-                                <View style={styles.badge}>
-                                    <Text style={styles.badgeText}>{count}</Text>
-                                </View>
+                                <View style={styles.redDot} />
                             )}
                         </View>
-                        <Text style={{ fontSize: 10, color: isFocused ? colors.tabActive : colors.tabInactive, marginTop: 4, fontWeight: isFocused ? '700' : '500' }}>
+                        <Text style={{ fontSize: 11, color: isFocused ? (colors.tabActive || '#0066FF') : (colors.tabInactive || '#8E8E93'), marginTop: 4, fontWeight: isFocused ? '600' : '400' }}>
                             {label}
                         </Text>
                     </TouchableOpacity>
@@ -106,23 +104,30 @@ const styles = StyleSheet.create({
     tabBar: {
         flexDirection: 'row',
         backgroundColor: '#fff',
-        height: Platform.OS === 'ios' ? 80 : 60,
-        paddingBottom: Platform.OS === 'ios' ? 20 : 0,
+        height: Platform.OS === 'ios' ? 85 : 60,
+        paddingBottom: Platform.OS === 'ios' ? 25 : 0,
+        paddingTop: Platform.OS === 'ios' ? 10 : 0,
         borderTopWidth: 1,
-        borderColor: '#F3F4F6',
-        elevation: 8,
-        shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 4, shadowOffset: { width: 0, height: -2 }
+        borderColor: '#E5E7EB',
+        elevation: 10,
+        shadowColor: '#000',
+        shadowOpacity: 0.1,
+        shadowRadius: 10,
+        shadowOffset: { width: 0, height: -4 },
+        position: 'absolute', // Ensures it floats above content if needed, but AppNavigator usually handles it
+        bottom: 0,
+        left: 0,
+        right: 0,
     },
     tabItem: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
     },
-    badge: {
-        position: 'absolute', top: -5, right: -8, backgroundColor: '#EF4444',
-        minWidth: 16, height: 16, borderRadius: 8, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 2
+    redDot: {
+        position: 'absolute', top: -2, right: -4, backgroundColor: '#EF4444',
+        width: 10, height: 10, borderRadius: 5, borderWidth: 1, borderColor: '#fff'
     },
-    badgeText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
 });
 
 export default BottomTabNavigator;

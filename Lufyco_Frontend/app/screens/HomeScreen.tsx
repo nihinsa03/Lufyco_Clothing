@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
 import {
   View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, FlatList,
-  Dimensions, SafeAreaView, ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent
+  Dimensions, SafeAreaView, ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent, Platform
 } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -103,7 +103,7 @@ const HomeScreen = ({ navigation }: Props) => {
         </TouchableOpacity>
 
         {/* Content */}
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 120 : 100 }}>
 
           {/* Tabs - Fashion Only */}
           <View style={styles.tabContainer}>
