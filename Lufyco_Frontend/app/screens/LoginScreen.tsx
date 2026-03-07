@@ -15,6 +15,19 @@ const LoginScreen = ({ navigation }: Props) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleLogin = async () => {
+    // START: Bypass for quick testing
+    if (email === 'user' && password === 'user') {
+      const bypassSuccess = await login({ email: 'test@example.com', password: '123456' });
+      if (bypassSuccess) {
+        navigation.reset({
+          index: 0,
+          routes: [{ name: 'Main' }],
+        });
+        return;
+      }
+    }
+    // END: Bypass
+
     if (!email || !password) {
       Alert.alert("Error", "Please fill all fields");
       return;
