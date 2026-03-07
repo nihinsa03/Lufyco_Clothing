@@ -1,8 +1,8 @@
 import axios from 'axios';
 import { Platform } from 'react-native';
 
-// Using localtunnel to expose the local backend to the internet
-const API_URL = 'https://plenty-berries-fry.loca.lt/api';
+// Using local WiFi IP to connect to the backend
+const API_URL = 'http://10.10.41.93:5001/api';
 
 const api = axios.create({
     baseURL: API_URL,
