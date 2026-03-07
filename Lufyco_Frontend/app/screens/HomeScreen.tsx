@@ -103,7 +103,7 @@ const HomeScreen = ({ navigation }: Props) => {
         </TouchableOpacity>
 
         {/* Content */}
-        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: Platform.OS === 'ios' ? 120 : 100 }}>
+        <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 100 }}>
 
           {/* Tabs - Fashion Only */}
           <View style={styles.tabContainer}>

@@ -114,10 +114,6 @@ const styles = StyleSheet.create({
         shadowOpacity: 0.1,
         shadowRadius: 10,
         shadowOffset: { width: 0, height: -4 },
-        position: 'absolute', // Ensures it floats above content if needed, but AppNavigator usually handles it
-        bottom: 0,
-        left: 0,
-        right: 0,
     },
     tabItem: {
         flex: 1,
