@@ -2,6 +2,8 @@
 
 My Final Year Project
 
+> **NOTE**: The frontend app depends on this backend. Always start the backend first using `npm run dev` before launching the mobile app to avoid connection errors.
+
 ## Prerequisites
 - [Node.js](https://nodejs.org/) (Maintained version recommended)
 - [MongoDB](https://www.mongodb.com/) (Local or Atlas)

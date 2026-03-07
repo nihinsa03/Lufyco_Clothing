@@ -228,7 +228,8 @@ Start the backend:
 npm run dev
 ```
 
-> The server runs on `http://localhost:5001` by default.
+> The server runs on `http://localhost:5001` by default. 
+> **Important**: Ensure the backend is running *before* starting the frontend to avoid "Network Error" issues.
 
 ### 3. Frontend Setup
 
@@ -298,6 +299,7 @@ If you want to test the app on a physical device that is **not** on the same Wi-
 | Problem | Solution |
 |---|---|
 | MongoDB connection error | Whitelist your IP in Atlas or ensure local MongoDB is running. Check `MONGO_URI` in `.env`. |
+| Login "Network Error" | 1. Ensure the backend is running (`npm run dev`). <br> 2. Confirm your device/emulator is on the **same Wi-Fi** as your computer. <br> 3. Check Windows Firewall (ensure port 5001 is open). |
 | Missing modules | Delete `node_modules` and `package-lock.json`, then re-run `npm install`. |
 | Port conflict | Change `PORT` in `.env` (backend) or use `--port` flag for Expo. |
 | Email not sending | Confirm `EMAIL_USER` and `EMAIL_PASSWORD` in `.env`; use an **App Password** (not your regular Gmail password). Restart server after editing `.env`. |
@@ -310,6 +312,7 @@ If you want to test the app on a physical device that is **not** on the same Wi-
 
 ## 🕘 Recent Updates (March 2026)
 
+- 🤖 **Dynamic API Selection** – The app now automatically detects the computer's IP address (via `expo-constants`) ensuring seamless connectivity for both iOS simulators (iMac) and Android emulators without manual IP configuration.
 - 🎨 **Dark Mode Text Fix** – All screen text now dynamically uses theme colors (`colors.text`, `colors.textSecondary`) ensuring readability in both light and dark mode
 - 📐 **Home Screen Spacing** – Increased gap between categories, banner carousel, and product sections for a more breathable layout
 - 🧹 **Codebase Cleanup** – Removed unused images, dependencies, and redundant code
