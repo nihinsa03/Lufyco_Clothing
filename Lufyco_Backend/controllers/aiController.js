@@ -89,6 +89,9 @@ const imageSearch = async (req, res) => {
             matchedFeatures: item.fallback ? ['category_match'] : ['visual_features', 'deep_learning']
         }));
 
+        const fs = require('fs');
+        fs.appendFileSync('search_debug.log', `[${new Date().toISOString()}] Search complete. Found ${results.length} products. Method: ${method}\n`);
+
         console.log(`✅ Found ${results.length} similar products (method: ${method})`);
 
         res.json({
@@ -100,6 +103,7 @@ const imageSearch = async (req, res) => {
         });
 
     } catch (error) {
+        require('fs').appendFileSync('search_debug.log', `[${new Date().toISOString()}] ERROR: ${error.message}\n${error.stack}\n`);
         console.error('❌ Image search error:', error);
         res.status(500).json({ message: error.message || 'Image search failed' });
     }

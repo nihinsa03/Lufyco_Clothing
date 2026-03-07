@@ -22,6 +22,7 @@ type RootStackParamList = {
   PlanMyLook: undefined;
   ShopNewStyles: undefined;
   UpcomingEvents: undefined;
+  SavedLooks: undefined;
   // Optional future routes:
   MyCart?: undefined;
   Wishlist?: undefined;
@@ -111,6 +112,15 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
             icon={<Feather name="calendar" size={22} color={isDark ? "#A38CFF" : "#7B61FF"} />}
             onPress={() => navigation.navigate("UpcomingEvents")}
           />
+        </View>
+
+        <View style={styles.tileRow}>
+          <Tile
+            label="Saved Looks"
+            icon={<Feather name="bookmark" size={22} color={isDark ? "#FFA726" : "#F57C00"} />}
+            onPress={() => navigation.navigate("SavedLooks")}
+          />
+          <View style={{ flex: 1, marginRight: 10, padding: 14 }} />
         </View>
 
         {/* Upcoming looks */}
