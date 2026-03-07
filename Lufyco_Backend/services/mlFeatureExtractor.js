@@ -17,8 +17,75 @@ try {
     }
 }
 
+const MODEL_DIR = path.join(__dirname, '../models/fashion-similarity-model_tfjs');
+const MODEL_PATH = path.join(MODEL_DIR, 'model.json');
+
 let customModel = null;
-const MODEL_PATH = path.join(__dirname, '../models/fashion-similarity-model_tfjs/model.json');
+
+/**
+ * Custom IOHandler that reads model.json and weight files from disk using Node.js fs.
+ * This works with pure @tensorflow/tfjs (no tfjs-node required).
+ */
+const createFsIOHandler = (modelDir) => {
+    const modelJsonPath = path.join(modelDir, 'model.json');
+    const modelJson = JSON.parse(fs.readFileSync(modelJsonPath, 'utf-8'));
+
+    return {
+        load: async () => {
+            const weightSpecs = modelJson.weightsManifest?.[0]?.weights ?? [];
+            const weightPaths = modelJson.weightsManifest?.[0]?.paths ?? [];
+            const weightBuffers = weightPaths.map(p =>
+                fs.readFileSync(path.join(modelDir, p)).buffer
+            );
+
+            return {
+                modelTopology: modelJson.modelTopology,
+                weightSpecs,
+                weightData: weightBuffers[0],   // MobileNet weights are usually sharded, but tfjs-converter concatenates them if small enough, wait!
+                // Actually, if there are multiple weight files, we need to concatenate their buffers properly.
+                format: modelJson.format,
+                generatedBy: modelJson.generatedBy,
+                convertedBy: modelJson.convertedBy,
+            };
+        },
+    };
+};
+
+/**
+ * Custom IOHandler supporting multiple shards
+ */
+const createFsIOHandlerMultiShard = (modelDir) => {
+    const modelJsonPath = path.join(modelDir, 'model.json');
+    const modelJson = JSON.parse(fs.readFileSync(modelJsonPath, 'utf-8'));
+
+    return {
+        load: async () => {
+            const weightSpecs = modelJson.weightsManifest?.[0]?.weights ?? [];
+            const weightPaths = modelJson.weightsManifest?.[0]?.paths ?? [];
+
+            // Read all shard files
+            const weightBuffers = weightPaths.map(p => fs.readFileSync(path.join(modelDir, p)));
+
+            // Concatenate all buffs into one ArrayBuffer (TF.js expects a single ArrayBuffer for weightData)
+            const totalLength = weightBuffers.reduce((sum, buf) => sum + buf.length, 0);
+            const concatenated = new Uint8Array(totalLength);
+            let offset = 0;
+            for (const buf of weightBuffers) {
+                concatenated.set(buf, offset);
+                offset += buf.length;
+            }
+
+            return {
+                modelTopology: modelJson.modelTopology,
+                weightSpecs,
+                weightData: concatenated.buffer,
+                format: modelJson.format,
+                generatedBy: modelJson.generatedBy,
+                convertedBy: modelJson.convertedBy,
+            };
+        },
+    };
+};
 
 /**
  * Load custom trained model
@@ -30,9 +97,13 @@ const loadCustomModel = async () => {
     try {
         // Check if custom model exists
         if (fs.existsSync(MODEL_PATH)) {
-            console.log('🎯 Loading custom trained fashion model...');
-            // In pure JS mode, use file:// handler if available, or just load directly if node backend
-            customModel = await tf.loadLayersModel(`file://${MODEL_PATH}`);
+            console.log('🎯 Loading custom trained fashion model via fs...');
+            const ioHandler = createFsIOHandlerMultiShard(MODEL_DIR);
+
+            // MobileNetV2 from tf.keras.applications is exported as a Layers graph
+            // However, depending on export, it might be a GraphModel.
+            // tfjs.converters.save_keras_model exports LayersModel.
+            customModel = await tf.loadLayersModel(ioHandler);
             console.log('✅ Custom fashion model loaded successfully');
         } else {
             console.log('⚠️ Custom model not found, falling back to pre-trained MobileNet');

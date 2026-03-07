@@ -1,0 +1,29 @@
+[dotenv@17.2.3] injecting env (6) from .env -- tip: ???????  run anywhere with `dotenvx run -- yourcommand`
+node : ?????? Native TensorFlow not 
+found, falling back to pure JS 
+@tensorflow/tfjs
+At line:1 char:1
++ node 
+scripts/populate_feature_vectors.js > 
+populate_output.txt 2>&1
++ ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecifie 
+   d: (?????? Native T...tensorflow/tfjs  
+  :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeComma 
+   ndError
+ 
+Connecting to database...
+MongoDB Connected: ac-6amhcgh-shard-00-00.yrkfagi.mongodb.net
+Loading ML model...
+Critical error: ReferenceError: 
+customModel is not defined
+    at loadCustomModel (D:\My_PaidProjects
+\Lufyco_Clothing\Lufyco_Backend\services\m
+lFeatureExtractor.js:93:5)
+    at populateFeatures (D:\My_PaidProject
+s\Lufyco_Clothing\Lufyco_Backend\scripts\p
+opulate_feature_vectors.js:30:15)
+    at process.processTicksAndRejections 
+(node:internal/process/task_queues:105:5)

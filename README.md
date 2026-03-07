@@ -250,26 +250,46 @@ npx expo start
 ### Windows
 
 ```powershell
-# Terminal 1 – Backend
+# Terminal 1 – Backend (Local Development)
 cd Lufyco_Backend
 npm install   # First time only
 npm run dev
 
-# Terminal 2 – Frontend
+# Terminal 2 – Frontend (Local Development)
 cd Lufyco_Frontend
 npm install   # First time only
-npm run start
+npx expo start
 ```
 
 ### macOS / Linux
 
 ```bash
-# Terminal 1 – Backend
+# Terminal 1 – Backend (Local Development)
 cd Lufyco_Backend && npm install && npm run dev
 
-# Terminal 2 – Frontend
-cd Lufyco_Frontend && npm install && npm run start
+# Terminal 2 – Frontend (Local Development)
+cd Lufyco_Frontend && npm install && npx expo start
 ```
+
+### 🌍 Running on Physical Devices (External Networks)
+
+If you want to test the app on a physical device that is **not** on the same Wi-Fi network as your computer, you need to expose both the backend and frontend to the internet.
+
+**Step 1. Expose the Backend**
+1. Keep your Node.js backend running in Terminal 1.
+2. Open a new terminal and run Localtunnel to expose port 5001:
+   ```bash
+   npx localtunnel --port 5001
+   ```
+3. Copy the generated URL (e.g., `https://some-url.loca.lt`) and update `API_URL` in `Lufyco_Frontend/app/api/api.js`.
+
+**Step 2. Expose the Frontend (Expo)**
+1. Open a new terminal and start Expo with the `--tunnel` flag:
+   ```bash
+   cd Lufyco_Frontend
+   npx expo start --tunnel
+   ```
+2. Scan the provided QR code using the **Expo Go** app on your phone.
 
 ---
 
@@ -297,6 +317,74 @@ cd Lufyco_Frontend && npm install && npm run start
 - 🛒 **Wishlist Cart** – "Add to Cart" from Wishlist now correctly adds items and navigates to cart
 - 🖼️ **Profile Picture** – Profile picture upload with Cloudinary persistence and graceful error handling for storage limits
 - 📊 **Order Tracking Bar** – Visual step-by-step progress bar added to Order Details screen
+
+---
+
+## 🤖 AI Architecture — How It Actually Works
+
+All AI features in this project are **fully on-demand**. Nothing runs in the background or on a schedule — all processing is triggered only when the user takes an explicit action.
+
+| AI Feature | Runs in Background? | When It Runs | How |
+|---|---|---|---|
+| **TF.js Image Search Model** | ❌ No | Only when user uploads a photo | Model lazy-loads into memory on first request, then stays resident for the lifetime of the server |
+| **Outfit Recommendation** | ❌ No | Only when user taps "Generate Outfit" | Rule-based logic (occasion + weather filters + random product selection from MongoDB) |
+| **Saved Looks CRUD** | ❌ No | Only on user action (save/delete/view) | Standard MongoDB read/write via REST API |
+
+### 🔁 Image Search Flow
+```
+User uploads photo → Multer stores in memory → TF.js extracts feature vector
+→ Cosine similarity compared against all products → Top 10 results returned
+→ Fallback: random results if no product feature vectors exist
+```
+
+### 👗 Outfit Generation Flow
+```
+User selects occasion + weather → Backend filters products from MongoDB
+→ Categorizes into tops/bottoms/shoes/outerwear → Assembles outfit randomly
+→ Suggests accessories → Returns complete outfit JSON
+```
+
+---
+
+## 🛠️ How I Developed This
+
+### Phase 1 — Planning & Design
+- Defined the full feature set: authentication, shopping, AI stylist, closet management, dark mode
+- Designed screen wireframes and navigation flow (bottom tabs + stack navigator)
+- Chose tech stack: **Expo/React Native** (frontend), **Node.js + Express + MongoDB** (backend), **Zustand** (state management)
+
+### Phase 2 — Backend First
+- Set up **Express REST API** with modular routes and controllers
+- Implemented **JWT authentication** with email OTP verification using Nodemailer
+- Integrated **Cloudinary** for image uploads (product images, profile pictures)
+- Built product, order, wishlist, and closet APIs with MongoDB/Mongoose
+
+### Phase 3 — Frontend Screens
+- Built all screens screen-by-screen, starting with auth flow (login → OTP → home)
+- Used **Zustand stores** for global state (cart, wishlist, auth, orders, shop filters)
+- Implemented **React Navigation** with nested stack + bottom tab navigators
+- Created reusable components: product cards, filter sheets, image galleries
+
+### Phase 4 — AI & ML Features
+- Integrated **TF.js** in the backend for image feature extraction (MobileNet v2)
+- Built `mlFeatureExtractor.js` with cosine similarity for visual product search
+- Implemented rule-based outfit generator in `outfitService.js` (weather + occasion logic)
+- Built **Plan My Look** screen with weather API integration and AI outfit suggestions
+- Added **Suggested Outfit** screen with undo/redo stack and save-to-looks feature
+
+### Phase 5 — UI / UX Polish
+- Implemented full **dark mode** using React Context (`ThemeContext`) — all text/backgrounds adapt dynamically
+- Added **banner carousel** with auto-scroll and pagination dots
+- Improved **spacing and layout** throughout the Home screen for a premium feel
+- Added visual **order tracking progress bar** on the Order Details screen
+- Replaced default icons with custom payment method images
+
+### Phase 6 — Testing & Bug Fixes
+- Fixed category products screen filter reset and header label
+- Fixed Wishlist "Add to Cart" functionality and cart navigation
+- Resolved profile picture storage limit handling (Cloudinary quota errors)
+- Fixed all hardcoded text colors that were unreadable in dark mode
+- Cleaned up unused images, dependencies, and redundant code
 
 ---
 
