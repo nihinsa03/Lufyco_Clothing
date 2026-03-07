@@ -12,22 +12,15 @@ const connectDB = require('./config/db');
 console.log('Attempting to connect to MongoDB...');
 connectDB();
 
+app.use(cors());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
+// Request Logger
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} from ${req.ip}`);
     next();
 });
-
-app.use(cors());
-app.use((req, res, next) => {
-    express.json({ limit: '50mb' })(req, res, (err) => {
-        if (err) {
-            console.error('JSON Parsing Error:', err.message);
-            return res.status(400).json({ message: 'Invalid JSON', error: err.message });
-        }
-        next();
-    });
-});
-app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -47,15 +40,14 @@ app.get('/', (req, res) => {
     res.send('Lufyco Clothing Backend is running!');
 });
 
+// Final Error Handler
 app.use((err, req, res, next) => {
-    console.error("Global Server Error:", err.stack);
-    res.status(500).json({
-        message: 'Internal Server Error',
-        error: process.env.NODE_ENV === 'production' ? {} : err.message
-    });
-});
+    // Catch JSON parsing errors
+    if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
+        console.error('Invalid JSON received:', err.message);
+        return res.status(400).json({ message: 'Invalid JSON', error: err.message });
+    }
 
-app.use((err, req, res, next) => {
     console.error("Global Server Error:", err.stack);
     res.status(500).json({
         message: 'Internal Server Error',

@@ -1,14 +1,21 @@
 import axios from 'axios';
-import { Platform } from 'react-native';
+import Constants from 'expo-constants';
 
-// Using local WiFi IP to connect to the backend
-// Standard Android emulator host loopback is 10.0.2.2
-const HOST_IP = '10.10.41.93';
+// Dynamic host IP detection for Expo development
+const getDevHost = () => {
+    const hostUri = Constants.expoConfig?.hostUri;
+    if (!hostUri) return 'localhost'; // Fallback
+    const host = hostUri.split(':')[0];
+    return host;
+};
+
+// Use the dynamic host if in dev mode, otherwise fallback to local IP
+const HOST_IP = __DEV__ ? getDevHost() : '10.10.41.93';
 const API_URL = `http://${HOST_IP}:5001/api`;
 
-// Note: If using iOS Simulator, you can change this to http://localhost:5001/api
-// If using Android Emulator, you can use http://10.0.2.2:5001/api
-// But HOST_IP should work for both if the machine's firewall allows port 5001.
+// Special cases for simulators/emulators if dynamic detection fails:
+// Android Emulator: http://10.0.2.2:5001/api
+// iOS Simulator / Web: http://localhost:5001/api
 
 const api = axios.create({
     baseURL: API_URL,
