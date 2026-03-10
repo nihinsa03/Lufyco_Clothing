@@ -73,7 +73,7 @@ const imageSearch = async (req, res) => {
         }
 
         // Find similar products (has built-in fallback if no feature vectors)
-        const similarProducts = findSimilarProducts(queryFeatures, allProducts, 10);
+        const similarProducts = findSimilarProducts(queryFeatures, allProducts, 5);
 
         // Format results
         const results = similarProducts.map(item => ({
