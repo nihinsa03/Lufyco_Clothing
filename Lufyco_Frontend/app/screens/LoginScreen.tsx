@@ -15,16 +15,16 @@ const LoginScreen = ({ navigation }: Props) => {
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
 
   const handleLogin = async () => {
-    // START: Bypass for quick testing
-    if (email === 'user' && password === 'user') {
-      const bypassSuccess = await login({ email: 'test@example.com', password: '123456' });
-      if (bypassSuccess) {
-        navigation.reset({
-          index: 0,
-          routes: [{ name: 'Main' }],
-        });
-        return;
-      }
+    // START: Bypass for quick testing (skips backend entirely)
+    if (email.toLowerCase() === 'user' && password === 'user') {
+      useAuthStore.setState({
+        user: { id: 'offline_user', name: 'Offline User', email: 'user', verified: true },
+        token: 'offline-token-123',
+        isAuthenticated: true,
+        loading: false,
+      });
+      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
+      return;
     }
     // END: Bypass
 
