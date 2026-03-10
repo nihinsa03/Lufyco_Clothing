@@ -116,9 +116,71 @@ const hexToRgb = (hex) => {
     } : null;
 };
 
+// Frontend palette we want to match exactly
+const FRONTEND_PALETTE = [
+    "#000000", "#FFFFFF", "#FF0000", "#0000FF", "#00FF00", 
+    "#FFFF00", "#808080", "#FFC0CB", "#A52A2A", "#800080"
+];
+
+/**
+ * Find the closest color in the frontend palette to a given RGB color
+ * @param {Object} rgb - RGB object {r, g, b}
+ * @returns {String} Closest hex color from the palette
+ */
+const findClosestPaletteColor = (rgb) => {
+    if (!rgb) return "#000000";
+
+    let closestColor = FRONTEND_PALETTE[0];
+    let minDistance = Infinity;
+
+    for (const hex of FRONTEND_PALETTE) {
+        const paletteRgb = hexToRgb(hex);
+        if (!paletteRgb) continue;
+
+        // Calculate Euclidean distance
+        const distance = Math.sqrt(
+            Math.pow(rgb.r - paletteRgb.r, 2) +
+            Math.pow(rgb.g - paletteRgb.g, 2) +
+            Math.pow(rgb.b - paletteRgb.b, 2)
+        );
+
+        if (distance < minDistance) {
+            minDistance = distance;
+            closestColor = hex;
+        }
+    }
+
+    return closestColor;
+};
+
+/**
+ * Extract dominant color from image buffer using sharp
+ * @param {Buffer} imageBuffer - Image buffer from multer
+ * @returns {Promise<String>} Closest hex color from the predefined palette
+ */
+const extractDominantColorLocal = async (imageBuffer) => {
+    try {
+        const sharp = require('sharp');
+        
+        // We shrink the image to a tiny 100x100 resolution to speed up color extraction,
+        // while ignoring alpha channel to get the dominant RGB.
+        const stats = await sharp(imageBuffer)
+            .resize(100, 100, { fit: 'inside' })
+            .removeAlpha()
+            .stats();
+            
+        const dominant = stats.dominant; // { r, g, b }
+        return findClosestPaletteColor(dominant);
+    } catch (error) {
+        console.error('Local color extraction error:', error);
+        return "#000000"; // fallback
+    }
+};
+
 module.exports = {
     uploadToCloudinary,
     extractColors,
     calculateColorSimilarity,
-    compareHexColors
+    compareHexColors,
+    extractDominantColorLocal
 };

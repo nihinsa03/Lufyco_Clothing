@@ -3,6 +3,7 @@ const router = express.Router();
 const {
     upload,
     imageSearch,
+    extractImageDetails,
     recommendOutfit,
     getSavedLooks,
     saveLook,
@@ -13,6 +14,11 @@ const {
 // @desc    Search products by uploaded image
 // @access  Public
 router.post('/image-search', upload.single('image'), imageSearch);
+
+// @route   POST /api/ai/extract-details
+// @desc    Extract features from image
+// @access  Private
+router.post('/extract-details', upload.single('image'), extractImageDetails);
 
 // @route   POST /api/ai/recommend-outfit
 // @desc    Generate outfit recommendation

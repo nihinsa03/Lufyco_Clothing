@@ -1,7 +1,7 @@
 const multer = require('multer');
 const Product = require('../models/Product');
 const SavedLook = require('../models/SavedLook');
-const { uploadToCloudinary } = require('../services/imageService');
+const { uploadToCloudinary, extractDominantColorLocal } = require('../services/imageService');
 const { generateOutfit } = require('../services/outfitService');
 const { extractFeatures, findSimilarProducts } = require('../services/mlFeatureExtractor');
 
@@ -73,7 +73,7 @@ const imageSearch = async (req, res) => {
         }
 
         // Find similar products (has built-in fallback if no feature vectors)
-        const similarProducts = findSimilarProducts(queryFeatures, allProducts, 10);
+        const similarProducts = findSimilarProducts(queryFeatures, allProducts, 5);
 
         // Format results
         const results = similarProducts.map(item => ({
@@ -106,6 +106,59 @@ const imageSearch = async (req, res) => {
         require('fs').appendFileSync('search_debug.log', `[${new Date().toISOString()}] ERROR: ${error.message}\n${error.stack}\n`);
         console.error('❌ Image search error:', error);
         res.status(500).json({ message: error.message || 'Image search failed' });
+    }
+};
+
+/**
+ * @route   POST /api/ai/extract-details
+ * @desc    Extract category and color from uploaded image for closet
+ * @access  Private
+ */
+const extractImageDetails = async (req, res) => {
+    try {
+        if (!req.file) {
+            return res.status(400).json({ message: 'No image file uploaded' });
+        }
+
+        console.log('🔍 Extracting image details for closet...');
+
+        // 1. Try ML feature extraction
+        let queryFeatures = [];
+        let category = 'Tops'; // Default fallback
+        let color = '#000000'; // Default fallback
+
+        try {
+            queryFeatures = await extractFeatures(req.file.buffer);
+
+            // Find similar products to guess category
+            const allProducts = await Product.find().lean();
+            if (allProducts.length > 0) {
+                const similarProducts = findSimilarProducts(queryFeatures, allProducts, 3);
+                if (similarProducts.length > 0 && similarProducts[0].product.category) {
+                    category = similarProducts[0].product.category;
+                }
+            }
+        } catch (mlError) {
+            console.warn('⚠️ ML extraction failed for details:', mlError.message);
+        }
+
+        // 2. Exact color extraction using sharp
+        try {
+            color = await extractDominantColorLocal(req.file.buffer);
+            console.log(`🎨 Extracted exact map color: ${color}`);
+        } catch (colorErr) {
+            console.warn('⚠️ Color extraction failed, using default:', colorErr.message);
+        }
+
+        res.json({
+            category,
+            color,
+            featureVector: queryFeatures
+        });
+
+    } catch (error) {
+        console.error('❌ Extract details error:', error);
+        res.status(500).json({ message: error.message || 'Details extraction failed' });
     }
 };
 
@@ -243,6 +296,7 @@ const deleteSavedLook = async (req, res) => {
 module.exports = {
     upload,
     imageSearch,
+    extractImageDetails,
     recommendOutfit,
     getSavedLooks,
     saveLook,

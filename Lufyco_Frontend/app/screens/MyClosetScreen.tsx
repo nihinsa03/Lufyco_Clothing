@@ -23,7 +23,7 @@ import { useFocusEffect } from "@react-navigation/native";
 type Props = NativeStackScreenProps<RootStackParamList, "MyCloset">;
 
 // Updated order as per Figma
-const chips = ["All", "Tops", "Bottoms", "Dresses", "Outerwear", "Accessories", "Shoes"];
+const chips = ["All", "Men's Wear", "Women's Wear", "Kids' Wear", "Foot Wear", "Beauty Products", "Jewellery", "Accessories", "Tops", "Bottoms", "Dresses", "Outerwear"];
 
 interface ClosetItem {
   _id: string;
@@ -45,6 +45,7 @@ const MyClosetScreen = ({ navigation }: Props) => {
   const [editItem, setEditItem] = useState<ClosetItem | null>(null);
   const [editName, setEditName] = useState("");
   const [editCategory, setEditCategory] = useState("Tops");
+  const [editColor, setEditColor] = useState("#000000");
 
   // Fetch items from backend API
   const fetchItems = useCallback(async () => {
@@ -189,6 +190,7 @@ const MyClosetScreen = ({ navigation }: Props) => {
                   setEditItem(item);
                   setEditName(item.name);
                   setEditCategory(item.category || "Tops");
+                  setEditColor(item.color || "#000000");
                 }}>
                   <Feather name="edit-2" size={18} color="#000" />
                 </TouchableOpacity>
@@ -225,14 +227,27 @@ const MyClosetScreen = ({ navigation }: Props) => {
             <TextInput style={styles.input} value={editName} onChangeText={setEditName} />
 
             <Text style={styles.label}>Category</Text>
-            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16, maxHeight: 40 }}>
-              {["Tops", "Bottoms", "Dresses", "Outerwear", "Accessories", "Shoes"].map(cat => (
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+              {["Men's Wear", "Women's Wear", "Kids' Wear", "Foot Wear", "Beauty Products", "Jewellery", "Accessories", "Tops", "Bottoms", "Dresses", "Outerwear"].map(cat => (
                 <TouchableOpacity
                   key={cat}
                   style={[styles.catChip, editCategory === cat && styles.catChipActive]}
                   onPress={() => setEditCategory(cat)}
                 >
                   <Text style={[styles.catChipText, editCategory === cat && styles.catChipTextActive]}>{cat}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            <Text style={styles.label}>Color</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+              {["#000000", "#FFFFFF", "#FF0000", "#0000FF", "#00FF00", "#FFFF00", "#808080", "#FFC0CB", "#A52A2A", "#800080"].map(c => (
+                <TouchableOpacity
+                  key={c}
+                  style={[styles.modalColorDotBtn, editColor === c && styles.modalColorDotBtnActive]}
+                  onPress={() => setEditColor(c)}
+                >
+                  <View style={[styles.modalColorDot, { backgroundColor: c }]} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -244,8 +259,8 @@ const MyClosetScreen = ({ navigation }: Props) => {
               <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#2563EB' }]} onPress={async () => {
                 if (!editItem) return;
                 try {
-                  await api.put(`/closet/${editItem._id}`, { name: editName, category: editCategory });
-                  setItems(prev => prev.map(i => i._id === editItem._id ? { ...i, name: editName, category: editCategory } : i));
+                  await api.put(`/closet/${editItem._id}`, { name: editName, category: editCategory, color: editColor });
+                  setItems(prev => prev.map(i => i._id === editItem._id ? { ...i, name: editName, category: editCategory, color: editColor } : i));
                   setEditItem(null);
                 } catch (e) {
                   Alert.alert("Error", "Could not update item.");
@@ -380,6 +395,15 @@ const styles = StyleSheet.create({
   catChipActive: { backgroundColor: '#2563EB' },
   catChipText: { fontSize: 13, fontWeight: '600', color: '#4B5563' },
   catChipTextActive: { color: '#fff' },
+  modalColorDotBtn: {
+    padding: 2, borderRadius: 16, marginRight: 8, height: 32, width: 32, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: 'transparent'
+  },
+  modalColorDotBtnActive: {
+    borderColor: '#2563EB'
+  },
+  modalColorDot: {
+    width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: '#ccc'
+  },
   modalBtn: {
     flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center'
   },

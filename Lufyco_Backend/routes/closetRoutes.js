@@ -42,6 +42,22 @@ router.post('/', async (req, res) => {
     }
 });
 
+// @route   PUT /api/closet/:id
+// @desc    Update a closet item
+router.put('/:id', async (req, res) => {
+    try {
+        const item = await ClosetItem.findByIdAndUpdate(
+            req.params.id,
+            { $set: req.body },
+            { new: true }
+        );
+        if (!item) return res.status(404).json({ message: 'Item not found' });
+        res.json(item);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // @route   DELETE /api/closet/:id
 // @desc    Delete closet item
 router.delete('/:id', async (req, res) => {
