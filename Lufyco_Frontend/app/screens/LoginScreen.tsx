@@ -16,6 +16,7 @@ const LoginScreen = ({ navigation }: Props) => {
 
   const handleLogin = async () => {
     // START: Bypass for quick testing (skips backend entirely)
+    // AppNavigator automatically switches to app stack when isAuthenticated = true
     if (email.toLowerCase() === 'user' && password === 'user') {
       useAuthStore.setState({
         user: { id: 'offline_user', name: 'Offline User', email: 'user', verified: true },
@@ -23,8 +24,7 @@ const LoginScreen = ({ navigation }: Props) => {
         isAuthenticated: true,
         loading: false,
       });
-      navigation.reset({ index: 0, routes: [{ name: 'Main' }] });
-      return;
+      return; // No navigation.reset() needed — AppNavigator handles it
     }
     // END: Bypass
 
@@ -34,16 +34,11 @@ const LoginScreen = ({ navigation }: Props) => {
     }
 
     const success = await login({ email: email.trim(), password });
-    if (success) {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Main' }],
-      });
-    } else {
-      // Show error from store
+    if (!success) {
       const { error } = useAuthStore.getState();
       Alert.alert("Login Failed", error || "Invalid credentials");
     }
+    // No navigation.reset() needed — AppNavigator automatically switches stack on isAuthenticated
   };
 
   return (
