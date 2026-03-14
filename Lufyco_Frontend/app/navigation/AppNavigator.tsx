@@ -27,6 +27,7 @@ import HomeScreen from "../screens/HomeScreen";
 import CategoriesScreen from "../screens/CategoriesScreen";
 import MensWearScreen from "../screens/MensWearScreen";
 import MenCasualShirtsScreen from "../screens/MenCasualShirtsScreen";
+import SubCategoryProductsScreen from "../screens/SubCategoryProductsScreen";
 import AIStylistScreen from "../screens/AIStylistScreen";
 import MyClosetScreen from "../screens/MyClosetScreen";
 import PlanMyLookScreen from "../screens/PlanMyLookScreen";
@@ -90,6 +91,7 @@ export type RootStackParamList = {
   ChangePassword: undefined;
   MensWear: undefined;
   MenCasualShirts: undefined;
+  SubCategoryProducts: { title: string; categoryId: string };
   AIStylist: undefined;
   ProductListing: {
     gender?: string;
@@ -195,6 +197,7 @@ export default function AppNavigator() {
           <Stack.Screen name="Categories" component={CategoriesScreen} />
           <Stack.Screen name="MensWear" component={MensWearScreen} />
           <Stack.Screen name="MenCasualShirts" component={MenCasualShirtsScreen} />
+          <Stack.Screen name="SubCategoryProducts" component={SubCategoryProductsScreen} />
           <Stack.Screen name="AIStylist" component={AIStylistScreen} />
           <Stack.Screen name="MyCloset" component={MyClosetScreen} />
           <Stack.Screen name="PlanMyLook" component={PlanMyLookScreen} />
