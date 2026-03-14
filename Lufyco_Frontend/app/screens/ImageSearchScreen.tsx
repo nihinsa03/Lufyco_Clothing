@@ -11,6 +11,7 @@ import {
     ActivityIndicator,
 } from 'react-native';
 import { Feather, Ionicons } from '@expo/vector-icons';
+import { useTheme } from '../context/ThemeContext';
 import * as ImagePicker from 'expo-image-picker';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { RootStackParamList } from '../navigation/AppNavigator';
@@ -19,6 +20,8 @@ import api from '../api/api';
 type Props = NativeStackScreenProps<RootStackParamList, 'ImageSearch'>;
 
 const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
+    const { colors, isDark: dark } = useTheme();
+    const styles = getStyles(colors, dark);
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
     const [searching, setSearching] = useState(false);
     const [checkingModel, setCheckingModel] = useState(false);
@@ -202,7 +205,7 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingRight: 8 }}>
-                    <Feather name="arrow-left" size={22} color="#111" />
+                    <Feather name="arrow-left" size={22} color={colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Image Search</Text>
                 <View style={{ width: 22 }} />
@@ -330,7 +333,7 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
                 {/* Empty State */}
                 {!selectedImage && searchResults.length === 0 && (
                     <View style={styles.emptyState}>
-                        <Ionicons name="images-outline" size={64} color="#ccc" />
+                        <Ionicons name="images-outline" size={64} color={dark ? '#555' : '#ccc'} />
                         <Text style={styles.emptyText}>No image selected</Text>
                         <Text style={styles.emptySubtext}>
                             Choose an option above to get started
@@ -342,8 +345,8 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
     );
 };
 
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: '#fff' },
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background },
 
     header: {
         flexDirection: 'row',
@@ -353,29 +356,29 @@ const styles = StyleSheet.create({
         paddingBottom: 12,
         justifyContent: 'space-between',
         borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
+        borderBottomColor: dark ? '#333' : '#f0f0f0',
     },
-    headerTitle: { fontSize: 20, fontWeight: '700', color: '#111' },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: colors.text },
 
     instructionsCard: {
         margin: 16,
         padding: 20,
-        backgroundColor: '#f8f9ff',
+        backgroundColor: dark ? '#1c1c1e' : '#f8f9ff',
         borderRadius: 12,
         alignItems: 'center',
         borderWidth: 1,
-        borderColor: '#e0e7ff',
+        borderColor: dark ? '#333' : '#e0e7ff',
     },
     instructionsTitle: {
         fontSize: 18,
         fontWeight: '700',
         marginTop: 12,
         marginBottom: 8,
-        color: '#111',
+        color: colors.text,
     },
     instructionsText: {
         fontSize: 14,
-        color: '#666',
+        color: dark ? '#aaa' : '#666',
         textAlign: 'center',
         lineHeight: 20,
     },
@@ -389,11 +392,11 @@ const styles = StyleSheet.create({
     actionButton: {
         flex: 1,
         alignItems: 'center',
-        backgroundColor: '#f9fafb',
+        backgroundColor: dark ? '#1c1c1e' : '#f9fafb',
         paddingVertical: 20,
         borderRadius: 12,
         borderWidth: 1.5,
-        borderColor: '#e5e7eb',
+        borderColor: dark ? '#333' : '#e5e7eb',
     },
     iconCircle: {
         width: 56,
@@ -407,7 +410,7 @@ const styles = StyleSheet.create({
     buttonLabel: {
         fontSize: 14,
         fontWeight: '600',
-        color: '#111',
+        color: colors.text,
     },
 
     imagePreviewContainer: {
@@ -417,7 +420,7 @@ const styles = StyleSheet.create({
     sectionTitle: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#111',
+        color: colors.text,
         marginBottom: 12,
     },
     imageWrapper: {
@@ -463,12 +466,12 @@ const styles = StyleSheet.create({
     },
     productCard: {
         flexDirection: 'row',
-        backgroundColor: '#f9fafb',
+        backgroundColor: dark ? '#1c1c1e' : '#f9fafb',
         borderRadius: 12,
         padding: 12,
         marginBottom: 12,
         borderWidth: 1,
-        borderColor: '#e5e7eb',
+        borderColor: dark ? '#222' : '#e5e7eb',
     },
     productImage: {
         width: 80,
@@ -484,7 +487,7 @@ const styles = StyleSheet.create({
     productName: {
         fontSize: 16,
         fontWeight: '700',
-        color: '#111',
+        color: colors.text,
         marginBottom: 4,
     },
     productPrice: {
@@ -507,7 +510,7 @@ const styles = StyleSheet.create({
         width: 40,
         height: 40,
         borderRadius: 20,
-        backgroundColor: '#fff',
+        backgroundColor: dark ? '#2c2c2e' : '#fff',
         alignItems: 'center',
         justifyContent: 'center',
         alignSelf: 'center',
@@ -521,12 +524,12 @@ const styles = StyleSheet.create({
     emptyText: {
         fontSize: 18,
         fontWeight: '700',
-        color: '#999',
+        color: dark ? '#aaa' : '#999',
         marginTop: 16,
     },
     emptySubtext: {
         fontSize: 14,
-        color: '#bbb',
+        color: dark ? '#777' : '#bbb',
         marginTop: 8,
         textAlign: 'center',
     },

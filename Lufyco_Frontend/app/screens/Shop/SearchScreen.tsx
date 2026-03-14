@@ -3,9 +3,12 @@ import { View, Text, StyleSheet, TextInput, TouchableOpacity, FlatList, SafeArea
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useNavigation } from '@react-navigation/native';
 import { useShopStore } from '../../store/useShopStore';
+import { useTheme } from '../../context/ThemeContext';
 
 const SearchScreen = () => {
     const navigation = useNavigation<any>();
+    const { colors, isDark: dark } = useTheme();
+    const styles = getStyles(colors, dark);
     const { recentSearches, addRecentSearch, clearRecentSearches, setQuery } = useShopStore();
     const [input, setInput] = useState('');
 
@@ -30,15 +33,16 @@ const SearchScreen = () => {
             <View style={styles.header}>
                 <Text style={styles.logo}>Fashion</Text>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Feather name="x" size={24} color="#000" />
+                    <Feather name="x" size={24} color={colors.text} />
                 </TouchableOpacity>
             </View>
 
             <View style={styles.searchBar}>
-                <Ionicons name="search" size={20} color="#666" />
+                <Ionicons name="search" size={20} color={dark ? "#aaa" : "#666"} />
                 <TextInput
                     style={styles.input}
                     placeholder="Search"
+                    placeholderTextColor={dark ? "#aaa" : "#888"}
                     value={input}
                     onChangeText={setInput}
                     onSubmitEditing={() => handleSearch(input)}
@@ -46,11 +50,11 @@ const SearchScreen = () => {
                 />
                 {input.length > 0 ? (
                     <TouchableOpacity onPress={handleClear}>
-                        <Feather name="x-circle" size={18} color="#999" />
+                        <Feather name="x-circle" size={18} color={dark ? "#888" : "#999"} />
                     </TouchableOpacity>
                 ) : (
                     <TouchableOpacity onPress={() => navigation.navigate('Filter')}>
-                        <Ionicons name="options-outline" size={24} color="#666" />
+                        <Ionicons name="options-outline" size={24} color={dark ? "#ccc" : "#666"} />
                     </TouchableOpacity>
                 )}
             </View>
@@ -60,7 +64,7 @@ const SearchScreen = () => {
                     <View style={styles.sectionHeader}>
                         <Text style={styles.sectionTitle}>RECENT SEARCH</Text>
                         <TouchableOpacity onPress={clearRecentSearches}>
-                            <Feather name="trash-2" size={16} color="#999" />
+                            <Feather name="trash-2" size={16} color={dark ? "#888" : "#999"} />
                         </TouchableOpacity>
                     </View>
 
@@ -70,7 +74,7 @@ const SearchScreen = () => {
                         renderItem={({ item }) => (
                             <TouchableOpacity style={styles.recentItem} onPress={() => handleSearch(item)}>
                                 <Text style={styles.recentText}>{item}</Text>
-                                <Feather name="arrow-up-right" size={20} color="#ccc" />
+                                <Feather name="arrow-up-right" size={20} color={dark ? "#555" : "#ccc"} />
                             </TouchableOpacity>
                         )}
                     />
@@ -86,8 +90,8 @@ const SearchScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#fff' },
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: colors.background },
     header: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -96,23 +100,25 @@ const styles = StyleSheet.create({
         paddingTop: 10,
         marginBottom: 15
     },
-    logo: { fontSize: 24, fontWeight: 'bold' },
+    logo: { fontSize: 24, fontWeight: 'bold', color: colors.text },
 
     searchBar: {
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: '#f5f5f5',
+        backgroundColor: dark ? '#1c1c1e' : '#f5f5f5',
         marginHorizontal: 20,
         paddingHorizontal: 15,
         height: 50,
         borderRadius: 25,
-        marginBottom: 25
+        marginBottom: 25,
+        borderWidth: dark ? 1 : 0,
+        borderColor: '#333'
     },
-    input: { flex: 1, marginLeft: 10, fontSize: 16 },
+    input: { flex: 1, marginLeft: 10, fontSize: 16, color: colors.text },
 
     recentSection: { paddingHorizontal: 20 },
     sectionHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 15 },
-    sectionTitle: { fontSize: 12, fontWeight: '600', color: '#888' },
+    sectionTitle: { fontSize: 12, fontWeight: '600', color: dark ? '#aaa' : '#888' },
 
     recentItem: {
         flexDirection: 'row',
@@ -120,19 +126,19 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 12,
         borderBottomWidth: 1,
-        borderBottomColor: '#f9f9f9'
+        borderBottomColor: dark ? '#333' : '#f9f9f9'
     },
-    recentText: { fontSize: 16, color: '#333' },
+    recentText: { fontSize: 16, color: colors.text },
 
     bottomSpacer: { flex: 1 },
     homeIndicator: {
         width: 134,
         height: 5,
-        backgroundColor: '#000',
+        backgroundColor: dark ? '#fff' : '#000',
         borderRadius: 2.5,
         alignSelf: 'center',
         marginBottom: 8,
-        opacity: 0.8
+        opacity: dark ? 0.4 : 0.8
     }
 });
 

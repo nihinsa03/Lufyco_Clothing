@@ -10,6 +10,8 @@ import {
   FlatList,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
+import { useNavigation } from "@react-navigation/native";
 
 type Props = {
   visible: boolean;
@@ -29,39 +31,48 @@ const RECENT = [
 
 const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSearch }) => {
   const [query, setQuery] = useState("");
+  const { colors, isDark: dark } = useTheme();
+  const navigation = useNavigation<any>();
 
   return (
     <Modal animationType="slide" presentationStyle="fullScreen" visible={visible}>
-      <SafeAreaView style={styles.safe}>
+      <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
         {/* Header */}
         <View style={styles.header}>
-          <Text style={styles.title}>Fashion</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Fashion</Text>
           <TouchableOpacity onPress={onClose} style={styles.iconBtn}>
-            <Feather name="x" size={26} />
+            <Feather name="x" size={26} color={colors.text} />
           </TouchableOpacity>
         </View>
 
         {/* Search bar */}
-        <View style={styles.searchWrap}>
-          <Feather name="search" size={20} style={{ marginLeft: 10 }} />
+        <View style={[styles.searchWrap, { backgroundColor: dark ? "#1c1c1e" : "#F6F6F7" }]}>
+          <Feather name="search" size={20} color={colors.text} style={{ marginLeft: 10 }} />
           <TextInput
             value={query}
             onChangeText={setQuery}
             placeholder="Search"
-            style={styles.input}
+            style={[styles.input, { color: colors.text }]}
             placeholderTextColor="#8e8e93"
             onSubmitEditing={() => onSearch && onSearch(query)}
           />
           <TouchableOpacity
-            onPress={onOpenFilter}
+            onPress={() => {
+              onClose();
+              if (onOpenFilter) {
+                 onOpenFilter();
+              } else {
+                 navigation.navigate('Filter');
+              }
+            }}
             style={[styles.iconBtn, { marginRight: 6 }]}
           >
-            <Feather name="sliders" size={20} />
+            <Feather name="sliders" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
 
         {/* Recent */}
-        <Text style={styles.sectionLabel}>RECENT SEARCH</Text>
+        <Text style={[styles.sectionLabel, { color: dark ? "#a0a0a5" : "#707077" }]}>RECENT SEARCH</Text>
         <FlatList
           data={RECENT.filter((t) =>
             query.trim().length
@@ -70,15 +81,15 @@ const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSear
           )}
           keyExtractor={(item) => item}
           ItemSeparatorComponent={() => (
-            <View style={{ height: 1, backgroundColor: "#F0F0F0" }} />
+            <View style={{ height: 1, backgroundColor: dark ? "#333" : "#F0F0F0" }} />
           )}
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.row} onPress={() => {
               setQuery(item);
               if (onSearch) onSearch(item);
             }}>
-              <Text style={styles.rowText}>{item}</Text>
-              <Feather name="corner-right-up" size={22} color="#C4C4C6" />
+              <Text style={[styles.rowText, { color: colors.text }]}>{item}</Text>
+              <Feather name="corner-right-up" size={22} color={dark ? "#666" : "#C4C4C6"} />
             </TouchableOpacity>
           )}
           ListEmptyComponent={

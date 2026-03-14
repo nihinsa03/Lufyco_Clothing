@@ -10,6 +10,7 @@ import {
     ActivityIndicator,
 } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import FilterSheet, { FilterKey } from "./FilterSheet";
@@ -34,7 +35,7 @@ type Product = {
     type?: string;
 };
 
-const ColorDots = ({ colors }: { colors: string[] }) => {
+const ColorDots = ({ colors, styles }: { colors: string[], styles: any }) => {
     if (!colors || colors.length === 0) return null;
     return (
         <View style={styles.colorRow}>
@@ -49,6 +50,8 @@ const ColorDots = ({ colors }: { colors: string[] }) => {
 };
 
 const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
+    const { colors, isDark: dark } = useTheme();
+    const styles = getStyles(colors, dark);
     const { gender, category, subCategory, type, search, isSale, title } = route.params || {};
 
     const [products, setProducts] = useState<Product[]>([]);
@@ -145,15 +148,15 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={styles.hIcon}>
-                    <Feather name="arrow-left" size={22} />
+                    <Feather name="arrow-left" size={22} color={colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.title}>{displayName.toUpperCase()}</Text>
                 <View style={styles.headerRight}>
                     <TouchableOpacity onPress={() => setFilterVisible(true)} style={styles.hIcon}>
-                        <Feather name="sliders" size={22} />
+                        <Feather name="sliders" size={22} color={colors.text} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => setSearchVisible(true)} style={styles.hIcon}>
-                        <Feather name="search" size={22} />
+                        <Feather name="search" size={22} color={colors.text} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -161,7 +164,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
             {/* Grid */}
             {loading ? (
                 <View style={styles.center}>
-                    <ActivityIndicator size="large" color="#000" />
+                    <ActivityIndicator size="large" color={colors.text} />
                 </View>
             ) : (
                 <FlatList
@@ -197,12 +200,12 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                                 <Ionicons
                                     name={isInWishlist(item._id) ? "heart" : "heart-outline"}
                                     size={18}
-                                    color={isInWishlist(item._id) ? "red" : "#111"}
+                                    color={isInWishlist(item._id) ? "red" : dark ? "#fff" : "#111"}
                                 />
                             </TouchableOpacity>
 
                             <View style={styles.colorRowWrap}>
-                                <ColorDots colors={item.colors} />
+                                <ColorDots colors={item.colors} styles={styles} />
                             </View>
 
                             <Text numberOfLines={1} style={styles.pTitle}>
@@ -219,7 +222,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                     )}
                     ListEmptyComponent={
                         <View style={styles.center}>
-                            <Text>No products found.</Text>
+                            <Text style={{ color: colors.text }}>No products found.</Text>
                         </View>
                     }
                 />
@@ -254,8 +257,8 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
     );
 };
 
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" },
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 50 },
     header: {
         flexDirection: "row",
@@ -265,7 +268,7 @@ const styles = StyleSheet.create({
         paddingBottom: 8,
         justifyContent: "space-between",
         borderBottomWidth: StyleSheet.hairlineWidth,
-        borderColor: "#eee",
+        borderColor: dark ? "#333" : "#eee",
     },
     hIcon: { padding: 6 },
     headerRight: { flexDirection: "row", alignItems: "center" },
@@ -275,6 +278,7 @@ const styles = StyleSheet.create({
         fontSize: 16,
         fontWeight: "700",
         letterSpacing: 0.3,
+        color: colors.text,
     },
     card: { width: "48%", marginTop: 14 },
     image: { width: "100%", height: 180, borderRadius: 14, backgroundColor: '#f0f0f0' },
@@ -282,7 +286,7 @@ const styles = StyleSheet.create({
         position: "absolute",
         right: 10,
         top: 10,
-        backgroundColor: "#fff",
+        backgroundColor: dark ? "#333" : "#fff",
         width: 30,
         height: 30,
         borderRadius: 15,
@@ -298,15 +302,15 @@ const styles = StyleSheet.create({
         borderRadius: 7,
         marginRight: 4,
         borderWidth: 1,
-        borderColor: "#e5e5e5",
+        borderColor: dark ? "#333" : "#e5e5e5",
     },
-    moreColors: { fontSize: 10, color: '#666' },
-    pTitle: { fontSize: 14, fontWeight: "600", marginTop: 6 },
+    moreColors: { fontSize: 10, color: dark ? '#aaa' : '#666' },
+    pTitle: { fontSize: 14, fontWeight: "600", marginTop: 6, color: colors.text },
     priceRow: { flexDirection: "row", alignItems: "center", marginTop: 2 },
-    price: { fontSize: 14, fontWeight: "700" },
+    price: { fontSize: 14, fontWeight: "700", color: colors.text },
     compare: {
         fontSize: 12,
-        color: "#888",
+        color: dark ? '#777' : "#888",
         marginLeft: 8,
         textDecorationLine: "line-through",
     },

@@ -13,6 +13,8 @@ import ForgotPasswordEmailScreen from "../screens/Auth/ForgotPasswordEmailScreen
 import ForgotPasswordOtpScreen from "../screens/Auth/ForgotPasswordOtpScreen";
 import NewPasswordScreen from "../screens/Auth/NewPasswordScreen";
 import PasswordResetSuccessScreen from "../screens/Auth/PasswordResetSuccessScreen";
+import { useTheme } from "../context/ThemeContext";
+import { DefaultTheme as RNDefaultTheme, DarkTheme as RNDarkTheme } from '@react-navigation/native';
 
 // ... Keep existing App screens ...
 import IntroScreen from "../screens/IntroScreen";
@@ -156,15 +158,19 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 export default function AppNavigator() {
   const { isAuthenticated, loading } = useAuthStore();
+  const { isDark } = useTheme();
 
   // Optional: Show global loading if Hydration is slow
   if (loading) {
     // return <Loading />;
   }
 
+  // Define a custom theme to pass to NavigationContainer if not already done in _layout
+  const navTheme = isDark ? RNDarkTheme : RNDefaultTheme;
+
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {!isAuthenticated ? (
+      <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: isDark ? '#121212' : '#fff' } }}>
+        {!isAuthenticated ? (
         // Auth Flow
         <Stack.Group>
           <Stack.Screen name="Splash" component={SplashScreen} />
@@ -232,6 +238,6 @@ export default function AppNavigator() {
           <Stack.Screen name="FAQ" component={FAQScreen} />
         </Stack.Group>
       )}
-    </Stack.Navigator>
+      </Stack.Navigator>
   );
 }

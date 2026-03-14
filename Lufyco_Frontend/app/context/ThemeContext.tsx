@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, ReactNode, useEffect } from 'react';
+import { Appearance } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 type ThemeContextType = {
@@ -54,13 +55,32 @@ const ThemeContext = createContext<ThemeContextType>({
 export const useTheme = () => useContext(ThemeContext);
 
 export const ThemeProvider = ({ children }: { children: ReactNode }) => {
-    const [isDark, setIsDark] = useState(false);
+    // Initialize with system preference
+    const colorScheme = Appearance.getColorScheme();
+    const [isDark, setIsDark] = useState(colorScheme === 'dark');
 
     // Load persisted theme on startup
     useEffect(() => {
         AsyncStorage.getItem(THEME_STORAGE_KEY).then((saved) => {
-            if (saved === 'true') setIsDark(true);
+            if (saved === 'true') {
+                setIsDark(true);
+            } else if (saved === 'false') {
+                setIsDark(false);
+            }
         });
+    }, []);
+
+    // Listen to system changes if user hasn't hard-set a preference
+    useEffect(() => {
+        const subscription = Appearance.addChangeListener(({ colorScheme }) => {
+            AsyncStorage.getItem(THEME_STORAGE_KEY).then((saved) => {
+                if (!saved) {
+                    setIsDark(colorScheme === 'dark');
+                }
+            });
+        });
+
+        return () => subscription.remove();
     }, []);
 
     const toggleTheme = () => {

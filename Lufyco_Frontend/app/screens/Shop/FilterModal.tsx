@@ -3,11 +3,14 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from
 import { Feather } from '@expo/vector-icons';
 import { useShopStore, FilterState } from '../../store/useShopStore';
 import { useNavigation } from '@react-navigation/native';
+import { useTheme } from '../../context/ThemeContext';
 
 const { height } = Dimensions.get('window');
 
 const FilterModal = () => {
     const navigation = useNavigation();
+    const { colors, isDark: dark } = useTheme();
+    const styles = getStyles(colors, dark);
     const { activeFilters, toggleFilter, resetFilters, setFilter } = useShopStore();
 
     const handleApply = () => {
@@ -29,7 +32,7 @@ const FilterModal = () => {
                 activeOpacity={0.7}
             >
                 <View style={[styles.checkbox, isChecked && styles.checkboxChecked]}>
-                    {isChecked && <Feather name="check" size={14} color="#fff" />}
+                    {isChecked && <Feather name="check" size={14} color={dark ? "#000" : "#fff"} />}
                 </View>
                 <Text style={styles.label}>{label}</Text>
             </TouchableOpacity>
@@ -62,10 +65,10 @@ const FilterModal = () => {
     );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
     container: {
         flex: 1,
-        backgroundColor: '#fff',
+        backgroundColor: colors.background || (dark ? '#121212' : '#ffffff'),
         paddingTop: 20,
         height: height * 0.5, // Half screen typical for bottom sheet
     },
@@ -76,11 +79,11 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
         marginBottom: 20,
         borderBottomWidth: 1,
-        borderBottomColor: '#f0f0f0',
+        borderBottomColor: dark ? '#333' : '#f0f0f0',
         paddingBottom: 15,
     },
-    headerTitle: { fontSize: 20, fontWeight: 'bold' },
-    resetText: { fontSize: 14, color: '#666' },
+    headerTitle: { fontSize: 20, fontWeight: 'bold', color: colors.text || (dark ? '#fff' : '#000') },
+    resetText: { fontSize: 14, color: dark ? '#aaa' : '#666' },
 
     content: { paddingHorizontal: 20 },
 
@@ -89,38 +92,38 @@ const styles = StyleSheet.create({
         alignItems: 'center',
         paddingVertical: 15, // Keep padding
         borderBottomWidth: 1, // Keep border
-        borderBottomColor: '#f5f5f5', // Keep border color
+        borderBottomColor: dark ? '#333' : '#f5f5f5', // Keep border color
         justifyContent: 'flex-start', // Align start to satisfy UI
     },
-    label: { fontSize: 16, color: '#333', marginLeft: 12 }, // Add margin left to separate from checkbox
+    label: { fontSize: 16, color: colors.text || (dark ? '#fff' : '#000'), marginLeft: 12 }, // Add margin left to separate from checkbox
 
     checkbox: {
         width: 24,
         height: 24,
         borderRadius: 6,
         borderWidth: 2,
-        borderColor: '#ddd',
+        borderColor: dark ? '#444' : '#ddd',
         justifyContent: 'center',
         alignItems: 'center',
     },
     checkboxChecked: {
-        backgroundColor: '#000',
-        borderColor: '#000',
+        backgroundColor: dark ? '#fff' : '#000',
+        borderColor: dark ? '#fff' : '#000',
     },
 
     footer: {
         padding: 20,
         borderTopWidth: 1,
-        borderTopColor: '#f0f0f0',
+        borderTopColor: dark ? '#333' : '#f0f0f0',
     },
     applyBtn: {
-        backgroundColor: '#000',
+        backgroundColor: colors.text || (dark ? '#fff' : '#000'),
         height: 50,
         borderRadius: 25,
         justifyContent: 'center',
         alignItems: 'center',
     },
-    applyText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
+    applyText: { color: colors.background || (dark ? '#121212' : '#fff'), fontSize: 16, fontWeight: 'bold' }
 });
 
 export default FilterModal;

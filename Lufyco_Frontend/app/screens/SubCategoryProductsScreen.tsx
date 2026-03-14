@@ -9,6 +9,7 @@ import {
   SafeAreaView,
 } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import FilterSheet, { FilterKey } from "../screens/FilterSheet";
@@ -37,7 +38,7 @@ const generateProducts = (image: any): Product[] => [
   { id: "p6", title: "Libera",        image, price: 16.9,  compareAtPrice: 22.0, colors: ["#1c6acb", "#8b8e93", "#6f7682"],                      totalColors: 4 },
 ];
 
-const ColorDots = ({ colors }: { colors: string[] }) => (
+const ColorDots = ({ colors, styles }: { colors: string[], styles: any }) => (
   <View style={styles.colorRow}>
     {colors.slice(0, 3).map((c, i) => (
       <View key={`${c}-${i}`} style={[styles.dot, { backgroundColor: c }]} />
@@ -46,6 +47,8 @@ const ColorDots = ({ colors }: { colors: string[] }) => (
 );
 
 const SubCategoryProductsScreen: React.FC<Props> = ({ navigation, route }) => {
+  const { colors, isDark: dark } = useTheme();
+  const styles = getStyles(colors, dark);
   const { title, categoryId } = route.params;
 
   // Look up the image from the central map – reliable, no param serialisation issues
@@ -83,15 +86,15 @@ const SubCategoryProductsScreen: React.FC<Props> = ({ navigation, route }) => {
       {/* Header */}
       <View style={styles.header}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.hIcon}>
-          <Feather name="arrow-left" size={22} />
+          <Feather name="arrow-left" size={22} color={colors.text} />
         </TouchableOpacity>
         <Text style={styles.title}>{title.toUpperCase()}</Text>
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={() => setFilterVisible(true)} style={styles.hIcon}>
-            <Feather name="sliders" size={22} />
+            <Feather name="sliders" size={22} color={colors.text} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setSearchVisible(true)} style={styles.hIcon}>
-            <Feather name="search" size={22} />
+            <Feather name="search" size={22} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
@@ -108,11 +111,11 @@ const SubCategoryProductsScreen: React.FC<Props> = ({ navigation, route }) => {
           <View style={styles.card}>
             <Image source={item.image} style={styles.image} />
             <TouchableOpacity style={styles.wishBtn}>
-              <Feather name="heart" size={18} color="#111" />
+              <Feather name="heart" size={18} color={dark ? "#fff" : "#111"} />
             </TouchableOpacity>
 
             <View style={styles.colorRowWrap}>
-              <ColorDots colors={item.colors} />
+              <ColorDots colors={item.colors} styles={styles} />
               <Text style={styles.allColorsText}>{`All ${item.totalColors} Colors`}</Text>
             </View>
 
@@ -162,8 +165,8 @@ const SubCategoryProductsScreen: React.FC<Props> = ({ navigation, route }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.background },
 
   header: {
     flexDirection: "row",
@@ -173,7 +176,7 @@ const styles = StyleSheet.create({
     paddingBottom: 8,
     justifyContent: "space-between",
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderColor: "#eee",
+    borderColor: dark ? "#333" : "#eee",
   },
   hIcon: { padding: 6 },
   headerRight: { flexDirection: "row", alignItems: "center" },
@@ -183,6 +186,7 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "700",
     letterSpacing: 0.3,
+    color: colors.text,
   },
 
   card: { width: "48%", marginTop: 14 },
@@ -191,7 +195,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     right: 10,
     top: 10,
-    backgroundColor: "#fff",
+    backgroundColor: dark ? "#2c2c2e" : "#fff",
     width: 30,
     height: 30,
     borderRadius: 15,
@@ -208,16 +212,16 @@ const styles = StyleSheet.create({
     borderRadius: 9,
     marginRight: 6,
     borderWidth: 1,
-    borderColor: "#e5e5e5",
+    borderColor: dark ? "#333" : "#e5e5e5",
   },
-  allColorsText: { fontSize: 12, color: "#3b3b3b", textDecorationLine: "underline" },
+  allColorsText: { fontSize: 12, color: dark ? "#aaa" : "#3b3b3b", textDecorationLine: "underline" },
 
-  pTitle: { fontSize: 14, fontWeight: "600", marginTop: 6 },
+  pTitle: { fontSize: 14, fontWeight: "600", marginTop: 6, color: colors.text },
   priceRow: { flexDirection: "row", alignItems: "center", marginTop: 2 },
-  price: { fontSize: 14, fontWeight: "700" },
+  price: { fontSize: 14, fontWeight: "700", color: colors.text },
   compare: {
     fontSize: 12,
-    color: "#888",
+    color: dark ? "#666" : "#888",
     marginLeft: 8,
     textDecorationLine: "line-through",
   },
@@ -229,8 +233,8 @@ const styles = StyleSheet.create({
     bottom: 0,
     height: 72,
     borderTopWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "#fff",
+    borderColor: dark ? "#333" : "#eee",
+    backgroundColor: colors.background,
     flexDirection: "row",
     paddingBottom: 8,
     paddingTop: 6,
