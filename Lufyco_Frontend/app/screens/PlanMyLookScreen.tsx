@@ -1,15 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import {
-  SafeAreaView,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  ScrollView,
-  Modal,
-  Platform,
-  TouchableWithoutFeedback,
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, ScrollView, Modal, Platform, TouchableWithoutFeedback, StatusBar } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import DatePicker from "react-native-ui-datepicker";
 import dayjs, { Dayjs } from "dayjs";
@@ -268,7 +258,7 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   header: {
     flexDirection: "row",

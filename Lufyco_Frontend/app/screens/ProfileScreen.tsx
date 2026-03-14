@@ -1,18 +1,5 @@
 import React from "react";
-import {
-    SafeAreaView,
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    Image,
-    ScrollView,
-    Switch,
-    StatusBar,
-    Alert,
-    Modal,
-    TextInput,
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Switch, StatusBar, Alert, Modal, TextInput, Platform } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useAuthStore } from "../store/useAuthStore";
@@ -279,7 +266,7 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    safe: { flex: 1 },
+    safe: { flex: 1 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
     headerGradient: {
         paddingHorizontal: 20,

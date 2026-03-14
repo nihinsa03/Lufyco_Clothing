@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import {
-    SafeAreaView, View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Dimensions
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, FlatList, Image, Dimensions, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useOrdersStore, Order } from "../store/useOrdersStore";
@@ -99,7 +97,7 @@ const OrderHistoryScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" },
+    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10 },
     headerTitle: { fontSize: 18, fontWeight: "700" },
 

@@ -1,18 +1,5 @@
 import React, { useState, useRef } from "react";
-import {
-    View,
-    Text,
-    StyleSheet,
-    Image,
-    TouchableOpacity,
-    ScrollView,
-    SafeAreaView,
-    Alert,
-    Dimensions,
-    Platform,
-    Animated,
-    Modal
-} from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert, Dimensions, Platform, Animated, Modal, StatusBar } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useCartStore } from "../store/useCartStore";
 import { useWishlistStore } from "../store/useWishlistStore";
@@ -348,7 +335,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" },
+    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         paddingHorizontal: 16, paddingVertical: 10, zIndex: 10

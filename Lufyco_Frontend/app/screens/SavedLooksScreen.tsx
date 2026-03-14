@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { SafeAreaView, View, Text, FlatList, Image, TouchableOpacity, StyleSheet } from 'react-native';
+import { SafeAreaView, View, Text, FlatList, Image, TouchableOpacity, StyleSheet, Platform, StatusBar } from "react-native";
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
@@ -78,7 +78,7 @@ const SavedLooksScreen = ({ navigation }) => {
 export default SavedLooksScreen;
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: '#fff' },
+    safe: { flex: 1, backgroundColor: '#fff' , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingTop: 10, paddingBottom: 10 },
     headerTitle: { fontSize: 20, fontWeight: '700' },
     list: { padding: 16 },

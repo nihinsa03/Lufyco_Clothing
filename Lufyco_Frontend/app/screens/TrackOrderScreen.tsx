@@ -1,12 +1,5 @@
 import React, { useState } from "react";
-import {
-    SafeAreaView,
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    ScrollView,
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, ScrollView, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
@@ -74,7 +67,7 @@ const TrackOrderScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#F9FAFB" },
+    safe: { flex: 1, backgroundColor: "#F9FAFB" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: "row", alignItems: "center", justifyContent: "space-between",
         paddingHorizontal: 16, paddingVertical: 12, backgroundColor: "#fff", borderBottomWidth: 1, borderColor: "#E5E7EB"

@@ -1,15 +1,5 @@
 import React from "react";
-import {
-  SafeAreaView,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Image,
-  TextInput,
-  ScrollView,
-  ActivityIndicator,
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, ActivityIndicator, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
@@ -298,7 +288,7 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#F3F4F6" },
+  safe: { flex: 1, backgroundColor: "#F3F4F6" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   scroll: { paddingBottom: 100 },
 
   header: {

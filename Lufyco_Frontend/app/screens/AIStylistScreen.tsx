@@ -1,14 +1,6 @@
 import React from "react";
 import { useAuth } from "../context/AuthContext";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
-} from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, ScrollView, Platform, StatusBar } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useWeather } from "../hooks/useWeather";
@@ -216,7 +208,7 @@ const LookItem = ({ image, label }: { image: any; label: string }) => {
 /* ---------- styles ---------- */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   header: {
     flexDirection: "row",

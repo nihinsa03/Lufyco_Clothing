@@ -1,14 +1,5 @@
 import React, { useMemo, useState } from "react";
-import {
-  SafeAreaView,
-  View,
-  Text,
-  StyleSheet,
-  TextInput,
-  TouchableOpacity,
-  Image,
-  FlatList,
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TextInput, TouchableOpacity, Image, FlatList, Platform, StatusBar } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
@@ -106,7 +97,7 @@ const ShopNewStylesScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1 },
+  safe: { flex: 1 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   header: {
     flexDirection: "row",

@@ -1,15 +1,5 @@
 import React, { useState } from "react";
-import {
-    SafeAreaView,
-    View,
-    Text,
-    StyleSheet,
-    TextInput,
-    TouchableOpacity,
-    ScrollView,
-    Image,
-    Alert,
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TextInput, TouchableOpacity, ScrollView, Image, Alert, Platform, StatusBar } from "react-native";
 import { Feather, FontAwesome, FontAwesome5, MaterialIcons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useCheckoutStore, PaymentMethod } from "../../store/useCheckoutStore";
@@ -195,7 +185,7 @@ const CheckoutPaymentScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" },
+    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
         paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F3F4F6'

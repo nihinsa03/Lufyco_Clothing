@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, TouchableOpacity, Image, StyleSheet } from "react-native";
+import { View, Text, TouchableOpacity, Image, StyleSheet, Platform, StatusBar } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/AppNavigator"; // Import RootStackParamList
@@ -38,7 +38,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     paddingHorizontal: 20,
     justifyContent: "center",
-  },
+  paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   successImage: {
     width: 150,
     height: 220,

@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Platform, StatusBar } from "react-native";
 
 const { height } = Dimensions.get('window');
 import { useAuthStore } from '../store/useAuthStore';
@@ -55,7 +55,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     width: '100%',
     minHeight: height,
-  },
+  paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.3)'

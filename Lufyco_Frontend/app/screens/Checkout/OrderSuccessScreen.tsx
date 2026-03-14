@@ -1,12 +1,5 @@
 import React from "react";
-import {
-    SafeAreaView,
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    Image,
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, Platform, StatusBar } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/AppNavigator";
@@ -53,8 +46,8 @@ const OrderSuccessScreen = () => {
 };
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" },
-    container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30 },
+    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+    container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     iconContainer: {
         width: 120, height: 120, borderRadius: 60, backgroundColor: '#EFF6FF',
         alignItems: 'center', justifyContent: 'center', marginBottom: 24

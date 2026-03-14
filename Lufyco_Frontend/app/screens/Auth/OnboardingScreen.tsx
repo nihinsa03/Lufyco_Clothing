@@ -1,8 +1,5 @@
 import React, { useRef, useState } from 'react';
-import {
-    View, Text, Image, FlatList, Dimensions, StyleSheet,
-    TouchableOpacity, SafeAreaView, StatusBar
-} from 'react-native';
+import { View, Text, Image, FlatList, Dimensions, StyleSheet, TouchableOpacity, SafeAreaView, StatusBar, Platform } from "react-native";
 import { useAuthStore } from '../../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { Ionicons } from '@expo/vector-icons';
@@ -148,7 +145,7 @@ const OnboardingScreen = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#f8f8f8' },
+    container: { flex: 1, backgroundColor: '#f8f8f8' , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         position: 'absolute',
         top: 40,

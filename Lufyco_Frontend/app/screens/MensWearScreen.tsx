@@ -1,14 +1,6 @@
 // screens/CategoriesScreen.tsx
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  ScrollView,
-  SafeAreaView,
-} from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
@@ -172,7 +164,7 @@ const MensWearScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#fff" },
+  safeArea: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   header: {
     flexDirection: "row",
@@ -192,7 +184,7 @@ const styles = StyleSheet.create({
   headerIcons: { flexDirection: "row", alignItems: "center" },
   icon: { marginLeft: 15 },
 
-  container: { flexDirection: "row", flex: 1 },
+  container: { flexDirection: "row", flex: 1 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   leftMenu: {
     width: "32%",

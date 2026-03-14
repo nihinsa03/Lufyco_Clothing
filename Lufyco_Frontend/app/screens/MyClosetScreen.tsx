@@ -1,19 +1,6 @@
 // screens/MyClosetScreen.tsx
 import React, { useState, useEffect, useCallback } from "react";
-import {
-  SafeAreaView,
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  TextInput,
-  Image,
-  ScrollView,
-  ActivityIndicator,
-  Alert,
-  RefreshControl,
-  Modal,
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, TextInput, Image, ScrollView, ActivityIndicator, Alert, RefreshControl, Modal, Platform, StatusBar } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
@@ -277,7 +264,7 @@ const MyClosetScreen = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   header: {
     flexDirection: "row",

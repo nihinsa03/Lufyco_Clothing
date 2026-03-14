@@ -1,7 +1,5 @@
 import React, { useState } from 'react';
-import {
-    View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, Image
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, Image, Platform, StatusBar } from "react-native";
 import { Feather, Ionicons } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
@@ -198,8 +196,8 @@ const NotificationsScreen = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#fff' },
-    container: { flex: 1 },
+    safeArea: { flex: 1, backgroundColor: '#fff' , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+    container: { flex: 1 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

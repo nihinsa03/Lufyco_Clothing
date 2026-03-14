@@ -1,16 +1,5 @@
 import React, { useState } from "react";
-import {
-    SafeAreaView,
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    Image,
-    ScrollView,
-    Modal,
-    Dimensions,
-    Alert,
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Modal, Dimensions, Alert, Platform, StatusBar } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useWishlistStore } from "../store/useWishlistStore";
 import { useCartStore } from "../store/useCartStore";
@@ -142,7 +131,7 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" },
+    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
         paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F3F4F6'

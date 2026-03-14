@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView, SafeAreaView, Alert, ActivityIndicator, Image, Modal, Dimensions } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView, SafeAreaView, Alert, ActivityIndicator, Image, Modal, Dimensions, Platform, StatusBar } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -289,7 +289,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: '#fff'
-  },
+  , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   container: {
     padding: 24,
     paddingTop: 10,

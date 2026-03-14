@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, StyleSheet, Text, SafeAreaView, Dimensions } from 'react-native';
+import { View, StyleSheet, Text, SafeAreaView, Dimensions, Platform, StatusBar } from "react-native";
 import { PrimaryButton } from '../../components/AuthComponents';
 import { Feather } from '@expo/vector-icons';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -34,8 +34,8 @@ const PasswordResetSuccessScreen = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-    safeArea: { flex: 1, backgroundColor: '#fff' },
-    container: { padding: 24, flex: 1, justifyContent: 'space-between' },
+    safeArea: { flex: 1, backgroundColor: '#fff' , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+    container: { padding: 24, flex: 1, justifyContent: 'space-between' , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     content: { alignItems: 'center', marginTop: 100 },
     iconCircle: { width: 100, height: 100, borderRadius: 50, backgroundColor: '#000', justifyContent: 'center', alignItems: 'center', marginBottom: 30 },
     title: { fontSize: 24, fontWeight: 'bold', textAlign: 'center', marginBottom: 15 },

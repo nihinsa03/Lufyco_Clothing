@@ -1,7 +1,5 @@
 import React, { useState } from "react";
-import {
-    SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert
-} from "react-native";
+import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -82,7 +80,7 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" },
+    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16 },
     headerTitle: { fontSize: 18, fontWeight: "700" },
 

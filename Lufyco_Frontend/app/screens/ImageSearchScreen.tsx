@@ -1,15 +1,5 @@
 import React, { useState, useRef } from 'react';
-import {
-    View,
-    Text,
-    StyleSheet,
-    TouchableOpacity,
-    Image,
-    SafeAreaView,
-    ScrollView,
-    Alert,
-    ActivityIndicator,
-} from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Image, SafeAreaView, ScrollView, Alert, ActivityIndicator, Platform, StatusBar } from "react-native";
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../context/ThemeContext';
 import * as ImagePicker from 'expo-image-picker';
@@ -346,7 +336,7 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.background },
+    safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
     header: {
         flexDirection: 'row',

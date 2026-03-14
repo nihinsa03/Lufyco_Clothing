@@ -1,7 +1,5 @@
 import React, { useMemo, useRef, useState } from "react";
-import {
-  SafeAreaView, View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Animated
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, Animated, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
@@ -224,7 +222,7 @@ const WomenTopDetailsScreen: React.FC<Props> = ({ navigation, route }) => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   hero: { width: "100%", height: 340, resizeMode: "cover" },
   topRow: { position: "absolute", top: 10, left: 12, right: 12, flexDirection: "row", justifyContent: "space-between" },
   iconLight: { backgroundColor: "#fff", width: 34, height: 34, borderRadius: 17, alignItems: "center", justifyContent: "center" },

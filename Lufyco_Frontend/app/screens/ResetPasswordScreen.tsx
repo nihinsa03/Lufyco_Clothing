@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native";
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, Platform, StatusBar } from "react-native";
 import { useNavigation, useRoute, RouteProp } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuthStore } from "../store/useAuthStore";
@@ -133,7 +133,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     alignItems: "center",
     paddingHorizontal: 30,
-  },
+  paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   backButton: {
     alignSelf: "flex-start",
     marginTop: 60,

@@ -1,5 +1,5 @@
 import React from "react";
-import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity } from "react-native";
+import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, Platform, StatusBar } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/AppNavigator"; // Import RootStackParamList
@@ -57,7 +57,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
     paddingHorizontal: 20,
-  },
+  paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   backButton: {
     position: "absolute",
     top: 50,

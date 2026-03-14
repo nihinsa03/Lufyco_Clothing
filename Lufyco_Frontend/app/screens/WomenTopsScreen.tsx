@@ -1,13 +1,5 @@
 import React, { useMemo, useState } from "react";
-import {
-  SafeAreaView,
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  FlatList,
-} from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, Image, TouchableOpacity, FlatList, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -243,7 +235,7 @@ const WomenTopsScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   header: {
     flexDirection: "row",

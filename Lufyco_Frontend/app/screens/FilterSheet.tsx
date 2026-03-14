@@ -1,14 +1,5 @@
 import React, { useEffect, useRef } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  TouchableOpacity,
-  Animated,
-  Easing,
-  Pressable,
-} from "react-native";
+import { View, Text, StyleSheet, Modal, TouchableOpacity, Animated, Easing, Pressable, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
 

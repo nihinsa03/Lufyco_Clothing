@@ -1,14 +1,5 @@
 import React, { useEffect, useState, useMemo } from "react";
-import {
-    View,
-    Text,
-    StyleSheet,
-    FlatList,
-    TouchableOpacity,
-    Image,
-    SafeAreaView,
-    ActivityIndicator,
-} from "react-native";
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, SafeAreaView, ActivityIndicator, Platform, StatusBar } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -274,7 +265,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
 };
 
 const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
-    safe: { flex: 1, backgroundColor: colors.background },
+    safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 50 },
     header: {
         flexDirection: "row",

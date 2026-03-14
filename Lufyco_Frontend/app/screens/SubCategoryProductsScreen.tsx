@@ -1,13 +1,5 @@
 import React, { useMemo, useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Image,
-  TouchableOpacity,
-  FlatList,
-  SafeAreaView,
-} from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity, FlatList, SafeAreaView, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
@@ -166,7 +158,7 @@ const SubCategoryProductsScreen: React.FC<Props> = ({ navigation, route }) => {
 };
 
 const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background },
+  safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   header: {
     flexDirection: "row",

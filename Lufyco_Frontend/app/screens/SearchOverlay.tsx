@@ -1,14 +1,5 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  StyleSheet,
-  Modal,
-  SafeAreaView,
-  TouchableOpacity,
-  TextInput,
-  FlatList,
-} from "react-native";
+import { View, Text, StyleSheet, Modal, SafeAreaView, TouchableOpacity, TextInput, FlatList, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useTheme } from "../context/ThemeContext";
 import { useNavigation } from "@react-navigation/native";
@@ -104,7 +95,7 @@ const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSear
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   header: {
     flexDirection: "row",
     alignItems: "center",

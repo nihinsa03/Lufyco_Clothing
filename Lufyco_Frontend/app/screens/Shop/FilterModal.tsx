@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView, Dimensions, Platform, StatusBar } from "react-native";
 import { Feather } from '@expo/vector-icons';
 import { useShopStore, FilterState } from '../../store/useShopStore';
 import { useNavigation } from '@react-navigation/native';
@@ -69,7 +69,7 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: colors.background || (dark ? '#121212' : '#ffffff'),
-        paddingTop: 20,
+        paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight || 0) + 20 : 20,
         height: height * 0.5, // Half screen typical for bottom sheet
     },
     header: {

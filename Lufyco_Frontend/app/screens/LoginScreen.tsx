@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, ScrollView, SafeAreaView, Alert } from 'react-native';
+import { View, StyleSheet, TouchableOpacity, Text, ScrollView, SafeAreaView, Alert, Platform, StatusBar } from "react-native";
 import { AuthHeader, AuthInput, PrimaryButton, SocialRow } from '../components/AuthComponents';
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -100,8 +100,8 @@ const LoginScreen = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#fff' },
-  container: { padding: 24, paddingBottom: 50 },
+  safeArea: { flex: 1, backgroundColor: '#fff' , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  container: { padding: 24, paddingBottom: 50 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   backBtn: { marginBottom: 20 },
   backArrow: { fontSize: 24, fontWeight: 'bold' },
   forgotPass: { textAlign: 'right', color: '#000', fontWeight: 'bold', marginBottom: 20 },

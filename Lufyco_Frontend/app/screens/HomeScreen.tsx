@@ -1,8 +1,5 @@
 import React, { useEffect, useState, useRef, useCallback } from "react";
-import {
-  View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, FlatList,
-  Dimensions, SafeAreaView, ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent, Platform
-} from "react-native";
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, TextInput, FlatList, Dimensions, SafeAreaView, ActivityIndicator, NativeScrollEvent, NativeSyntheticEvent, Platform, StatusBar } from "react-native";
 import { Ionicons, Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useCart } from "../context/CartContext";
@@ -258,8 +255,8 @@ const HomeScreen = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#fff" },
-  container: { flex: 1, paddingHorizontal: 16 },
+  safeArea: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  container: { flex: 1, paddingHorizontal: 16 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10, marginBottom: 15 },
   logo: { fontSize: 26, fontWeight: "800", color: '#000' },
   headerIcons: { flexDirection: "row", alignItems: 'center' },
