@@ -1,5 +1,7 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, ImageBackground, TouchableOpacity, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
+
+const { height } = Dimensions.get('window');
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
@@ -25,11 +27,13 @@ const SplashScreen = ({ navigation }: Props) => {
   }, []);
 
   return (
-    <ImageBackground
-      source={require('../../assets/images/first_screen.png')}
-      style={styles.container}
-    >
-      <View style={styles.overlay} />
+    <View style={styles.container}>
+      <Image
+        source={require('../../assets/images/first_screen.png')}
+        style={StyleSheet.absoluteFillObject}
+        resizeMode="cover"
+      />
+      <View style={styles.overlay} pointerEvents="none" />
       <View style={styles.content}>
 
 
@@ -41,7 +45,7 @@ const SplashScreen = ({ navigation }: Props) => {
           <Text style={styles.secondaryBtnText}>Sign in</Text>
         </TouchableOpacity>
       </View>
-    </ImageBackground>
+    </View>
   );
 };
 
@@ -50,7 +54,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     width: '100%',
-    height: '100%'
+    minHeight: height,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
@@ -60,7 +64,8 @@ const styles = StyleSheet.create({
     padding: 30,
     paddingBottom: 50,
     width: '100%',
-    alignItems: 'center'
+    alignItems: 'center',
+    zIndex: 1, // Bring to front on Web
   },
   title: {
     fontSize: 48,

@@ -4,6 +4,9 @@ import { AuthProvider } from "./context/AuthContext";
 import { ThemeProvider } from "./context/ThemeContext";
 import AppNavigator from "./navigation/AppNavigator";
 import { registerForPushNotificationsAsync, scheduleDailyNotifications } from "./services/notificationService";
+import { LogBox } from "react-native";
+
+LogBox.ignoreLogs(["expo-notifications: Android Push notifications"]);
 
 export default function App() {
     useEffect(() => {
