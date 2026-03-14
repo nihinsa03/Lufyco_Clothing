@@ -180,7 +180,7 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                 ))}
               </ScrollView>
 
-              {/* Color */}
+              {/* Color — only show exact AI detected color */}
               <Text style={styles.label}>
                 Color
                 {!extracting && !extractError && aiColor && (
@@ -188,30 +188,23 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                 )}
               </Text>
 
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
-                {/* AI-detected color as first circle */}
-                {aiColor && (
-                  <View style={styles.aiCircleWrap}>
-                    <TouchableOpacity
-                      style={[styles.colorDotBtn, color === aiColor && styles.colorDotBtnActive]}
-                      onPress={() => setColor(aiColor)}
-                    >
-                      <View style={[styles.colorDot, { backgroundColor: aiColor }]} />
-                    </TouchableOpacity>
-                    <Text style={styles.aiCircleLabel}>✨ AI</Text>
-                  </View>
-                )}
-                {/* Standard palette circles */}
-                {PALETTE.map(c => (
-                  <TouchableOpacity
-                    key={c.hex}
-                    style={[styles.colorDotBtn, color === c.hex && color !== aiColor && styles.colorDotBtnActive]}
-                    onPress={() => setColor(c.hex)}
-                  >
-                    <View style={[styles.colorDot, { backgroundColor: c.hex }]} />
-                  </TouchableOpacity>
-                ))}
-              </ScrollView>
+              {aiColor ? (
+                <View style={styles.exactColorRow}>
+                  <View style={[styles.exactColorCircle, { backgroundColor: aiColor }]} />
+                  <Text style={styles.exactColorHex}>{aiColor.toUpperCase()}</Text>
+                </View>
+              ) : extracting ? (
+                <View style={styles.exactColorRow}>
+                  <ActivityIndicator size="small" color="#2563EB" />
+                  <Text style={[styles.exactColorHex, { color: '#9CA3AF' }]}>Detecting...</Text>
+                </View>
+              ) : (
+                <View style={styles.exactColorRow}>
+                  <View style={[styles.exactColorCircle, { backgroundColor: color }]} />
+                  <Text style={styles.exactColorHex}>{color.toUpperCase()}</Text>
+                </View>
+              )}
+
             </View>
 
             {/* Action Buttons */}
@@ -278,11 +271,11 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
       {/* Bottom Tab Bar */}
       <View style={styles.bottomBar}>
         {[
-          { label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
-          { label: "AI Stylist", icon: "grid", onPress: () => navigation.navigate("AISylist" as any) },
-          { label: "My Cart", icon: "shopping-cart", onPress: () => { } },
-          { label: "Wishlist", icon: "heart", onPress: () => { } },
-          { label: "Profile", icon: "user", onPress: () => { } },
+          { label: "Home", icon: "home", onPress: () => navigation.navigate("Main", { screen: "Home" } as any) },
+          { label: "AI Stylist", icon: "grid", onPress: () => navigation.navigate("Main", { screen: "AIStylist" } as any) },
+          { label: "My Cart", icon: "shopping-cart", onPress: () => navigation.navigate("Main", { screen: "MyCart" } as any) },
+          { label: "Wishlist", icon: "heart", onPress: () => navigation.navigate("Main", { screen: "Wishlist" } as any) },
+          { label: "Profile", icon: "user", onPress: () => navigation.navigate("Main", { screen: "Profile" } as any) },
         ].map((t, i) => (
           <TouchableOpacity key={t.label} style={styles.tabBtn} onPress={t.onPress}>
             <Feather name={t.icon as any} size={22} color={i === 0 ? "#000" : "#777"} />
@@ -373,24 +366,29 @@ const styles = StyleSheet.create({
   catChipText: { fontSize: 12, fontWeight: "600", color: "#4B5563" },
   catChipTextActive: { color: "#fff" },
 
-  aiCircleWrap: {
+  exactColorRow: {
+    flexDirection: "row",
     alignItems: "center",
-    marginRight: 8,
+    marginBottom: 14,
   },
-  aiCircleLabel: {
-    fontSize: 9,
+  exactColorCircle: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    borderWidth: 2,
+    borderColor: "#2563EB",
+    marginRight: 12,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.15,
+    shadowRadius: 3,
+    elevation: 2,
+  },
+  exactColorHex: {
+    fontSize: 16,
     fontWeight: "700",
-    color: "#2563EB",
-    marginTop: 2,
-  },
-
-  colorDotBtn: {
-    padding: 2, borderRadius: 18, marginRight: 8, height: 36, width: 36,
-    justifyContent: "center", alignItems: "center", borderWidth: 2, borderColor: "transparent",
-  },
-  colorDotBtnActive: { borderColor: "#2563EB" },
-  colorDot: {
-    width: 26, height: 26, borderRadius: 13, borderWidth: 1, borderColor: "#ccc",
+    color: "#111",
+    letterSpacing: 1,
   },
 
   btnRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 18 },

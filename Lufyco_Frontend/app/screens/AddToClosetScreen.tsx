@@ -119,14 +119,13 @@ const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </View>
 
-      {/* Bottom tab (static visual only) */}
       <View style={styles.bottomBar}>
         {[
-          { key: "home", label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
-          { key: "stylist", label: "AI Stylist", icon: "grid", onPress: () => navigation.navigate("AIStylist") },
-          { key: "cart", label: "My Cart", icon: "shopping-cart", onPress: () => navigation.navigate("MyCart") },
-          { key: "wish", label: "Wishlist", icon: "heart", onPress: () => navigation.navigate("Wishlist") },
-          { key: "profile", label: "Profile", icon: "user", onPress: () => navigation.navigate("Profile") },
+          { key: "home", label: "Home", icon: "home", onPress: () => navigation.navigate("Main", { screen: "Home" } as any) },
+          { key: "stylist", label: "AI Stylist", icon: "grid", onPress: () => navigation.navigate("Main", { screen: "AIStylist" } as any) },
+          { key: "cart", label: "My Cart", icon: "shopping-cart", onPress: () => navigation.navigate("Main", { screen: "MyCart" } as any) },
+          { key: "wish", label: "Wishlist", icon: "heart", onPress: () => navigation.navigate("Main", { screen: "Wishlist" } as any) },
+          { key: "profile", label: "Profile", icon: "user", onPress: () => navigation.navigate("Main", { screen: "Profile" } as any) },
         ].map((t) => (
           <TouchableOpacity key={t.key} style={styles.tabBtn} onPress={t.onPress}>
             <Feather name={t.icon as any} size={22} color={t.key === 'stylist' ? "#1E90FF" : "#777"} />
