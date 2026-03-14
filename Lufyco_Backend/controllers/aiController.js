@@ -1,9 +1,81 @@
 const multer = require('multer');
+const sharp = require('sharp');
 const Product = require('../models/Product');
 const SavedLook = require('../models/SavedLook');
 const { uploadToCloudinary, extractDominantColorLocal } = require('../services/imageService');
 const { generateOutfit } = require('../services/outfitService');
 const { extractFeatures, findSimilarProducts } = require('../services/mlFeatureExtractor');
+
+/**
+ * Guess clothing category from image using pixel region analysis via sharp.
+ * Samples the top-third vs bottom-third of the image.
+ * Estimates whether the photo shows a top, bottom, dress etc.
+ * @param {Buffer} imageBuffer
+ * @returns {Promise<string>} category name
+ */
+const guessCategoryFromImage = async (imageBuffer) => {
+    try {
+        const { data, info } = await sharp(imageBuffer)
+            .resize(100, 150, { fit: 'fill' })
+            .removeAlpha()
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+
+        const pixels = data;
+        const width = info.width;
+        const height = info.height;
+        const channels = 3;
+
+        // Helper: is pixel approximately skin tone?
+        const isSkin = (r, g, b) =>
+            r > 80 && g > 50 && b > 30 &&
+            r > g && r > b &&
+            (r - g) > 10 &&
+            r < 250;
+
+        let topSkin = 0, topCloth = 0, botSkin = 0, botCloth = 0;
+        const third = Math.floor(height / 3);
+
+        for (let y = 0; y < height; y++) {
+            for (let x = 0; x < width; x++) {
+                const idx = (y * width + x) * channels;
+                const r = pixels[idx], g = pixels[idx + 1], b = pixels[idx + 2];
+                const skin = isSkin(r, g, b);
+
+                if (y < third) {
+                    skin ? topSkin++ : topCloth++;
+                } else if (y >= height - third) {
+                    skin ? botSkin++ : botCloth++;
+                }
+            }
+        }
+
+        const topTotal = topSkin + topCloth || 1;
+        const botTotal = botSkin + botCloth || 1;
+        const topSkinRatio = topSkin / topTotal;
+        const botSkinRatio = botSkin / botTotal;
+
+        // Classify based on where clothing is dominant
+        if (topSkinRatio < 0.3 && botSkinRatio > 0.3) {
+            // Top region is mostly clothing, bottom is mostly skin → Tops (shirt etc.)
+            return "Men's Wear"; // could be tops/shirt
+        }
+        if (botSkinRatio < 0.3 && topSkinRatio > 0.3) {
+            // Bottom is mostly clothing, top is skin → Bottoms
+            return "Women's Wear";
+        }
+        if (topSkinRatio < 0.3 && botSkinRatio < 0.3) {
+            // Both sections are mostly clothing → Dress/Outerwear
+            return "Women's Wear";
+        }
+
+        // Default
+        return "Men's Wear";
+    } catch (err) {
+        console.warn('⚠️ Category guess failed:', err.message);
+        return "Men's Wear";
+    }
+};
 
 // Configure multer for memory storage
 const upload = multer({
@@ -122,38 +194,41 @@ const extractImageDetails = async (req, res) => {
 
         console.log('🔍 Extracting image details for closet...');
 
-        // 1. Try ML feature extraction
-        let queryFeatures = [];
-        let category = 'Tops'; // Default fallback
-        let color = '#000000'; // Default fallback
+        // Run color extraction and category guessing in parallel for speed
+        const [color, pixelCategory] = await Promise.all([
+            extractDominantColorLocal(req.file.buffer).catch(err => {
+                console.warn('⚠️ Color extraction failed:', err.message);
+                return '#000000';
+            }),
+            guessCategoryFromImage(req.file.buffer).catch(err => {
+                console.warn('⚠️ Category guess failed:', err.message);
+                return "Men's Wear";
+            })
+        ]);
 
+        console.log(`🎨 Detected color: ${color}`);
+        console.log(`👕 Pixel-based category guess: ${pixelCategory}`);
+
+        // Try ML product similarity as an optional override
+        let category = pixelCategory;
         try {
-            queryFeatures = await extractFeatures(req.file.buffer);
-
-            // Find similar products to guess category
-            const allProducts = await Product.find().lean();
+            const queryFeatures = await extractFeatures(req.file.buffer);
+            const allProducts = await Product.find({ featureVector: { $exists: true, $not: { $size: 0 } } }).lean();
             if (allProducts.length > 0) {
                 const similarProducts = findSimilarProducts(queryFeatures, allProducts, 3);
-                if (similarProducts.length > 0 && similarProducts[0].product.category) {
+                // Only override if it's a genuine ML result (not fallback random)
+                if (similarProducts.length > 0 && !similarProducts[0].fallback && similarProducts[0].product.category) {
                     category = similarProducts[0].product.category;
+                    console.log(`🤖 ML override category: ${category}`);
                 }
             }
         } catch (mlError) {
-            console.warn('⚠️ ML extraction failed for details:', mlError.message);
-        }
-
-        // 2. Exact color extraction using sharp
-        try {
-            color = await extractDominantColorLocal(req.file.buffer);
-            console.log(`🎨 Extracted exact map color: ${color}`);
-        } catch (colorErr) {
-            console.warn('⚠️ Color extraction failed, using default:', colorErr.message);
+            console.warn('⚠️ ML extraction skipped:', mlError.message);
         }
 
         res.json({
             category,
             color,
-            featureVector: queryFeatures
         });
 
     } catch (error) {
@@ -161,6 +236,7 @@ const extractImageDetails = async (req, res) => {
         res.status(500).json({ message: error.message || 'Details extraction failed' });
     }
 };
+
 
 /**
  * @route   POST /api/ai/recommend-outfit

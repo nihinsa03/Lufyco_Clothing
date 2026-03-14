@@ -93,10 +93,9 @@ export async function scheduleDailyNotifications() {
             data: { screen: 'Home' },
         },
         trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+            type: Notifications.SchedulableTriggerInputTypes.DAILY,
             hour: 9,
             minute: 0,
-            repeats: true,
         },
     });
 
@@ -108,10 +107,9 @@ export async function scheduleDailyNotifications() {
             data: { screen: 'Offers' },
         },
         trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+            type: Notifications.SchedulableTriggerInputTypes.DAILY,
             hour: 14,
             minute: 0,
-            repeats: true,
         },
     });
 
@@ -123,10 +121,9 @@ export async function scheduleDailyNotifications() {
             data: { screen: 'Categories' },
         },
         trigger: {
-            type: Notifications.SchedulableTriggerInputTypes.CALENDAR,
+            type: Notifications.SchedulableTriggerInputTypes.DAILY,
             hour: 19,
             minute: 0,
-            repeats: true,
         },
     });
 

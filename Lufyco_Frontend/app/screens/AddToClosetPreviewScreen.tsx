@@ -17,33 +17,64 @@ import api from "../api/api";
 
 type Props = NativeStackScreenProps<RootStackParamList, "AddToClosetPreview">;
 
+const PALETTE = [
+  { hex: "#000000", label: "Black" },
+  { hex: "#FFFFFF", label: "White" },
+  { hex: "#FF0000", label: "Red" },
+  { hex: "#0000FF", label: "Blue" },
+  { hex: "#00FF00", label: "Green" },
+  { hex: "#FFFF00", label: "Yellow" },
+  { hex: "#808080", label: "Gray" },
+  { hex: "#FFC0CB", label: "Pink" },
+  { hex: "#A52A2A", label: "Brown" },
+  { hex: "#800080", label: "Purple" },
+];
+
+const CATEGORIES = [
+  "Men's Wear", "Women's Wear", "Kids' Wear", "Foot Wear",
+  "Beauty Products", "Jewellery", "Accessories",
+  "Tops", "Bottoms", "Dresses", "Outerwear",
+];
+
 const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const { uri } = route.params;
   const [status, setStatus] = React.useState<"idle" | "saving" | "processed" | "error">("idle");
 
   const [name, setName] = React.useState("New Upload");
-  const [category, setCategory] = React.useState("Tops");
+  const [category, setCategory] = React.useState("Men's Wear");
   const [color, setColor] = React.useState("#000000");
+  const [aiColor, setAiColor] = React.useState<string | null>(null); // exact AI-detected hex
   const [extracting, setExtracting] = React.useState(true);
+  const [extractError, setExtractError] = React.useState(false);
 
   React.useEffect(() => {
     const extractDetails = async () => {
       try {
+        setExtracting(true);
+        setExtractError(false);
+
         const formData = new FormData();
         const filename = uri.split('/').pop() || 'photo.jpg';
         const match = /\.(\w+)$/.exec(filename);
-        const type = match ? `image/${match[1]}` : `image`;
+        const type = match ? `image/${match[1]}` : `image/jpeg`;
 
         formData.append('image', { uri, name: filename, type } as any);
 
-        const res = await api.post('/ai/extract-details', formData);
+        const res = await api.post('/ai/extract-details', formData, {
+          headers: { 'Content-Type': 'multipart/form-data' },
+          timeout: 20000,
+        });
 
         if (res.data) {
           if (res.data.category) setCategory(res.data.category);
-          if (res.data.color) setColor(res.data.color);
+          if (res.data.color) {
+            setColor(res.data.color);       // palette-snapped color (for selection)
+            setAiColor(res.data.color);     // store as "AI detected"
+          }
         }
       } catch (err) {
         console.warn("Failed to extract details", err);
+        setExtractError(true);
       } finally {
         setExtracting(false);
       }
@@ -54,16 +85,8 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const handleSave = async () => {
     try {
       setStatus("saving");
-      const payload = {
-        name,
-        category,
-        image: uri,
-        color,
-      };
-
-      console.log("Saving to closet:", JSON.stringify(payload).substring(0, 200));
+      const payload = { name, category, image: uri, color };
       const res = await api.post("/closet", payload);
-      console.log("Save response:", res.data);
 
       try {
         await api.post("/closet/train", { itemId: res.data._id || res.data.id });
@@ -90,98 +113,154 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
         <View style={{ width: 22 }} />
       </View>
 
-      <View style={styles.cardWrap}>
-        <View style={styles.previewCard}>
-          <Image source={{ uri }} style={styles.previewImage} />
+      <ScrollView contentContainerStyle={styles.scroll} showsVerticalScrollIndicator={false}>
+        <View style={styles.cardWrap}>
+          <View style={styles.previewCard}>
+            <Image source={{ uri }} style={styles.previewImage} />
 
-          {extracting ? (
-            <View style={styles.extractingWrap}>
-              <ActivityIndicator size="small" color="#2563EB" />
-              <Text style={styles.extractingText}>Analyzing item...</Text>
-            </View>
-          ) : (
+            {/* AI Analysis Banner */}
+            {extracting && (
+              <View style={styles.aiBanner}>
+                <ActivityIndicator size="small" color="#fff" />
+                <Text style={styles.aiBannerText}>🤖 AI is detecting color & category...</Text>
+              </View>
+            )}
+            {!extracting && !extractError && (
+              <View style={[styles.aiBanner, { backgroundColor: "#10b981" }]}>
+                <Feather name="check-circle" size={14} color="#fff" />
+                <Text style={styles.aiBannerText}>✅ Auto-detected! You can adjust below.</Text>
+              </View>
+            )}
+            {!extracting && extractError && (
+              <View style={[styles.aiBanner, { backgroundColor: "#f59e0b" }]}>
+                <Feather name="alert-circle" size={14} color="#fff" />
+                <Text style={styles.aiBannerText}>⚠️ AI unavailable — please select manually.</Text>
+              </View>
+            )}
+
+            {/* Form */}
             <View style={styles.detailsForm}>
               <Text style={styles.label}>Name</Text>
-              <TextInput style={styles.input} value={name} onChangeText={setName} />
+              <TextInput
+                style={styles.input}
+                value={name}
+                onChangeText={setName}
+                placeholder="e.g. Blue Shirt"
+                placeholderTextColor="#9CA3AF"
+              />
 
-              <Text style={styles.label}>Category</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
-                {["Men's Wear", "Women's Wear", "Kids' Wear", "Foot Wear", "Beauty Products", "Jewellery", "Accessories", "Tops", "Bottoms", "Dresses", "Outerwear"].map(cat => (
+              {/* Category */}
+              <Text style={styles.label}>
+                Category
+                {!extracting && !extractError && (
+                  <Text style={styles.aiTag}> · AI detected</Text>
+                )}
+              </Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+                {CATEGORIES.map(cat => (
                   <TouchableOpacity
                     key={cat}
                     style={[styles.catChip, category === cat && styles.catChipActive]}
                     onPress={() => setCategory(cat)}
                   >
-                    <Text style={[styles.catChipText, category === cat && styles.catChipTextActive]}>{cat}</Text>
+                    <Text style={[styles.catChipText, category === cat && styles.catChipTextActive]}>
+                      {cat}
+                    </Text>
                   </TouchableOpacity>
                 ))}
               </ScrollView>
 
-              <Text style={styles.label}>Color</Text>
-              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 12 }}>
-                {["#000000", "#FFFFFF", "#FF0000", "#0000FF", "#00FF00", "#FFFF00", "#808080", "#FFC0CB", "#A52A2A", "#800080"].map(c => (
+              {/* Color */}
+              <Text style={styles.label}>
+                Color
+                {!extracting && !extractError && aiColor && (
+                  <Text style={styles.aiTag}> · AI detected</Text>
+                )}
+              </Text>
+
+              {/* Show exact AI color as a special chip if different from palette */}
+              {aiColor && (
+                <View style={styles.aiColorRow}>
+                  <View style={[styles.aiColorSwatch, { backgroundColor: aiColor }]} />
+                  <Text style={styles.aiColorLabel}>Detected: <Text style={{ fontWeight: '700' }}>{aiColor.toUpperCase()}</Text></Text>
+                </View>
+              )}
+
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+                {PALETTE.map(c => (
                   <TouchableOpacity
-                    key={c}
-                    style={[styles.colorDotBtn, color === c && styles.colorDotBtnActive]}
-                    onPress={() => setColor(c)}
+                    key={c.hex}
+                    style={[styles.colorDotBtn, color === c.hex && styles.colorDotBtnActive]}
+                    onPress={() => setColor(c.hex)}
                   >
-                    <View style={[styles.colorDot, { backgroundColor: c }]} />
+                    <View style={[styles.colorDot, { backgroundColor: c.hex }]} />
                   </TouchableOpacity>
                 ))}
               </ScrollView>
             </View>
-          )}
 
-          <View style={styles.btnRow}>
-            {status === "idle" && (
-              <>
-                <TouchableOpacity style={styles.blackBtn} onPress={handleSave}>
-                  <Text style={styles.blackBtnText}>Add to Closet</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.blackBtn, { backgroundColor: "#444" }]}
-                  onPress={() => navigation.replace("AddToCloset")}
-                >
-                  <Text style={styles.blackBtnText}>Retake</Text>
-                </TouchableOpacity>
-              </>
-            )}
+            {/* Action Buttons */}
+            <View style={styles.btnRow}>
+              {status === "idle" && (
+                <>
+                  <TouchableOpacity
+                    style={[styles.blackBtn, extracting && styles.blackBtnDisabled]}
+                    onPress={handleSave}
+                    disabled={extracting}
+                  >
+                    {extracting
+                      ? <ActivityIndicator size="small" color="#fff" />
+                      : <Text style={styles.blackBtnText}>Add to Closet</Text>
+                    }
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.blackBtn, { backgroundColor: "#444" }]}
+                    onPress={() => navigation.replace("AddToCloset")}
+                  >
+                    <Text style={styles.blackBtnText}>Retake</Text>
+                  </TouchableOpacity>
+                </>
+              )}
 
-            {status === "saving" && (
-              <TouchableOpacity style={[styles.blackBtn, { opacity: 0.7 }]} disabled>
-                <Text style={styles.blackBtnText}>Processing...</Text>
-              </TouchableOpacity>
-            )}
+              {status === "saving" && (
+                <TouchableOpacity style={[styles.blackBtn, { opacity: 0.7 }]} disabled>
+                  <Text style={styles.blackBtnText}>Saving...</Text>
+                </TouchableOpacity>
+              )}
 
-            {status === "processed" && (
-              <>
-                <View style={[styles.blackBtn, { backgroundColor: "#10b981", opacity: 0.8 }]}>
-                  <Text style={styles.blackBtnText}>Processed</Text>
-                </View>
-                <TouchableOpacity style={[styles.blackBtn, { backgroundColor: "#111" }]} onPress={() => navigation.navigate("MyCloset")}>
-                  <Text style={styles.blackBtnText}>Go to Closet</Text>
-                </TouchableOpacity>
-              </>
-            )}
+              {status === "processed" && (
+                <>
+                  <View style={[styles.blackBtn, { backgroundColor: "#10b981" }]}>
+                    <Text style={styles.blackBtnText}>✅ Saved!</Text>
+                  </View>
+                  <TouchableOpacity
+                    style={[styles.blackBtn, { backgroundColor: "#111" }]}
+                    onPress={() => navigation.navigate("MyCloset")}
+                  >
+                    <Text style={styles.blackBtnText}>Go to Closet</Text>
+                  </TouchableOpacity>
+                </>
+              )}
 
-            {status === "error" && (
-              <>
-                <TouchableOpacity style={[styles.blackBtn, { backgroundColor: "#ef4444" }]} onPress={handleSave}>
-                  <Text style={styles.blackBtnText}>Retry</Text>
-                </TouchableOpacity>
-                <TouchableOpacity
-                  style={[styles.blackBtn, { backgroundColor: "#444" }]}
-                  onPress={() => navigation.replace("AddToCloset")}
-                >
-                  <Text style={styles.blackBtnText}>Retake</Text>
-                </TouchableOpacity>
-              </>
-            )}
+              {status === "error" && (
+                <>
+                  <TouchableOpacity style={[styles.blackBtn, { backgroundColor: "#ef4444" }]} onPress={handleSave}>
+                    <Text style={styles.blackBtnText}>Retry</Text>
+                  </TouchableOpacity>
+                  <TouchableOpacity
+                    style={[styles.blackBtn, { backgroundColor: "#444" }]}
+                    onPress={() => navigation.replace("AddToCloset")}
+                  >
+                    <Text style={styles.blackBtnText}>Retake</Text>
+                  </TouchableOpacity>
+                </>
+              )}
+            </View>
           </View>
         </View>
-      </View>
+      </ScrollView>
 
-      {/* Bottom bar (static visual only) */}
+      {/* Bottom Tab Bar */}
       <View style={styles.bottomBar}>
         {[
           { label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
@@ -201,7 +280,8 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+  safe: { flex: 1, backgroundColor: "#F3F4F6" },
+  scroll: { paddingBottom: 100 },
 
   header: {
     flexDirection: "row",
@@ -210,63 +290,110 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     paddingBottom: 10,
     justifyContent: "space-between",
+    backgroundColor: "#fff",
+    borderBottomWidth: 1,
+    borderColor: "#E5E7EB",
   },
   hIcon: { padding: 4 },
-  headerTitle: { fontSize: 24, fontWeight: "700" },
+  headerTitle: { fontSize: 22, fontWeight: "700" },
 
-  cardWrap: { paddingHorizontal: 16, marginTop: 8 },
+  cardWrap: { paddingHorizontal: 14, marginTop: 12 },
   previewCard: {
-    backgroundColor: "#DEDEDE",
-    borderRadius: 16,
-    padding: 12,
+    backgroundColor: "#fff",
+    borderRadius: 20,
+    padding: 14,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08,
+    shadowRadius: 8,
+    elevation: 3,
   },
   previewImage: {
     width: "100%",
-    height: 230,
-    borderRadius: 12,
+    height: 240,
+    borderRadius: 14,
     backgroundColor: "#eee",
   },
-  extractingWrap: {
-    flexDirection: "row", alignItems: "center", justifyContent: "center",
-    paddingVertical: 20,
+
+  aiBanner: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: "#2563EB",
+    borderRadius: 10,
+    paddingVertical: 8,
+    paddingHorizontal: 12,
+    marginTop: 10,
+    gap: 6,
   },
-  extractingText: {
-    marginLeft: 8, fontSize: 14, color: "#4B5563", fontWeight: "500",
+  aiBannerText: {
+    color: "#fff",
+    fontSize: 13,
+    fontWeight: "600",
+    marginLeft: 6,
   },
-  detailsForm: {
-    marginTop: 16,
-  },
-  label: { fontSize: 13, fontWeight: '600', color: '#374151', marginBottom: 6 },
+
+  detailsForm: { marginTop: 16 },
+
+  label: { fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 },
+  aiTag: { fontSize: 11, fontWeight: "500", color: "#2563EB" },
+
   input: {
-    height: 40, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 8,
-    paddingHorizontal: 12, fontSize: 14, color: '#111', marginBottom: 12,
-    backgroundColor: '#fff'
+    height: 42,
+    borderWidth: 1,
+    borderColor: "#E5E7EB",
+    borderRadius: 10,
+    paddingHorizontal: 12,
+    fontSize: 14,
+    color: "#111",
+    marginBottom: 14,
+    backgroundColor: "#F9FAFB",
   },
+
   catChip: {
-    paddingHorizontal: 14, paddingVertical: 6, borderRadius: 16, backgroundColor: '#E5E7EB', marginRight: 8, height: 32, justifyContent: 'center'
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
+    backgroundColor: "#E5E7EB", marginRight: 8,
+    justifyContent: "center",
   },
-  catChipActive: { backgroundColor: '#2563EB' },
-  catChipText: { fontSize: 12, fontWeight: '600', color: '#4B5563' },
-  catChipTextActive: { color: '#fff' },
+  catChipActive: { backgroundColor: "#2563EB" },
+  catChipText: { fontSize: 12, fontWeight: "600", color: "#4B5563" },
+  catChipTextActive: { color: "#fff" },
+
+  aiColorRow: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginBottom: 10,
+    backgroundColor: "#F0F4FF",
+    borderRadius: 10,
+    paddingHorizontal: 10,
+    paddingVertical: 7,
+    borderWidth: 1,
+    borderColor: "#BFDBFE",
+  },
+  aiColorSwatch: {
+    width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: "#ccc", marginRight: 10,
+  },
+  aiColorLabel: { fontSize: 13, color: "#374151" },
+
   colorDotBtn: {
-    padding: 2, borderRadius: 16, marginRight: 8, height: 32, width: 32, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: 'transparent'
+    padding: 2, borderRadius: 18, marginRight: 8, height: 36, width: 36,
+    justifyContent: "center", alignItems: "center", borderWidth: 2, borderColor: "transparent",
   },
-  colorDotBtnActive: {
-    borderColor: '#2563EB'
-  },
+  colorDotBtnActive: { borderColor: "#2563EB" },
   colorDot: {
-    width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: '#ccc'
+    width: 26, height: 26, borderRadius: 13, borderWidth: 1, borderColor: "#ccc",
   },
-  btnRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 16 },
+
+  btnRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 18 },
   blackBtn: {
     flex: 1,
     backgroundColor: "#111",
-    borderRadius: 10,
-    paddingVertical: 12,
+    borderRadius: 12,
+    paddingVertical: 13,
     alignItems: "center",
-    marginHorizontal: 6,
+    marginHorizontal: 5,
   },
-  blackBtnText: { color: "#fff", fontWeight: "700" },
+  blackBtnDisabled: { backgroundColor: "#6B7280", opacity: 0.7 },
+  blackBtnText: { color: "#fff", fontWeight: "700", fontSize: 14 },
 
   bottomBar: {
     position: "absolute",
