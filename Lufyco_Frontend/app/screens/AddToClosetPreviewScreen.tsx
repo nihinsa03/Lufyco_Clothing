@@ -40,10 +40,14 @@ const PALETTE = [
   { hex: "#800080", label: "Purple" },
 ];
 
-const CATEGORIES = [
-  "Men's Wear", "Women's Wear", "Kids' Wear", "Foot Wear",
-  "Beauty Products", "Jewellery", "Accessories",
-  "Tops", "Bottoms", "Dresses", "Outerwear",
+const VISUAL_CATEGORIES = [
+  { name: "Men's Wear", image: require('../../assets/images/categories/men/mens_wear_hero.png') },
+  { name: "Women's Wear", image: require('../../assets/images/categories/women/womens_wear_hero.png') },
+  { name: "Kids' Wear", image: require('../../assets/images/categories/kids_wear_hero.png') },
+  { name: "Foot Wear", image: require('../../assets/images/categories/footwear/footwear_hero_new.jpg') },
+  { name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
+  { name: "Jewellery", image: require('../../assets/images/categories/jewellery/jewellery.png') },
+  { name: "Accessories", image: require('../../assets/images/categories/accessories/handbag_hero.png') },
 ];
 
 const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
@@ -167,17 +171,23 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                 )}
               </Text>
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
-                {CATEGORIES.map(cat => (
-                  <TouchableOpacity
-                    key={cat}
-                    style={[styles.catChip, category === cat && styles.catChipActive]}
-                    onPress={() => setCategory(cat)}
-                  >
-                    <Text style={[styles.catChipText, category === cat && styles.catChipTextActive]}>
-                      {cat}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
+                {VISUAL_CATEGORIES.map(cat => {
+                  const isActive = category === cat.name;
+                  return (
+                    <TouchableOpacity
+                      key={cat.name}
+                      style={styles.visualCatCard}
+                      onPress={() => setCategory(cat.name)}
+                    >
+                      <View style={[styles.visualCatImageBox, isActive && styles.visualCatImageBoxActive]}>
+                        <Image source={cat.image} style={styles.visualCatImage} resizeMode="contain" />
+                      </View>
+                      <Text style={[styles.visualCatText, isActive && styles.visualCatTextActive]} numberOfLines={2}>
+                        {cat.name}
+                      </Text>
+                    </TouchableOpacity>
+                  );
+                })}
               </ScrollView>
 
               {/* Color — only show exact AI detected color */}
@@ -357,14 +367,28 @@ const styles = StyleSheet.create({
     backgroundColor: "#F9FAFB",
   },
 
-  catChip: {
-    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20,
-    backgroundColor: "#E5E7EB", marginRight: 8,
-    justifyContent: "center",
+  visualCatCard: {
+    alignItems: 'center',
+    marginRight: 15,
+    width: 65,
   },
-  catChipActive: { backgroundColor: "#2563EB" },
-  catChipText: { fontSize: 12, fontWeight: "600", color: "#4B5563" },
-  catChipTextActive: { color: "#fff" },
+  visualCatImageBox: {
+    width: 58,
+    height: 58,
+    borderRadius: 14,
+    overflow: 'hidden',
+    marginBottom: 6,
+    backgroundColor: '#F3F4F6',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  visualCatImageBoxActive: {
+    borderColor: '#3B82F6',
+    backgroundColor: '#F0F7FF',
+  },
+  visualCatImage: { width: '100%', height: '100%' },
+  visualCatText: { fontSize: 10, textAlign: 'center', color: '#4B5563', fontWeight: '500' },
+  visualCatTextActive: { color: '#3B82F6', fontWeight: '700' },
 
   exactColorRow: {
     flexDirection: "row",

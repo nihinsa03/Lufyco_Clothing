@@ -4,6 +4,7 @@ import { useShopStore } from '../store/useShopStore';
 import { useNavigation } from '@react-navigation/native';
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { mockCategories, Category } from '../data/mockData';
+import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 
@@ -55,6 +56,7 @@ const CategoriesScreen = () => {
   const { setFilter, resetFilters } = useShopStore();
   const navigation = useNavigation<any>();
   const [selectedCategory, setSelectedCategory] = useState<string>('men');
+  const { colors, isDark } = useTheme();
 
   // Categories that have sections (multi-row layouts like Casual, Work, Sports)
   const MEN_SECTIONS = [
@@ -201,17 +203,17 @@ const CategoriesScreen = () => {
     const isActive = selectedCategory === item.id;
     return (
       <TouchableOpacity
-        style={[styles.sidebarItem, isActive && styles.sidebarItemActive]}
+        style={[styles.sidebarItem, isActive && { backgroundColor: isDark ? '#1E293B' : '#F0F7FF' }]}
         onPress={() => setSelectedCategory(item.id)}
       >
-        <View style={styles.imageBox}>
+        <View style={[styles.imageBox, { backgroundColor: colors.iconBg }]}>
           <Image
             source={item.image}
             style={styles.sidebarImage}
             resizeMode="contain"
           />
         </View>
-        <Text style={styles.sidebarText}>
+        <Text style={[styles.sidebarText, { color: colors.textSecondary }]}>
           {item.name}
         </Text>
       </TouchableOpacity>
@@ -220,41 +222,41 @@ const CategoriesScreen = () => {
 
   const renderGridItem = (item: Category) => (
     <TouchableOpacity key={item.id} style={styles.subCategoryItem} onPress={() => handleSubCategoryPress(item.id)}>
-      <View style={styles.subCategoryImageContainer}>
+      <View style={[styles.subCategoryImageContainer, { backgroundColor: colors.iconBg }]}>
         <Image source={item.image} style={styles.subCategoryImage} resizeMode="cover" />
       </View>
-      <Text style={styles.subCategoryName}>{item.name}</Text>
+      <Text style={[styles.subCategoryName, { color: colors.text }]}>{item.name}</Text>
     </TouchableOpacity>
   );
 
 
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
         <View style={{ flexDirection: 'row', alignItems: 'center' }}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 15 }}>
-            <Feather name="arrow-left" size={24} color="#111" />
+            <Feather name="arrow-left" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={styles.title}>Categories</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Categories</Text>
         </View>
         <View style={styles.headerRight}>
           <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Feather name="bell" size={22} color="#111" style={{ marginRight: 15 }} />
+            <Feather name="bell" size={22} color={colors.text} style={{ marginRight: 15 }} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Feather name="heart" size={22} color="#111" style={{ marginRight: 15 }} />
+            <Feather name="heart" size={22} color={colors.text} style={{ marginRight: 15 }} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Feather name="user" size={22} color="#111" />
+            <Feather name="user" size={22} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
 
       <View style={styles.contentContainer}>
         {/* Left Sidebar */}
-        <View style={styles.sidebar}>
+        <View style={[styles.sidebar, { backgroundColor: colors.card, borderColor: isDark ? '#1E3A8A' : '#3B82F6' }]}>
           <FlatList
             data={SIDEBAR_ITEMS}
             keyExtractor={item => item.id}
@@ -265,12 +267,12 @@ const CategoriesScreen = () => {
         </View>
 
         {/* Right Content Area */}
-        <View style={styles.mainContent}>
+        <View style={[styles.mainContent, { backgroundColor: colors.background }]}>
           {selectedCategory === 'men' ? (
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 15 }}>
               {MEN_SECTIONS.map((section) => (
                 <View key={section.title} style={styles.section}>
-                  <Text style={styles.sectionTitle}>{section.title}</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>{section.title}</Text>
                   <View style={styles.sectionGrid}>
                     {section.items.map((item) => (
                       <TouchableOpacity
@@ -284,8 +286,8 @@ const CategoriesScreen = () => {
                           }
                         }}
                       >
-                        <Image source={item.image} style={styles.sectionItemImage} />
-                        <Text style={styles.sectionItemName}>{item.name}</Text>
+                        <Image source={item.image} style={[styles.sectionItemImage, { backgroundColor: colors.iconBg }]} />
+                        <Text style={[styles.sectionItemName, { color: colors.textSecondary }]}>{item.name}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -296,7 +298,7 @@ const CategoriesScreen = () => {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 15 }}>
               {WOMEN_SECTIONS.map((section) => (
                 <View key={section.title} style={styles.section}>
-                  <Text style={styles.sectionTitle}>{section.title}</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>{section.title}</Text>
                   <View style={styles.sectionGrid}>
                     {section.items.map((item) => (
                       <TouchableOpacity
@@ -310,8 +312,8 @@ const CategoriesScreen = () => {
                           }
                         }}
                       >
-                        <Image source={item.image} style={styles.sectionItemImage} />
-                        <Text style={styles.sectionItemName}>{item.name}</Text>
+                        <Image source={item.image} style={[styles.sectionItemImage, { backgroundColor: colors.iconBg }]} />
+                        <Text style={[styles.sectionItemName, { color: colors.textSecondary }]}>{item.name}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -322,7 +324,7 @@ const CategoriesScreen = () => {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 15 }}>
               {KIDS_SECTIONS.map((section) => (
                 <View key={section.title} style={styles.section}>
-                  <Text style={styles.sectionTitle}>{section.title}</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>{section.title}</Text>
                   <View style={styles.sectionGrid}>
                     {section.items.map((item) => (
                       <TouchableOpacity
@@ -332,8 +334,8 @@ const CategoriesScreen = () => {
                           handleSubCategoryPress(item.id);
                         }}
                       >
-                        <Image source={item.image} style={styles.sectionItemImage} />
-                        <Text style={styles.sectionItemName}>{item.name}</Text>
+                        <Image source={item.image} style={[styles.sectionItemImage, { backgroundColor: colors.iconBg }]} />
+                        <Text style={[styles.sectionItemName, { color: colors.textSecondary }]}>{item.name}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>
@@ -344,7 +346,7 @@ const CategoriesScreen = () => {
             <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 15 }}>
               {FOOTWEAR_SECTIONS.map((section) => (
                 <View key={section.title} style={styles.section}>
-                  <Text style={styles.sectionTitle}>{section.title}</Text>
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>{section.title}</Text>
                   <View style={styles.sectionGrid}>
                     {section.items.map((item) => (
                       <TouchableOpacity
@@ -354,8 +356,8 @@ const CategoriesScreen = () => {
                           handleSubCategoryPress(item.id);
                         }}
                       >
-                        <Image source={item.image} style={styles.sectionItemImage} />
-                        <Text style={styles.sectionItemName}>{item.name}</Text>
+                        <Image source={item.image} style={[styles.sectionItemImage, { backgroundColor: colors.iconBg }]} />
+                        <Text style={[styles.sectionItemName, { color: colors.textSecondary }]}>{item.name}</Text>
                       </TouchableOpacity>
                     ))}
                   </View>

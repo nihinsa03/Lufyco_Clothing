@@ -201,6 +201,7 @@ const HomeScreen = ({ navigation }: Props) => {
           <FlatList
             key={'2col'}
             data={latestProducts}
+            extraData={colors}
             scrollEnabled={false}
             numColumns={2}
             columnWrapperStyle={{ justifyContent: 'space-between' }}
@@ -208,14 +209,14 @@ const HomeScreen = ({ navigation }: Props) => {
             contentContainerStyle={{ paddingHorizontal: 4 }}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <TouchableOpacity style={styles.productCard} onPress={() => handleProductPress(item)}>
+              <TouchableOpacity style={[styles.productCard, { backgroundColor: colors.card }]} onPress={() => handleProductPress(item)}>
                 <View style={styles.imageWrapper}>
                   <Image
                     source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}
                     style={styles.productImage}
                   />
                   <TouchableOpacity
-                    style={styles.wishlistBtn}
+                    style={[styles.wishlistBtn, { backgroundColor: colors.card === '#1E1E1E' ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.9)' }]}
                     onPress={(e) => {
                       e.stopPropagation();
                       toggleWishlist({
@@ -235,11 +236,11 @@ const HomeScreen = ({ navigation }: Props) => {
                   </TouchableOpacity>
                 </View>
 
-                <View style={styles.productInfo}>
+                <View style={[styles.productInfo, { paddingBottom: 10 }]}>
                   <View style={styles.cardColorRow}>
-                    <View style={[styles.colorCircle, { backgroundColor: '#000' }]} />
-                    <View style={[styles.colorCircle, { backgroundColor: '#2ba' }]} />
-                    <View style={[styles.colorCircle, { backgroundColor: '#0f0' }]} />
+                    <View style={[styles.colorCircle, { backgroundColor: '#000', borderColor: colors.card }]} />
+                    <View style={[styles.colorCircle, { backgroundColor: '#2ba', borderColor: colors.card }]} />
+                    <View style={[styles.colorCircle, { backgroundColor: '#0f0', borderColor: colors.card }]} />
                     <Text style={[styles.moreColors, { color: colors.textSecondary }]}>All 5 Colors</Text>
                   </View>
                   <Text numberOfLines={1} style={[styles.productName, { color: colors.text }]}>{item.title}</Text>
@@ -314,7 +315,7 @@ const styles = StyleSheet.create({
   sectionTitle: { fontSize: 18, fontWeight: "bold", color: '#000' }, // overridden inline with colors.text
   seeAll: { color: "#2DD4BF", fontSize: 12, fontWeight: '600' }, // Teal color matching image
 
-  productCard: { backgroundColor: "#fff", width: (screenWidth - 48) / 2, marginBottom: 20 },
+  productCard: { width: (screenWidth - 48) / 2, marginBottom: 20, borderRadius: 16, overflow: 'hidden' },
   imageWrapper: {
     width: '100%', aspectRatio: 1, backgroundColor: "#E5E7EB", borderRadius: 16, marginBottom: 10,
     overflow: 'hidden', position: 'relative'
@@ -333,12 +334,12 @@ const styles = StyleSheet.create({
     shadowRadius: 4,
     elevation: 2
   },
-  productInfo: { paddingHorizontal: 4 },
+  productInfo: { paddingHorizontal: 8, paddingTop: 4 },
   cardColorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
-  colorCircle: { width: 10, height: 10, borderRadius: 5, marginRight: -3, borderWidth: 1, borderColor: '#fff' },
+  colorCircle: { width: 10, height: 10, borderRadius: 5, marginRight: -3, borderWidth: 1 },
   moreColors: { fontSize: 9, color: '#666', marginLeft: 8, textDecorationLine: 'underline' },
-  productName: { fontSize: 13, fontWeight: "500", marginBottom: 4, color: "#333" }, // overridden inline
-  productPrice: { fontSize: 13, fontWeight: "bold", color: "#000" }, // overridden inline
+  productName: { fontSize: 13, fontWeight: "500", marginBottom: 4 }, // overridden inline
+  productPrice: { fontSize: 13, fontWeight: "bold" }, // overridden inline
 });
 
 export default HomeScreen;
