@@ -116,10 +116,28 @@ const hexToRgb = (hex) => {
     } : null;
 };
 
-// Frontend palette we want to match exactly
+// Frontend palette we want to match exactly (must mirror PALETTE in AddToClosetPreviewScreen.tsx)
 const FRONTEND_PALETTE = [
-    "#000000", "#FFFFFF", "#FF0000", "#0000FF", "#00FF00", 
-    "#FFFF00", "#808080", "#FFC0CB", "#A52A2A", "#800080"
+    // Neutrals
+    "#000000", // Black
+    "#FFFFFF", // White
+    "#F5F5F5", // Off-white / Cream
+    "#808080", // Gray
+    // Reds
+    "#FF0000", // Red
+    "#8B0000", // Dark Red
+    "#800000", // Maroon
+    "#A52A2A", // Brown
+    // Blues
+    "#0000FF", // Blue
+    "#000080", // Navy
+    // Others
+    "#00FF00", // Green
+    "#008080", // Teal
+    "#FFFF00", // Yellow
+    "#FF8C00", // Orange
+    "#FFC0CB", // Pink
+    "#800080", // Purple
 ];
 
 /**
@@ -154,28 +172,97 @@ const findClosestPaletteColor = (rgb) => {
 };
 
 /**
- * Extract dominant color from image buffer using sharp
+ * Extract dominant clothing color from image buffer using smart pixel sampling.
+ * Focuses on center of image and filters out skin tones, shadows, and green backgrounds.
  * @param {Buffer} imageBuffer - Image buffer from multer
  * @returns {Promise<String>} Closest hex color from the predefined palette
  */
 const extractDominantColorLocal = async (imageBuffer) => {
     try {
         const sharp = require('sharp');
-        
-        // We shrink the image to a tiny 100x100 resolution to speed up color extraction,
-        // while ignoring alpha channel to get the dominant RGB.
-        const stats = await sharp(imageBuffer)
-            .resize(100, 100, { fit: 'inside' })
+
+        // Resize to a manageable size for pixel analysis
+        const { data, info } = await sharp(imageBuffer)
+            .resize(80, 120, { fit: 'fill' })
             .removeAlpha()
-            .stats();
-            
-        const dominant = stats.dominant; // { r, g, b }
+            .raw()
+            .toBuffer({ resolveWithObject: true });
+
+        const { width, height } = info;
+        const channels = 3;
+
+        // Focus on the CENTER of the image (avoid background edges)
+        // Clothing is typically the main subject in the center
+        const xStart = Math.floor(width * 0.15);
+        const xEnd = Math.floor(width * 0.85);
+        const yStart = Math.floor(height * 0.10);
+        const yEnd = Math.floor(height * 0.90);
+
+        let rSum = 0, gSum = 0, bSum = 0, count = 0;
+
+        for (let y = yStart; y < yEnd; y++) {
+            for (let x = xStart; x < xEnd; x++) {
+                const idx = (y * width + x) * channels;
+                const r = data[idx], g = data[idx + 1], b = data[idx + 2];
+
+                const brightness = (r + g + b) / 3;
+
+                // Skip very dark pixels (shadows, dark backgrounds – likely not clothing color)
+                if (brightness < 25) continue;
+
+                // Skip very bright/white pixels (highlights, white backgrounds)
+                if (brightness > 230) continue;
+
+                // Skip skin-tone pixels (so we detect clothing not exposed skin)
+                const isSkin = r > 80 && g > 50 && b > 20 &&
+                    r > g && r > b &&
+                    (r - g) > 8 && (r - b) > 15 &&
+                    r < 250;
+                if (isSkin) continue;
+
+                // Skip dominant green pixels (outdoor background, trees, plants)
+                const isGreen = g > r && g > b && (g - r) > 20 && g > 80;
+                if (isGreen) continue;
+
+                // Skip dominant blue/sky pixels
+                const isSky = b > r && b > g && (b - r) > 30 && b > 100;
+                if (isSky) continue;
+
+                rSum += r;
+                gSum += g;
+                bSum += b;
+                count++;
+            }
+        }
+
+        console.log(`🎨 Clothing pixels sampled: ${count}`);
+
+        let dominant;
+        if (count < 50) {
+            // Not enough clothing pixels found — try broader sampling without greenfilter
+            console.warn('⚠️ Few clothing pixels, falling back to broader stats');
+            const stats = await sharp(imageBuffer)
+                .resize(50, 50, { fit: 'inside' })
+                .removeAlpha()
+                .stats();
+            dominant = stats.dominant;
+        } else {
+            dominant = {
+                r: Math.round(rSum / count),
+                g: Math.round(gSum / count),
+                b: Math.round(bSum / count),
+            };
+        }
+
+        console.log(`🎨 Avg clothing RGB: r=${dominant.r} g=${dominant.g} b=${dominant.b}`);
         return findClosestPaletteColor(dominant);
+
     } catch (error) {
         console.error('Local color extraction error:', error);
-        return "#000000"; // fallback
+        return '#000000'; // fallback
     }
 };
+
 
 module.exports = {
     uploadToCloudinary,

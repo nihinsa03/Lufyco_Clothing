@@ -18,15 +18,25 @@ import api from "../api/api";
 type Props = NativeStackScreenProps<RootStackParamList, "AddToClosetPreview">;
 
 const PALETTE = [
+  // Neutrals
   { hex: "#000000", label: "Black" },
   { hex: "#FFFFFF", label: "White" },
-  { hex: "#FF0000", label: "Red" },
-  { hex: "#0000FF", label: "Blue" },
-  { hex: "#00FF00", label: "Green" },
-  { hex: "#FFFF00", label: "Yellow" },
+  { hex: "#F5F5F5", label: "Off-white" },
   { hex: "#808080", label: "Gray" },
-  { hex: "#FFC0CB", label: "Pink" },
+  // Reds
+  { hex: "#FF0000", label: "Red" },
+  { hex: "#8B0000", label: "Dark Red" },
+  { hex: "#800000", label: "Maroon" },
   { hex: "#A52A2A", label: "Brown" },
+  // Blues
+  { hex: "#0000FF", label: "Blue" },
+  { hex: "#000080", label: "Navy" },
+  // Others
+  { hex: "#00FF00", label: "Green" },
+  { hex: "#008080", label: "Teal" },
+  { hex: "#FFFF00", label: "Yellow" },
+  { hex: "#FF8C00", label: "Orange" },
+  { hex: "#FFC0CB", label: "Pink" },
   { hex: "#800080", label: "Purple" },
 ];
 
@@ -178,19 +188,24 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                 )}
               </Text>
 
-              {/* Show exact AI color as a special chip if different from palette */}
-              {aiColor && (
-                <View style={styles.aiColorRow}>
-                  <View style={[styles.aiColorSwatch, { backgroundColor: aiColor }]} />
-                  <Text style={styles.aiColorLabel}>Detected: <Text style={{ fontWeight: '700' }}>{aiColor.toUpperCase()}</Text></Text>
-                </View>
-              )}
-
               <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+                {/* AI-detected color as first circle */}
+                {aiColor && (
+                  <View style={styles.aiCircleWrap}>
+                    <TouchableOpacity
+                      style={[styles.colorDotBtn, color === aiColor && styles.colorDotBtnActive]}
+                      onPress={() => setColor(aiColor)}
+                    >
+                      <View style={[styles.colorDot, { backgroundColor: aiColor }]} />
+                    </TouchableOpacity>
+                    <Text style={styles.aiCircleLabel}>✨ AI</Text>
+                  </View>
+                )}
+                {/* Standard palette circles */}
                 {PALETTE.map(c => (
                   <TouchableOpacity
                     key={c.hex}
-                    style={[styles.colorDotBtn, color === c.hex && styles.colorDotBtnActive]}
+                    style={[styles.colorDotBtn, color === c.hex && color !== aiColor && styles.colorDotBtnActive]}
                     onPress={() => setColor(c.hex)}
                   >
                     <View style={[styles.colorDot, { backgroundColor: c.hex }]} />
@@ -358,21 +373,16 @@ const styles = StyleSheet.create({
   catChipText: { fontSize: 12, fontWeight: "600", color: "#4B5563" },
   catChipTextActive: { color: "#fff" },
 
-  aiColorRow: {
-    flexDirection: "row",
+  aiCircleWrap: {
     alignItems: "center",
-    marginBottom: 10,
-    backgroundColor: "#F0F4FF",
-    borderRadius: 10,
-    paddingHorizontal: 10,
-    paddingVertical: 7,
-    borderWidth: 1,
-    borderColor: "#BFDBFE",
+    marginRight: 8,
   },
-  aiColorSwatch: {
-    width: 24, height: 24, borderRadius: 12, borderWidth: 1.5, borderColor: "#ccc", marginRight: 10,
+  aiCircleLabel: {
+    fontSize: 9,
+    fontWeight: "700",
+    color: "#2563EB",
+    marginTop: 2,
   },
-  aiColorLabel: { fontSize: 13, color: "#374151" },
 
   colorDotBtn: {
     padding: 2, borderRadius: 18, marginRight: 8, height: 36, width: 36,
