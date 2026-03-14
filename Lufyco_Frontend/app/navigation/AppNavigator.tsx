@@ -86,7 +86,7 @@ export type RootStackParamList = {
   Payments: undefined;
 
   Home: undefined;
-  Main: undefined;
+  Main: { screen: string } | undefined;
   Categories: undefined;
   Profile: undefined;
   OrderHistory: undefined;

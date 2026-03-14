@@ -13,12 +13,14 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useShopStore } from "../store/useShopStore";
+import { useTheme } from "../context/ThemeContext";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ShopNewStyles">;
 
 const ShopNewStylesScreen: React.FC<Props> = ({ navigation }) => {
   const { products } = useShopStore();
   const [query, setQuery] = useState("");
+  const { colors, isDark: dark } = useTheme();
 
   const list = useMemo(() => {
     // Filter for new arrivals
@@ -27,9 +29,11 @@ const ShopNewStylesScreen: React.FC<Props> = ({ navigation }) => {
     const q = query.trim().toLowerCase();
     if (q) {
       data = data.filter(
-        (i) =>
-          i.title.toLowerCase().includes(q) ||
-          (i.description && i.description.toLowerCase().includes(q))
+        (i) => {
+          const itemText = (i.name || i.title || "").toLowerCase();
+          const descText = (i.description || "").toLowerCase();
+          return itemText.includes(q) || descText.includes(q);
+        }
       );
     }
     return data;
@@ -41,25 +45,25 @@ const ShopNewStylesScreen: React.FC<Props> = ({ navigation }) => {
   const stylistRouteName = "AISylist" as RouteName; // <- matches your navigator
 
   return (
-    <SafeAreaView style={styles.safe}>
+    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
       {/* Header */}
-      <View style={styles.header}>
+      <View style={[styles.header, { borderBottomColor: dark ? "#333" : "transparent", borderBottomWidth: dark ? 1 : 0 }]}>
         <TouchableOpacity onPress={() => navigation.goBack()} style={styles.hIcon}>
-          <Feather name="arrow-left" size={22} />
+          <Feather name="arrow-left" size={22} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Shop New Styles</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Shop New Styles</Text>
         <View style={{ width: 22 }} />
       </View>
 
       {/* Search */}
-      <View style={styles.searchBar}>
-        <Ionicons name="search" size={20} color="#111" />
+      <View style={[styles.searchBar, { borderColor: dark ? colors.border : "#60A5FA", backgroundColor: dark ? colors.card : "#fff" }]}>
+        <Ionicons name="search" size={20} color={colors.text} />
         <TextInput
           placeholder="Search for Items"
           value={query}
           onChangeText={setQuery}
-          style={styles.searchInput}
-          placeholderTextColor="#6b7280"
+          style={[styles.searchInput, { color: colors.text }]}
+          placeholderTextColor={colors.textMuted}
         />
       </View>
 
@@ -71,17 +75,17 @@ const ShopNewStylesScreen: React.FC<Props> = ({ navigation }) => {
         ItemSeparatorComponent={() => <View style={{ height: 12 }} />}
         renderItem={({ item }) => (
           <TouchableOpacity
-            style={styles.card}
+            style={[styles.card, { backgroundColor: colors.card, borderColor: dark ? colors.border : '#4A90D9' }]}
             onPress={() => navigation.navigate("ProductDetails", { id: item.id, product: item })}
           >
-            <View style={styles.row}>
+            <View style={[styles.row, { padding: dark ? 8 : 0 }]}>
               <Image
                 source={item.images && item.images[0] ? (typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]) : require("../../assets/images/clothing.png")}
-                style={styles.thumb}
+                style={[styles.thumb, { backgroundColor: colors.iconBg }]}
               />
               <View style={{ flex: 1, marginRight: 10 }}>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.subtitle}>${item.price?.toFixed(2)}</Text>
+                <Text style={[styles.title, { color: colors.text }]}>{item.title || item.name}</Text>
+                <Text style={[styles.subtitle, { color: colors.textMuted }]}>${item.price?.toFixed(2)}</Text>
               </View>
 
               <View
@@ -93,37 +97,16 @@ const ShopNewStylesScreen: React.FC<Props> = ({ navigation }) => {
           </TouchableOpacity>
         )}
         ListEmptyComponent={
-          <Text style={styles.empty}>No items match “{query}”.</Text>
+          <Text style={[styles.empty, { color: colors.textMuted }]}>No items match “{query}”.</Text>
         }
       />
 
-      {/* Bottom bar */}
-      <View style={styles.bottomBar}>
-        {[
-          { key: "home", label: "Home", icon: "home", onPress: () => navigation.navigate("Home") },
-          { key: "stylist", label: "AI Stylist", icon: "grid", onPress: () => navigation.navigate("AIStylist") },
-          { key: "cart", label: "My Cart", icon: "shopping-cart", onPress: () => navigation.navigate("MyCart") },
-          { key: "wish", label: "Wishlist", icon: "heart", onPress: () => navigation.navigate("Wishlist") },
-          { key: "profile", label: "Profile", icon: "user", onPress: () => navigation.navigate("Profile") },
-        ].map((t) => (
-          <TouchableOpacity key={t.key} style={styles.tabBtn} onPress={t.onPress}>
-            <Feather
-              name={t.icon as any}
-              size={22}
-              color={t.key === 'stylist' ? "#1E90FF" : "#777"}
-            />
-            <Text style={[styles.tabLabel, { color: t.key === 'stylist' ? "#1E90FF" : "#777" }]}>
-              {t.label}
-            </Text>
-          </TouchableOpacity>
-        ))}
-      </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" },
+  safe: { flex: 1 },
 
   header: {
     flexDirection: "row",
@@ -150,9 +133,11 @@ const styles = StyleSheet.create({
   searchInput: { marginLeft: 10, flex: 1, color: "#111" },
 
   card: {
-    backgroundColor: "#D9D9D9",
+    backgroundColor: "transparent",
     borderRadius: 14,
     padding: 12,
+    borderWidth: 1,
+    marginVertical: 4
   },
   row: { flexDirection: "row", alignItems: "center" },
   thumb: {
@@ -180,23 +165,6 @@ const styles = StyleSheet.create({
     color: "#666",
     fontStyle: "italic",
   },
-
-  bottomBar: {
-    position: "absolute",
-    left: 0,
-    right: 0,
-    bottom: 0,
-    height: 84,
-    borderTopWidth: 1,
-    borderColor: "#eee",
-    backgroundColor: "#fff",
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-around",
-    paddingBottom: 8,
-  },
-  tabBtn: { alignItems: "center" },
-  tabLabel: { fontSize: 12, marginTop: 2, fontWeight: "500" },
 });
 
 export default ShopNewStylesScreen;

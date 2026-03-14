@@ -8,6 +8,7 @@ export interface Category {
 export interface Product {
     id: string;
     title: string;
+    name?: string;
     price: number;
     oldPrice?: number;
     rating: number;
@@ -85,7 +86,7 @@ mockCategories.forEach((cat) => {
             isNewArrival: i <= 2, // First 2 are new
             isPopular: i > 2 && i <= 4,
             isPriceDropping: i === 5,
-            oldPrice: i === 5 ? Math.floor(Math.random() * (12000 - 9000) + 9000) : undefined, // Add oldPrice for item 5
+            oldPrice: (i === 5 || i === 2) ? Math.floor(Math.random() * (12000 - 9000) + 9000) : undefined, // Add oldPrice for item 5 and 2
         });
     }
 });

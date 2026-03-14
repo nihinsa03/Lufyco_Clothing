@@ -23,7 +23,8 @@ type Props = NativeStackScreenProps<RootStackParamList, "ProductListing">;
 
 type Product = {
     _id: string;
-    name: string;
+    name?: string;
+    title?: string;
     price: number;
     compareAtPrice?: number;
     image: string; // URL or base64
@@ -84,42 +85,57 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
             // Use MOCK_PRODUCTS for now
             let data = [...MOCK_PRODUCTS];
 
-            // Client-side filtering
-            if (params.gender) {
-                data = data.filter((p: Product) => p.gender === params.gender || p.gender === 'Unisex');
+            // If the route has specific filters, start with those
+            if (params.category === "Shoes") {
+                data = data.filter((p: Product) => p.category === "Shoes");
+            } else if (params.category === "Accessories") {
+                data = data.filter((p: Product) => p.category === "Accessories");
+            } else if (params.gender === "Men") {
+                data = data.filter((p: Product) => p.gender === "Men" || (p.gender === "Unisex" && p.category !== "Women"));
+            } else if (params.gender === "Women") {
+                data = data.filter((p: Product) => p.gender === "Women" || (p.gender === "Unisex" && p.category !== "Men"));
+            } else if (params.gender === "Kids") {
+                data = data.filter((p: Product) => p.gender === "Kids" || p.category === "Kids");
             }
-            if (params.category) {
-                // For Shoes/Accessories which are main categories but also used as filter
+
+            // Apply specific params if not already scoped
+            if (params.category && params.category !== "Shoes" && params.category !== "Accessories") {
                 data = data.filter((p: Product) => p.category === params.category || p.subCategory === params.category);
             }
-            // Add other filters as needed... currently just showing all for simplicity if no specific match
+            if (params.subCategory) {
+                data = data.filter((p: Product) => p.subCategory === params.subCategory);
+            }
+            if (params.type) {
+                data = data.filter((p: Product) => p.type === params.type);
+            }
 
-            // If the route has specific filters, try to respect them
-            if (params.category === "Shoes") {
-                data = MOCK_PRODUCTS.filter((p: Product) => p.category === "Shoes");
-            } else if (params.category === "Accessories") {
-                data = MOCK_PRODUCTS.filter((p: Product) => p.category === "Accessories");
-            } else if (params.gender === "Men") {
-                // Show Men + Shoes (Men) + Accessories (Men/Unisex)
-                data = MOCK_PRODUCTS.filter((p: Product) => p.gender === "Men" || (p.gender === "Unisex" && p.category !== "Women"));
-            } else if (params.gender === "Women") {
-                data = MOCK_PRODUCTS.filter((p: Product) => p.gender === "Women" || (p.gender === "Unisex" && p.category !== "Men"));
-            } else if (params.gender === "Kids") {
-                data = MOCK_PRODUCTS.filter((p: Product) => p.gender === "Kids" || p.category === "Kids");
+            // Handle Search Query properly
+            if (params.search) {
+                const query = params.search.toLowerCase();
+                data = data.filter((p: Product) => {
+                    const itemName = (p.name || p.title || "").toLowerCase();
+                    const itemType = (p.type || "").toLowerCase();
+                    const itemCategory = (p.category || "").toLowerCase();
+                    const itemSubCategory = (p.subCategory || "").toLowerCase();
+                    return itemName.includes(query) || 
+                           itemType.includes(query) ||
+                           itemCategory.includes(query) ||
+                           itemSubCategory.includes(query);
+                });
             }
 
             // Apply sorting & filtering from selectedFilter
             if (selectedFilter === "price_low_to_high") {
-                data.sort((a, b) => a.price - b.price);
+                data.sort((a, b) => (a.price || 0) - (b.price || 0));
             } else if (selectedFilter === "price_high_to_low") {
-                data.sort((a, b) => b.price - a.price);
+                data.sort((a, b) => (b.price || 0) - (a.price || 0));
             } else if (selectedFilter === "discount") {
                 data = data.filter((p: any) => p.compareAtPrice && p.compareAtPrice > p.price);
             } else if (selectedFilter === "popularity") {
                 data.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
             } else if (selectedFilter === "whats_new") {
                 const newArrivals = data.filter((p: any) => p.isNewArrival);
-                data = newArrivals.length > 0 ? newArrivals : data.reverse();
+                data = newArrivals.length > 0 ? newArrivals : [...data].reverse();
             }
 
             // Simulate delay
@@ -191,7 +207,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                                     toggleWishlist({
                                         id: item._id,
                                         productId: item._id,
-                                        title: item.name,
+                                        title: item.name || item.title || "Product",
                                         price: item.price,
                                         image: item.image,
                                     });
@@ -209,7 +225,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                             </View>
 
                             <Text numberOfLines={1} style={styles.pTitle}>
-                                {item.name}
+                                {item.name || item.title || "Unknown Product"}
                             </Text>
 
                             <View style={styles.priceRow}>

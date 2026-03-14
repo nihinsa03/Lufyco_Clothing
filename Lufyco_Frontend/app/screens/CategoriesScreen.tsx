@@ -180,7 +180,7 @@ const CategoriesScreen = () => {
   // All items in the grid
   const gridItems = subCategories;
 
-  const handleSubCategoryPress = (catId: string) => {
+  const handleSubCategoryPress = (catId: string, catName: string) => {
     // Single atomic update: reset all flags + set the category in one go
     // This prevents the persisted store from overriding partial updates
     setFilter({
@@ -196,7 +196,17 @@ const CategoriesScreen = () => {
       priceMax: undefined,
       categoryId: catId,
     });
-    navigation.navigate('CategoryProducts');
+
+    let searchParams: any = { title: catName, category: catName };
+
+    // Map the selectedCategory to correct gender or category filters for the ProductListing
+    if (selectedCategory === 'men') searchParams = { gender: 'Men', search: catName, title: catName };
+    else if (selectedCategory === 'women') searchParams = { gender: 'Women', search: catName, title: catName };
+    else if (selectedCategory === 'kids') searchParams = { gender: 'Kids', search: catName, title: catName };
+    else if (selectedCategory === 'footwear') searchParams = { category: 'Shoes', search: catName, title: catName };
+    else searchParams = { search: catName, title: catName };
+
+    navigation.navigate('ProductListing', searchParams);
   };
 
   const renderSidebarItem = ({ item }: { item: any }) => {
@@ -221,7 +231,7 @@ const CategoriesScreen = () => {
   };
 
   const renderGridItem = (item: Category) => (
-    <TouchableOpacity key={item.id} style={styles.subCategoryItem} onPress={() => navigation.navigate('SubCategoryProducts', { title: item.name, categoryId: item.id })}>
+    <TouchableOpacity key={item.id} style={styles.subCategoryItem} onPress={() => handleSubCategoryPress(item.id, item.name)}>
       <View style={[styles.subCategoryImageContainer, { backgroundColor: colors.iconBg }]}>
         <Image source={item.image} style={styles.subCategoryImage} resizeMode="cover" />
       </View>
@@ -278,7 +288,7 @@ const CategoriesScreen = () => {
                       <TouchableOpacity
                         key={item.id}
                         style={styles.sectionItem}
-                        onPress={() => navigation.navigate('SubCategoryProducts', { title: `MEN ${item.name}`, categoryId: item.id })}
+                        onPress={() => navigation.navigate('ProductListing', { title: `MEN ${item.name}`, gender: 'Men', search: item.name })}
                       >
                         <Image source={item.image} style={[styles.sectionItemImage, { backgroundColor: colors.iconBg }]} />
                         <Text style={[styles.sectionItemName, { color: colors.textSecondary }]}>{item.name}</Text>
@@ -298,7 +308,7 @@ const CategoriesScreen = () => {
                       <TouchableOpacity
                         key={item.id}
                         style={styles.sectionItem}
-                        onPress={() => navigation.navigate('SubCategoryProducts', { title: `WOMEN ${item.name}`, categoryId: item.id })}
+                        onPress={() => navigation.navigate('ProductListing', { title: `WOMEN ${item.name}`, gender: 'Women', search: item.name })}
                       >
                         <Image source={item.image} style={[styles.sectionItemImage, { backgroundColor: colors.iconBg }]} />
                         <Text style={[styles.sectionItemName, { color: colors.textSecondary }]}>{item.name}</Text>
@@ -318,7 +328,7 @@ const CategoriesScreen = () => {
                       <TouchableOpacity
                         key={item.id}
                         style={styles.sectionItem}
-                        onPress={() => navigation.navigate('SubCategoryProducts', { title: `KIDS ${item.name}`, categoryId: item.id })}
+                        onPress={() => navigation.navigate('ProductListing', { title: `KIDS ${item.name}`, gender: 'Kids', search: item.name })}
                       >
                         <Image source={item.image} style={[styles.sectionItemImage, { backgroundColor: colors.iconBg }]} />
                         <Text style={[styles.sectionItemName, { color: colors.textSecondary }]}>{item.name}</Text>
@@ -338,7 +348,7 @@ const CategoriesScreen = () => {
                       <TouchableOpacity
                         key={item.id}
                         style={styles.sectionItem}
-                        onPress={() => navigation.navigate('SubCategoryProducts', { title: item.name, categoryId: item.id })}
+                        onPress={() => navigation.navigate('ProductListing', { title: item.name, category: 'Shoes', search: item.name })}
                       >
                         <Image source={item.image} style={[styles.sectionItemImage, { backgroundColor: colors.iconBg }]} />
                         <Text style={[styles.sectionItemName, { color: colors.textSecondary }]}>{item.name}</Text>

@@ -54,6 +54,7 @@ const HomeScreen = ({ navigation }: Props) => {
   const latestProducts = products.filter(p => p.isNewArrival);
 
   const handleCategoryPress = (catId: string) => {
+    const cat = categories.find(c => c.id === catId);
     setFilter({
       query: '',
       newArrivals: false,
@@ -67,7 +68,7 @@ const HomeScreen = ({ navigation }: Props) => {
       priceMax: undefined,
       categoryId: catId,
     });
-    navigation.navigate("CategoryProducts");
+    navigation.navigate("ProductListing", { search: cat?.name, title: cat?.name });
   };
 
   const handleProductPress = (item: any) => {
@@ -209,7 +210,7 @@ const HomeScreen = ({ navigation }: Props) => {
             contentContainerStyle={{ paddingHorizontal: 4 }}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <TouchableOpacity style={[styles.productCard, { backgroundColor: colors.card }]} onPress={() => handleProductPress(item)}>
+              <TouchableOpacity style={[styles.productCard, { backgroundColor: colors.card }]} onPress={() => navigation.navigate('ProductDetails', { id: item.id, product: item })}>
                 <View style={styles.imageWrapper}>
                   <Image
                     source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}

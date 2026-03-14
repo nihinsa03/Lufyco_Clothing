@@ -75,14 +75,18 @@ export const useShopStore = create<ShopState>()(
                 if (typeof val === 'boolean') {
                     let nextFilters = { ...state.activeFilters, [key]: !val };
 
-                    // Enforce mutual exclusivity for price sort
+                    // Enforce mutual exclusivity for sorts
                     if (key === 'priceLowToHigh' && !val) {
-                        // If turning ON LowToHigh, turn OFF HighToLow
                         nextFilters.priceHighToLow = false;
+                        nextFilters.popularity = false;
                     }
                     if (key === 'priceHighToLow' && !val) {
-                        // If turning ON HighToLow, turn OFF LowToHigh
                         nextFilters.priceLowToHigh = false;
+                        nextFilters.popularity = false;
+                    }
+                    if (key === 'popularity' && !val) {
+                        nextFilters.priceLowToHigh = false;
+                        nextFilters.priceHighToLow = false;
                     }
 
                     return { activeFilters: nextFilters };
@@ -94,7 +98,13 @@ export const useShopStore = create<ShopState>()(
                 activeFilters: { ...state.activeFilters, ...updates }
             })),
 
-            resetFilters: () => set({ activeFilters: initialFilters }),
+            resetFilters: () => set((state) => ({ 
+                activeFilters: { 
+                    ...initialFilters, 
+                    categoryId: state.activeFilters.categoryId, 
+                    query: state.activeFilters.query 
+                } 
+            })),
 
             addRecentSearch: (term) => set((state) => {
                 if (!term.trim()) return state;

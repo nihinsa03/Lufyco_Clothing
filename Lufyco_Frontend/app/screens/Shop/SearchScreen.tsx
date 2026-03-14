@@ -9,23 +9,20 @@ const SearchScreen = () => {
     const navigation = useNavigation<any>();
     const { colors, isDark: dark } = useTheme();
     const styles = getStyles(colors, dark);
-    const { recentSearches, addRecentSearch, clearRecentSearches, setQuery } = useShopStore();
+    const { recentSearches, addRecentSearch, clearRecentSearches, setFilter } = useShopStore();
     const [input, setInput] = useState('');
 
     const handleSearch = (term: string) => {
         if (!term.trim()) return;
         addRecentSearch(term);
-        setQuery(term);
-        // Instead of staying here, usually we go back to listing or show results here.
-        // Requested behavior: "Typing updates results OR navigate back to ProductsScreen"
-        // Let's navigate to ProductsScreen (or CategoryProducts matching prev nav) with query.
-        // Assuming 'CategoryProducts' screen is our main listing.
-        navigation.navigate('CategoryProducts');
+        // Clear categoryId when performing a global search
+        setFilter({ query: term, categoryId: undefined });
+        navigation.navigate('ProductListing', { search: term, title: `Search: ${term}` });
     };
 
     const handleClear = () => {
         setInput('');
-        setQuery('');
+        setFilter({ query: '' });
     };
 
     return (
