@@ -3,6 +3,7 @@ import { View, StyleSheet, TouchableOpacity, Text, ScrollView, SafeAreaView, Ale
 import { AuthHeader, AuthInput, PrimaryButton, SocialRow } from '../components/AuthComponents';
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
+import { useTheme } from '../context/ThemeContext';
 
 interface Props {
   navigation: StackNavigationProp<any>;
@@ -10,6 +11,7 @@ interface Props {
 
 const LoginScreen = ({ navigation }: Props) => {
   const { login, loading } = useAuthStore();
+  const { colors, isDark } = useTheme();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -42,10 +44,10 @@ const LoginScreen = ({ navigation }: Props) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.container}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Text style={styles.backArrow}>←</Text>
+          <Text style={[styles.backArrow, { color: colors.text }]}>←</Text>
         </TouchableOpacity>
 
         <AuthHeader
@@ -74,7 +76,7 @@ const LoginScreen = ({ navigation }: Props) => {
         />
 
         <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-          <Text style={styles.forgotPass}>Forgot Password?</Text>
+          <Text style={[styles.forgotPass, { color: colors.text }]}>Forgot Password?</Text>
         </TouchableOpacity>
 
         <PrimaryButton
@@ -83,14 +85,14 @@ const LoginScreen = ({ navigation }: Props) => {
           loading={loading}
         />
 
-        <Text style={styles.orText}>or continue with</Text>
+        <Text style={[styles.orText, { color: colors.textSecondary }]}>or continue with</Text>
 
         <SocialRow />
 
         <View style={styles.footer}>
-          <Text style={styles.footerText}>Don't have an account? </Text>
+          <Text style={[styles.footerText, { color: colors.textSecondary }]}>Don't have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-            <Text style={styles.link}>Sign up</Text>
+            <Text style={[styles.link, { color: colors.text }]}>Sign up</Text>
           </TouchableOpacity>
         </View>
 

@@ -97,17 +97,30 @@ const loadCustomModel = async () => {
     try {
         // Check if custom model exists
         if (fs.existsSync(MODEL_PATH)) {
-            console.log('🎯 Loading custom trained fashion model via fs...');
-            const ioHandler = createFsIOHandlerMultiShard(MODEL_DIR);
-
-            // MobileNetV2 from tf.keras.applications is exported as a Layers graph
-            // However, depending on export, it might be a GraphModel.
-            // tfjs.converters.save_keras_model exports LayersModel.
-            customModel = await tf.loadLayersModel(ioHandler);
+            console.log(`🎯 Loading custom trained fashion model: ${MODEL_PATH}`);
+            
+            // If tfjs-node is available, use file:// protocol which is faster and more reliable
+            if (tf.version_node) {
+                const modelUrl = `file://${MODEL_PATH}`;
+                try {
+                    customModel = await tf.loadLayersModel(modelUrl);
+                } catch (err) {
+                    console.warn('⚠️ Failed to load as LayersModel, trying GraphModel...');
+                    customModel = await tf.loadGraphModel(modelUrl);
+                }
+            } else {
+                // Pure JS fallback
+                const ioHandler = createFsIOHandlerMultiShard(MODEL_DIR);
+                try {
+                    customModel = await tf.loadLayersModel(ioHandler);
+                } catch (err) {
+                    console.warn('⚠️ Failed to load as LayersModel via custom IO, trying GraphModel...');
+                    customModel = await tf.loadGraphModel(ioHandler);
+                }
+            }
             console.log('✅ Custom fashion model loaded successfully');
         } else {
             console.log('⚠️ Custom model not found, falling back to pre-trained MobileNet');
-
             // Fallback to pre-trained model
             customModel = await tf.loadGraphModel(
                 'https://tfhub.dev/google/tfjs-model/imagenet/mobilenet_v2_100_224/feature_vector/3/default/1',
@@ -206,7 +219,8 @@ const cosineSimilarity = (vector1, vector2) => {
         norm2 += vector2[i] * vector2[i];
     }
 
-    const similarity = dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
+    const denom = Math.sqrt(norm1) * Math.sqrt(norm2);
+    const similarity = denom === 0 ? 0 : dotProduct / denom;
 
     // Convert to 0-100 scale
     return Math.round((similarity + 1) * 50); // Cosine ranges from -1 to 1

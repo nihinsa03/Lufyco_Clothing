@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, ScrollView, LayoutAnimation, Platform, UIManager, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import { useTheme } from "../../context/ThemeContext";
 
 if (Platform.OS === 'android') {
     if (UIManager.setLayoutAnimationEnabledExperimental) {
@@ -11,6 +12,7 @@ if (Platform.OS === 'android') {
 
 const FAQScreen = () => {
     const navigation = useNavigation();
+    const { colors } = useTheme();
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
     const faqs = [
@@ -42,25 +44,25 @@ const FAQScreen = () => {
     };
 
     return (
-        <SafeAreaView style={styles.safe}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { borderColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Feather name="arrow-left" size={24} color="#111" />
+                    <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>FAQ</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>FAQ</Text>
                 <View style={{ width: 24 }} />
             </View>
 
             <ScrollView contentContainerStyle={{ padding: 20 }}>
                 {faqs.map((item, i) => (
-                    <View key={i} style={styles.item}>
+                    <View key={i} style={[styles.item, { borderColor: colors.border }]}>
                         <TouchableOpacity style={styles.questionRow} onPress={() => toggle(i)}>
-                            <Text style={styles.question}>{item.q}</Text>
-                            <Feather name={openIndex === i ? "chevron-up" : "chevron-down"} size={20} color="#666" />
+                            <Text style={[styles.question, { color: colors.text }]}>{item.q}</Text>
+                            <Feather name={openIndex === i ? "chevron-up" : "chevron-down"} size={20} color={colors.textSecondary} />
                         </TouchableOpacity>
                         {openIndex === i && (
                             <View style={styles.answerBox}>
-                                <Text style={styles.answer}>{item.a}</Text>
+                                <Text style={[styles.answer, { color: colors.textSecondary }]}>{item.a}</Text>
                             </View>
                         )}
                     </View>

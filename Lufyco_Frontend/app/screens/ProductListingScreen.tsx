@@ -154,15 +154,27 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
         <SafeAreaView style={styles.safe}>
             {/* Header */}
             <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.hIcon}>
+                <TouchableOpacity 
+                    onPress={() => navigation.goBack()} 
+                    style={styles.hIcon}
+                    hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                >
                     <Feather name="arrow-left" size={22} color={colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.title}>{displayName.toUpperCase()}</Text>
                 <View style={styles.headerRight}>
-                    <TouchableOpacity onPress={() => setFilterVisible(true)} style={styles.hIcon}>
+                    <TouchableOpacity 
+                        onPress={() => setFilterVisible(true)} 
+                        style={styles.hIcon}
+                        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                    >
                         <Feather name="sliders" size={22} color={colors.text} />
                     </TouchableOpacity>
-                    <TouchableOpacity onPress={() => setSearchVisible(true)} style={styles.hIcon}>
+                    <TouchableOpacity 
+                        onPress={() => setSearchVisible(true)} 
+                        style={styles.hIcon}
+                        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                    >
                         <Feather name="search" size={22} color={colors.text} />
                     </TouchableOpacity>
                 </View>

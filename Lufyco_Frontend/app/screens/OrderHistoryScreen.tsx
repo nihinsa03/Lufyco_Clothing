@@ -3,6 +3,7 @@ import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, FlatList, Image
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useOrdersStore, Order } from "../store/useOrdersStore";
+import { useTheme } from "../context/ThemeContext";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -11,6 +12,8 @@ type NavProp = NativeStackNavigationProp<RootStackParamList, "OrderHistory">;
 const OrderHistoryScreen = () => {
     const navigation = useNavigation<NavProp>();
     const { orders } = useOrdersStore();
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
     const [tab, setTab] = useState<'ongoing' | 'completed'>('ongoing');
 
     const filteredOrders = orders.filter(o => {
@@ -22,12 +25,12 @@ const OrderHistoryScreen = () => {
         const firstItem = item.items?.[0];
         return (
             <TouchableOpacity
-                style={styles.card}
+                style={[styles.card, { backgroundColor: colors.card, borderColor: colors.border }]}
                 onPress={() => navigation.navigate("OrderDetails", { orderId: item.id })}
             >
                 <View style={styles.cardHeader}>
-                    <Text style={styles.orderId}>Order #{item.id.split('-')[1]}</Text>
-                    <Text style={styles.date}>{new Date(item.date).toLocaleDateString()}</Text>
+                    <Text style={[styles.orderId, { color: colors.text }]}>Order #{item.id.split('-')[1]}</Text>
+                    <Text style={[styles.date, { color: colors.textSecondary }]}>{new Date(item.date).toLocaleDateString()}</Text>
                 </View>
                 <View style={styles.cardBody}>
                     <Image
@@ -35,31 +38,31 @@ const OrderHistoryScreen = () => {
                         style={styles.thumb}
                     />
                     <View style={{ flex: 1, marginLeft: 12 }}>
-                        <Text style={styles.title} numberOfLines={1}>{firstItem?.title || "Product"}</Text>
-                        {item.items.length > 1 && <Text style={styles.subtext}>+ {item.items.length - 1} more items</Text>}
-                        <Text style={styles.price}>${item.total.toFixed(2)}</Text>
+                        <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>{firstItem?.title || "Product"}</Text>
+                        {item.items.length > 1 && <Text style={[styles.subtext, { color: colors.textSecondary }]}>+ {item.items.length - 1} more items</Text>}
+                        <Text style={[styles.price, { color: colors.text }]}>${item.total.toFixed(2)}</Text>
                     </View>
-                    <View style={[styles.statusBadge, { backgroundColor: item.status === 'Delivered' ? "#DCFCE7" : "#DBEAFE" }]}>
-                        <Text style={[styles.statusText, { color: item.status === 'Delivered' ? "#16A34A" : "#1E40AF" }]}>
+                    <View style={[styles.statusBadge, { backgroundColor: item.status === 'Delivered' ? (isDark ? "#064E3B" : "#DCFCE7") : (isDark ? "#1E3A8A" : "#DBEAFE") }]}>
+                        <Text style={[styles.statusText, { color: item.status === 'Delivered' ? (isDark ? "#6EE7B7" : "#16A34A") : (isDark ? "#93C5FD" : "#1E40AF") }]}>
                             {item.status}
                         </Text>
                     </View>
                 </View>
-                <View style={styles.trackBtn}>
-                    <Text style={styles.trackText}>View Details</Text>
+                <View style={[styles.trackBtn, { backgroundColor: isDark ? "#2A2A2A" : "#F9FAFB" }]}>
+                    <Text style={[styles.trackText, { color: colors.text }]}>View Details</Text>
                 </View>
             </TouchableOpacity>
         );
     };
 
     return (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
             {/* Header */}
-            <View style={styles.header}>
-                <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 6 }}>
-                    <Feather name="arrow-left" size={22} />
+            <View style={[styles.header, { borderBottomWidth: 1, borderColor: colors.border }]}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 6 }} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+                    <Feather name="arrow-left" size={22} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Order History</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Order History</Text>
                 <View style={{ width: 22 }} />
             </View>
 
@@ -96,35 +99,37 @@ const OrderHistoryScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+
+
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", paddingHorizontal: 16, paddingVertical: 10 },
     headerTitle: { fontSize: 18, fontWeight: "700" },
 
     tabs: { flexDirection: "row", padding: 16 },
-    tab: { flex: 1, alignItems: "center", paddingVertical: 10, borderBottomWidth: 2, borderColor: "#eee" },
-    tabActive: { borderColor: "#111" },
-    tabText: { fontWeight: "600", color: "#888" },
-    tabTextActive: { color: "#111" },
+    tab: { flex: 1, alignItems: "center", paddingVertical: 10, borderBottomWidth: 2, borderColor: colors.border },
+    tabActive: { borderColor: colors.text },
+    tabText: { fontWeight: "600", color: colors.textSecondary },
+    tabTextActive: { color: colors.text },
 
-    card: { backgroundColor: "#fff", borderRadius: 12, padding: 16, marginVertical: 8, borderWidth: 1, borderColor: "#F3F4F6", elevation: 1 },
+    card: { backgroundColor: colors.card, borderRadius: 12, padding: 16, marginVertical: 8, borderWidth: 1, borderColor: colors.border, elevation: 1 },
     cardHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
     orderId: { fontWeight: "700" },
-    date: { color: "#666", fontSize: 12 },
+    date: { color: colors.textSecondary, fontSize: 12 },
     cardBody: { flexDirection: "row", alignItems: "center" },
-    thumb: { width: 60, height: 60, borderRadius: 8, backgroundColor: "#eee" },
+    thumb: { width: 60, height: 60, borderRadius: 8, backgroundColor: dark ? "#333" : "#eee" },
     title: { fontWeight: "700", fontSize: 14 },
-    subtext: { fontSize: 12, color: "#666" },
+    subtext: { fontSize: 12, color: colors.textSecondary },
     price: { fontWeight: "700", marginTop: 4 },
     statusBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 8 },
     statusText: { fontSize: 12, fontWeight: "700" },
-    trackBtn: { marginTop: 16, alignItems: "center", paddingVertical: 10, backgroundColor: "#F9FAFB", borderRadius: 8 },
-    trackText: { color: "#111", fontWeight: "700" },
+    trackBtn: { marginTop: 16, alignItems: "center", paddingVertical: 10, backgroundColor: dark ? "#2A2A2A" : "#F9FAFB", borderRadius: 8 },
+    trackText: { color: colors.text, fontWeight: "700" },
 
     emptyContainer: { alignItems: 'center', marginTop: 80 },
-    emptyTitle: { fontSize: 18, fontWeight: '700', color: '#666', marginBottom: 20 },
-    exploreBtn: { backgroundColor: '#111', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
-    exploreText: { color: '#fff', fontWeight: '700' },
+    emptyTitle: { fontSize: 18, fontWeight: '700', color: colors.textSecondary, marginBottom: 20 },
+    exploreBtn: { backgroundColor: colors.text, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
+    exploreText: { color: colors.background, fontWeight: '700' },
 });
 
 export default OrderHistoryScreen;

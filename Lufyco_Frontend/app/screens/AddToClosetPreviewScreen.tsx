@@ -1,6 +1,7 @@
 import React from "react";
 import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, TextInput, ScrollView, ActivityIndicator, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import api from "../api/api";
@@ -33,6 +34,9 @@ const PALETTE = [
 const VISUAL_CATEGORIES = [
   { name: "Men's Wear", image: require('../../assets/images/categories/men/mens_wear_hero.png') },
   { name: "Women's Wear", image: require('../../assets/images/categories/women/womens_wear_hero.png') },
+  { name: "Shirt", image: require('../../assets/images/shirt.png') },
+  { name: "T-shirt", image: require('../../assets/images/shirt.png') },
+  { name: "Shorts", image: require('../../assets/images/categories/men/mens_wear_hero.png') },
   { name: "Kids' Wear", image: require('../../assets/images/categories/kids_wear_hero.png') },
   { name: "Foot Wear", image: require('../../assets/images/categories/footwear/footwear_hero_new.jpg') },
   { name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
@@ -42,6 +46,8 @@ const VISUAL_CATEGORIES = [
 
 const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const { uri } = route.params;
+  const { colors, isDark } = useTheme();
+  const styles = getStyles(colors, isDark);
   const [status, setStatus] = React.useState<"idle" | "saving" | "processed" | "error">("idle");
 
   const [name, setName] = React.useState("New Upload");
@@ -144,17 +150,17 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
 
             {/* Form */}
             <View style={styles.detailsForm}>
-              <Text style={styles.label}>Name</Text>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>Name</Text>
               <TextInput
-                style={styles.input}
+                style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
                 value={name}
                 onChangeText={setName}
                 placeholder="e.g. Blue Shirt"
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={colors.textMuted}
               />
 
               {/* Category */}
-              <Text style={styles.label}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>
                 Category
                 {!extracting && !extractError && (
                   <Text style={styles.aiTag}> · AI detected</Text>
@@ -169,10 +175,10 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                       style={styles.visualCatCard}
                       onPress={() => setCategory(cat.name)}
                     >
-                      <View style={[styles.visualCatImageBox, isActive && styles.visualCatImageBoxActive]}>
+                      <View style={[styles.visualCatImageBox, { backgroundColor: isDark ? colors.inputBg : '#F3F4F6' }, isActive && styles.visualCatImageBoxActive]}>
                         <Image source={cat.image} style={styles.visualCatImage} resizeMode="contain" />
                       </View>
-                      <Text style={[styles.visualCatText, isActive && styles.visualCatTextActive]} numberOfLines={2}>
+                      <Text style={[styles.visualCatText, { color: colors.textSecondary }, isActive && styles.visualCatTextActive]} numberOfLines={2}>
                         {cat.name}
                       </Text>
                     </TouchableOpacity>
@@ -181,7 +187,7 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
               </ScrollView>
 
               {/* Color — only show exact AI detected color */}
-              <Text style={styles.label}>
+              <Text style={[styles.label, { color: colors.textSecondary }]}>
                 Color
                 {!extracting && !extractError && aiColor && (
                   <Text style={styles.aiTag}> · AI detected</Text>
@@ -190,18 +196,18 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
 
               {aiColor ? (
                 <View style={styles.exactColorRow}>
-                  <View style={[styles.exactColorCircle, { backgroundColor: aiColor }]} />
-                  <Text style={styles.exactColorHex}>{aiColor.toUpperCase()}</Text>
+                  <View style={[styles.exactColorCircle, { backgroundColor: aiColor, borderColor: '#2563EB' }]} />
+                  <Text style={[styles.exactColorHex, { color: colors.text }]}>{aiColor.toUpperCase()}</Text>
                 </View>
               ) : extracting ? (
                 <View style={styles.exactColorRow}>
                   <ActivityIndicator size="small" color="#2563EB" />
-                  <Text style={[styles.exactColorHex, { color: '#9CA3AF' }]}>Detecting...</Text>
+                  <Text style={[styles.exactColorHex, { color: colors.textMuted }]}>Detecting...</Text>
                 </View>
               ) : (
                 <View style={styles.exactColorRow}>
-                  <View style={[styles.exactColorCircle, { backgroundColor: color }]} />
-                  <Text style={styles.exactColorHex}>{color.toUpperCase()}</Text>
+                  <View style={[styles.exactColorCircle, { backgroundColor: color, borderColor: '#2563EB' }]} />
+                  <Text style={[styles.exactColorHex, { color: colors.text }]}>{color.toUpperCase()}</Text>
                 </View>
               )}
 
@@ -212,27 +218,27 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
               {status === "idle" && (
                 <>
                   <TouchableOpacity
-                    style={[styles.blackBtn, extracting && styles.blackBtnDisabled]}
+                    style={[styles.blackBtn, { backgroundColor: colors.text }, extracting && styles.blackBtnDisabled]}
                     onPress={handleSave}
                     disabled={extracting}
                   >
                     {extracting
-                      ? <ActivityIndicator size="small" color="#fff" />
-                      : <Text style={styles.blackBtnText}>Add to Closet</Text>
+                      ? <ActivityIndicator size="small" color={colors.background} />
+                      : <Text style={[styles.blackBtnText, { color: colors.background }]}>Add to Closet</Text>
                     }
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.blackBtn, { backgroundColor: "#444" }]}
+                    style={[styles.blackBtn, { backgroundColor: isDark ? colors.border : "#444" }]}
                     onPress={() => navigation.replace("AddToCloset")}
                   >
-                    <Text style={styles.blackBtnText}>Retake</Text>
+                    <Text style={[styles.blackBtnText, { color: colors.text }]}>Retake</Text>
                   </TouchableOpacity>
                 </>
               )}
 
               {status === "saving" && (
-                <TouchableOpacity style={[styles.blackBtn, { opacity: 0.7 }]} disabled>
-                  <Text style={styles.blackBtnText}>Saving...</Text>
+                <TouchableOpacity style={[styles.blackBtn, { backgroundColor: colors.text, opacity: 0.7 }]} disabled>
+                  <Text style={[styles.blackBtnText, { color: colors.background }]}>Saving...</Text>
                 </TouchableOpacity>
               )}
 
@@ -242,10 +248,10 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                     <Text style={styles.blackBtnText}>✅ Saved!</Text>
                   </View>
                   <TouchableOpacity
-                    style={[styles.blackBtn, { backgroundColor: "#111" }]}
+                    style={[styles.blackBtn, { backgroundColor: colors.text }]}
                     onPress={() => navigation.navigate("MyCloset")}
                   >
-                    <Text style={styles.blackBtnText}>Go to Closet</Text>
+                    <Text style={[styles.blackBtnText, { color: colors.background }]}>Go to Closet</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -256,10 +262,10 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                     <Text style={styles.blackBtnText}>Retry</Text>
                   </TouchableOpacity>
                   <TouchableOpacity
-                    style={[styles.blackBtn, { backgroundColor: "#444" }]}
+                    style={[styles.blackBtn, { backgroundColor: isDark ? colors.border : "#444" }]}
                     onPress={() => navigation.replace("AddToCloset")}
                   >
-                    <Text style={styles.blackBtnText}>Retake</Text>
+                    <Text style={[styles.blackBtnText, { color: colors.text }]}>Retake</Text>
                   </TouchableOpacity>
                 </>
               )}
@@ -287,8 +293,8 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#F3F4F6" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   scroll: { paddingBottom: 100 },
 
   header: {
@@ -298,16 +304,16 @@ const styles = StyleSheet.create({
     paddingTop: 6,
     paddingBottom: 10,
     justifyContent: "space-between",
-    backgroundColor: "#fff",
+    backgroundColor: colors.background,
     borderBottomWidth: 1,
-    borderColor: "#E5E7EB",
+    borderColor: colors.border,
   },
   hIcon: { padding: 4 },
-  headerTitle: { fontSize: 22, fontWeight: "700" },
+  headerTitle: { fontSize: 22, fontWeight: "700", color: colors.text },
 
   cardWrap: { paddingHorizontal: 14, marginTop: 12 },
   previewCard: {
-    backgroundColor: "#fff",
+    backgroundColor: colors.card,
     borderRadius: 20,
     padding: 14,
     shadowColor: "#000",
@@ -320,7 +326,7 @@ const styles = StyleSheet.create({
     width: "100%",
     height: 240,
     borderRadius: 14,
-    backgroundColor: "#eee",
+    backgroundColor: dark ? colors.border : "#eee",
   },
 
   aiBanner: {
@@ -342,19 +348,16 @@ const styles = StyleSheet.create({
 
   detailsForm: { marginTop: 16 },
 
-  label: { fontSize: 13, fontWeight: "600", color: "#374151", marginBottom: 6 },
+  label: { fontSize: 13, fontWeight: "600", marginBottom: 6 },
   aiTag: { fontSize: 11, fontWeight: "500", color: "#2563EB" },
 
   input: {
     height: 42,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
     borderRadius: 10,
     paddingHorizontal: 12,
     fontSize: 14,
-    color: "#111",
     marginBottom: 14,
-    backgroundColor: "#F9FAFB",
   },
 
   visualCatCard: {
@@ -368,7 +371,6 @@ const styles = StyleSheet.create({
     borderRadius: 14,
     overflow: 'hidden',
     marginBottom: 6,
-    backgroundColor: '#F3F4F6',
     borderWidth: 2,
     borderColor: 'transparent',
   },
@@ -377,7 +379,7 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0F7FF',
   },
   visualCatImage: { width: '100%', height: '100%' },
-  visualCatText: { fontSize: 10, textAlign: 'center', color: '#4B5563', fontWeight: '500' },
+  visualCatText: { fontSize: 10, textAlign: 'center', fontWeight: "500" },
   visualCatTextActive: { color: '#3B82F6', fontWeight: '700' },
 
   exactColorRow: {
@@ -390,38 +392,30 @@ const styles = StyleSheet.create({
     height: 40,
     borderRadius: 20,
     borderWidth: 2,
-    borderColor: "#2563EB",
     marginRight: 12,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.15,
-    shadowRadius: 3,
-    elevation: 2,
   },
   exactColorHex: {
     fontSize: 16,
     fontWeight: "700",
-    color: "#111",
     letterSpacing: 1,
   },
 
   btnRow: { flexDirection: "row", justifyContent: "space-between", marginTop: 18 },
   blackBtn: {
     flex: 1,
-    backgroundColor: "#111",
     borderRadius: 12,
     paddingVertical: 13,
     alignItems: "center",
     marginHorizontal: 5,
   },
-  blackBtnDisabled: { backgroundColor: "#6B7280", opacity: 0.7 },
-  blackBtnText: { color: "#fff", fontWeight: "700", fontSize: 14 },
+  blackBtnDisabled: { opacity: 0.7 },
+  blackBtnText: { fontWeight: "700", fontSize: 14 },
 
   bottomBar: {
     position: "absolute",
     left: 0, right: 0, bottom: 0,
-    height: 84, borderTopWidth: 1, borderColor: "#eee",
-    backgroundColor: "#fff", flexDirection: "row",
+    height: 84, borderTopWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.background, flexDirection: "row",
     alignItems: "center", justifyContent: "space-around", paddingBottom: 8,
   },
   tabBtn: { alignItems: "center" },

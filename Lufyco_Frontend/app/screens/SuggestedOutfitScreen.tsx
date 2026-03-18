@@ -1,6 +1,7 @@
 import React from "react";
 import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 
@@ -26,6 +27,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
   const { mood, weather, occasion } = route.params;
+  const { colors, isDark } = useTheme();
+  const styles = getStyles(colors, isDark);
 
   const [generatedOutfit, setGeneratedOutfit] = React.useState<any[]>([]);
   const [loading, setLoading] = React.useState(true);
@@ -168,32 +171,32 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
   return (
     <SafeAreaView style={styles.safe}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingRight: 8 }}>
-          <Feather name="arrow-left" size={22} />
+      <View style={[styles.header, { backgroundColor: colors.background }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} style={{ paddingRight: 8 }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Feather name="arrow-left" size={22} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>Suggested Outfit</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>Suggested Outfit</Text>
         {/* Button to view saved looks */}
-        <TouchableOpacity onPress={() => navigation.navigate('SavedLooks')} style={{ paddingLeft: 8 }}>
-          <Feather name="bookmark" size={22} />
+        <TouchableOpacity onPress={() => navigation.navigate('SavedLooks')} style={{ paddingLeft: 8 }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Feather name="bookmark" size={22} color={colors.text} />
         </TouchableOpacity>
       </View>
 
       <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
         {/* Selection pill */}
-        <View style={styles.pill}>
+        <View style={[styles.pill, { backgroundColor: isDark ? colors.border : "#DFF6FF" }]}>
           <Text style={styles.pillEmoji}>{moodEmoji[mood] ?? "🙂"}</Text>
-          <Text style={styles.pillText}>
+          <Text style={[styles.pillText, { color: colors.text }]}>
             {mood} + {weather} + {occasion}
           </Text>
         </View>
 
         {/* Your Suggested Outfit */}
-        <Text style={styles.sectionTitle}>Your Suggested Outfit</Text>
-        <View style={styles.outfitCard}>
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>Your Suggested Outfit</Text>
+        <View style={[styles.outfitCard, { backgroundColor: colors.card }]}>
           <View style={styles.outfitRow}>
             {generatedOutfit.length === 0 ? (
-              <Text style={{ padding: 20 }}>No items found in closet to match this.</Text>
+              <Text style={{ padding: 20, color: colors.textSecondary }}>No items found in closet to match this.</Text>
             ) : (
               generatedOutfit.map((item, idx) => (
                 <View key={idx} style={styles.outfitItem}>
@@ -201,7 +204,7 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
                     source={item.image && item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png")}
                     style={styles.outfitImg}
                   />
-                  <Text style={styles.outfitLabel}>{item.name}</Text>
+                  <Text style={[styles.outfitLabel, { color: colors.text }]}>{item.name}</Text>
                 </View>
               ))
             )}
@@ -209,17 +212,17 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
         </View>
 
         {/* Complete your look */}
-        <Text style={[styles.sectionTitle, { marginTop: 12 }]}>Complete Your Look</Text>
+        <Text style={[styles.sectionTitle, { marginTop: 12, color: colors.text }]}>Complete Your Look</Text>
 
         {/* Watch row */}
-        <View style={styles.suggestionRow}>
+        <View style={[styles.suggestionRow, { backgroundColor: colors.card }]}>
           <Image
             source={require("../../assets/images/categories/men/watches.jpg")}
             style={styles.suggestionImg}
           />
           <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={styles.suggestionTitle}>Brown Leather Watch</Text>
-            <Text style={styles.suggestionSub}>Complements casual style</Text>
+            <Text style={[styles.suggestionTitle, { color: colors.text }]}>Brown Leather Watch</Text>
+            <Text style={[styles.suggestionSub, { color: colors.textSecondary }]}>Complements casual style</Text>
           </View>
           <TouchableOpacity style={styles.cartBtn}>
             <Feather name="shopping-cart" size={18} color="#fff" />
@@ -227,14 +230,14 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
         </View>
 
         {/* Perfume row */}
-        <View style={styles.suggestionRow}>
+        <View style={[styles.suggestionRow, { backgroundColor: colors.card }]}>
           <Image
             source={require("../../assets/images/categories/men/perfume.jpg")}
             style={styles.suggestionImg}
           />
           <View style={{ flex: 1, marginLeft: 12 }}>
-            <Text style={styles.suggestionTitle}>Black Night Perfume</Text>
-            <Text style={styles.suggestionSub}>Complements casual style</Text>
+            <Text style={[styles.suggestionTitle, { color: colors.text }]}>Black Night Perfume</Text>
+            <Text style={[styles.suggestionSub, { color: colors.textSecondary }]}>Complements casual style</Text>
           </View>
           <TouchableOpacity style={styles.cartBtn}>
             <Feather name="shopping-cart" size={18} color="#fff" />
@@ -248,38 +251,38 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
         {/* Actions */}
         <View style={styles.actionsRow}>
           <TouchableOpacity
-            style={[styles.actionBtn, styles.actionGhost, { flex: 0.5, marginRight: 5, opacity: currentIndex > 0 ? 1 : 0.4 }]}
+            style={[styles.actionBtn, styles.actionGhost, { backgroundColor: isDark ? colors.border : '#F1F1F1' }, { flex: 0.5, marginRight: 5, opacity: currentIndex > 0 ? 1 : 0.4 }]}
             onPress={handleUndo}
             disabled={currentIndex <= 0}
           >
-            <Feather name="corner-up-left" size={20} color="#111" />
+            <Feather name="corner-up-left" size={20} color={colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionBtn, styles.actionGhost, { flex: 1, marginHorizontal: 5 }]}
+            style={[styles.actionBtn, styles.actionGhost, { backgroundColor: isDark ? colors.border : '#F1F1F1' }, { flex: 1, marginHorizontal: 5 }]}
             onPress={handleRegenerate}
           >
-            <Feather name="thumbs-down" size={20} color="#111" />
+            <Feather name="thumbs-down" size={20} color={colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionBtn, styles.actionGhost, { flex: 1, marginHorizontal: 5 }]}
+            style={[styles.actionBtn, styles.actionGhost, { backgroundColor: isDark ? colors.border : '#F1F1F1' }, { flex: 1, marginHorizontal: 5 }]}
             onPress={handleRegenerate}
           >
-            <Feather name="repeat" size={20} color="#111" />
+            <Feather name="repeat" size={20} color={colors.text} />
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={[styles.actionBtn, styles.actionGhost, { flex: 0.5, marginLeft: 5, opacity: currentIndex < history.length - 1 ? 1 : 0.4 }]}
+            style={[styles.actionBtn, styles.actionGhost, { backgroundColor: isDark ? colors.border : '#F1F1F1' }, { flex: 0.5, marginLeft: 5, opacity: currentIndex < history.length - 1 ? 1 : 0.4 }]}
             onPress={handleRedo}
             disabled={currentIndex >= history.length - 1}
           >
-            <Feather name="corner-up-right" size={20} color="#111" />
+            <Feather name="corner-up-right" size={20} color={colors.text} />
           </TouchableOpacity>
         </View>
         <View style={[styles.actionsRow, { marginTop: 10 }]}>
-          <TouchableOpacity style={[styles.actionBtn, styles.actionPrimary, { flex: 1, marginLeft: 0 }]} onPress={handleSave}>
-            <Text style={[styles.actionText, { color: "#fff" }]}>Save This Look</Text>
+          <TouchableOpacity style={[styles.actionBtn, { backgroundColor: colors.text }, { flex: 1, marginLeft: 0 }]} onPress={handleSave}>
+            <Text style={[styles.actionText, { color: colors.background }]}>Save This Look</Text>
           </TouchableOpacity>
         </View>
       </ScrollView>
@@ -287,8 +290,8 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   header: {
     flexDirection: "row",
     alignItems: "center",
@@ -301,7 +304,6 @@ const styles = StyleSheet.create({
 
   pill: {
     marginHorizontal: 16,
-    backgroundColor: "#DFF6FF",
     borderRadius: 12,
     paddingVertical: 10,
     paddingHorizontal: 12,
@@ -321,9 +323,10 @@ const styles = StyleSheet.create({
 
   outfitCard: {
     marginHorizontal: 16,
-    backgroundColor: "#E2E2E2",
     borderRadius: 14,
     padding: 12,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   outfitRow: { flexDirection: "row", justifyContent: "flex-start" },
   outfitItem: { alignItems: "center", marginRight: 24 },
@@ -332,16 +335,17 @@ const styles = StyleSheet.create({
 
   suggestionRow: {
     marginHorizontal: 16,
-    backgroundColor: "#E2E2E2",
     borderRadius: 14,
     padding: 12,
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 10,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
   suggestionImg: { width: 64, height: 64, borderRadius: 10, resizeMode: "cover" },
   suggestionTitle: { fontWeight: "800", fontSize: 16 },
-  suggestionSub: { color: "#333", marginTop: 2 },
+  suggestionSub: { marginTop: 2 },
 
   cartBtn: {
     width: 38,
@@ -374,12 +378,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   actionGhost: {
-    backgroundColor: "#F1F1F1",
     marginRight: 10,
-  },
-  actionPrimary: {
-    backgroundColor: "#111",
-    marginLeft: 10,
   },
   actionText: { fontWeight: "800", fontSize: 16 },
 });

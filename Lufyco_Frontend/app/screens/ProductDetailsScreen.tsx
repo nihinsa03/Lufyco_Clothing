@@ -6,6 +6,7 @@ import { useWishlistStore } from "../store/useWishlistStore";
 import { useProductsStore } from "../store/useProductsStore";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
+import { useTheme } from "../context/ThemeContext";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductDetails">;
 
@@ -19,6 +20,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     const getProductById = useProductsStore((state) => state.getProductById);
     const addItemToCart = useCartStore((state) => state.addItem);
     const { toggleWishlist, isInWishlist } = useWishlistStore();
+    const { colors, isDark } = useTheme();
 
     // Local State
     const fullProduct = getProductById(id) || paramProduct;
@@ -39,8 +41,12 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
         return (
             <SafeAreaView style={styles.safe}>
                 <View style={{ padding: 16 }}>
-                    <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 8 }}>
-                        <Feather name="arrow-left" size={24} />
+                    <TouchableOpacity 
+                        onPress={() => navigation.goBack()} 
+                        style={{ padding: 8 }}
+                        hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                    >
+                        <Feather name="arrow-left" size={24} color={colors.text} />
                     </TouchableOpacity>
                 </View>
                 <Text style={{ padding: 20, textAlign: 'center' }}>Product not found</Text>
@@ -140,12 +146,16 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     );
 
     return (
-        <SafeAreaView style={styles.safe}>
-            <View style={styles.header}>
-                <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-                    <Feather name="arrow-left" size={24} color="#111" />
+        <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { backgroundColor: colors.background }]}>
+                <TouchableOpacity 
+                    style={styles.backBtn} 
+                    onPress={() => navigation.goBack()}
+                    hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+                >
+                    <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Product Details</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Product Details</Text>
                 <View style={{ width: 40 }} />
             </View>
 
@@ -161,23 +171,23 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 />
 
                 {/* Content */}
-                <View style={styles.content}>
+                <View style={[styles.content, { backgroundColor: colors.card }]}>
                     <View style={styles.topRow}>
                         {renderRating(fullProduct.rating || 4.5, fullProduct.reviewsCount || fullProduct.reviews || 88)}
                     </View>
 
                     <View style={styles.titlePriceRow}>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.title}>{fullProduct.title || fullProduct.name}</Text>
-                            <Text style={styles.categoryText}>Men's Fashion</Text>
+                            <Text style={[styles.title, { color: colors.text }]}>{fullProduct.title || fullProduct.name}</Text>
+                            <Text style={[styles.categoryText, { color: colors.textSecondary }]}>Men's Fashion</Text>
                         </View>
                         <View>
-                            <Text style={styles.price}>LKR {fullProduct.price?.toFixed(2)}</Text>
+                            <Text style={[styles.price, { color: colors.text }]}>LKR {fullProduct.price?.toFixed(2)}</Text>
                         </View>
                     </View>
 
                     <Text
-                        style={styles.description}
+                        style={[styles.description, { color: colors.textSecondary }]}
                         numberOfLines={isExpanded ? undefined : 3}
                         onTextLayout={(e) => {
                             if (e.nativeEvent.lines.length > 3) {
@@ -188,18 +198,17 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                         {fullProduct.description || "A stylish comfortable piece for your wardrobe. Made from premium materials designed to last."}
                     </Text>
 
-                    {/* Read More / Show Less Toggle only if needed */}
                     {showReadMoreButton && (
                         <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)} style={{ marginTop: 4 }}>
-                            <Text style={styles.readMore}>{isExpanded ? "Show less" : "Read more"}</Text>
+                            <Text style={[styles.readMore, { color: colors.text }]}>{isExpanded ? "Show less" : "Read more"}</Text>
                         </TouchableOpacity>
                     )}
 
-                    <View style={styles.divider} />
+                    <View style={[styles.divider, { backgroundColor: colors.border }]} />
 
                     {/* Colors */}
                     <View style={styles.section}>
-                        <Text style={styles.label}>Color</Text>
+                        <Text style={[styles.label, { color: colors.text }]}>Color</Text>
                         <View style={styles.optionsRow}>
                             {(fullProduct.colors || ['#000', '#fff', '#1F2937']).map((c: string) => (
                                 <TouchableOpacity
@@ -207,7 +216,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                                     onPress={() => setSelectedColor(c)}
                                     style={[
                                         styles.colorDot,
-                                        { backgroundColor: c },
+                                        { backgroundColor: c, borderColor: isDark ? '#555' : '#ddd' },
                                         selectedColor === c && styles.colorSelected
                                     ]}
                                 >
@@ -220,9 +229,9 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                     {/* Sizes */}
                     <View style={styles.section}>
                         <View style={styles.sizeHeader}>
-                            <Text style={styles.label}>Size</Text>
+                            <Text style={[styles.label, { color: colors.text }]}>Size</Text>
                             <TouchableOpacity onPress={() => setSizeGuideVisible(true)}>
-                                <Text style={styles.sizeGuide}>Size Guide</Text>
+                                <Text style={[styles.sizeGuide, { color: colors.textSecondary }]}>Size Guide</Text>
                             </TouchableOpacity>
                         </View>
                         <View style={styles.optionsRow}>
@@ -232,10 +241,11 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                                     onPress={() => setSelectedSize(s)}
                                     style={[
                                         styles.sizeChip,
+                                        { borderColor: isDark ? '#444' : '#E5E7EB' },
                                         selectedSize === s && styles.sizeChipSelected
                                     ]}
                                 >
-                                    <Text style={[styles.sizeText, selectedSize === s && styles.sizeTextSelected]}>{s}</Text>
+                                    <Text style={[styles.sizeText, { color: colors.text }, selectedSize === s && styles.sizeTextSelected]}>{s}</Text>
                                 </TouchableOpacity>
                             ))}
                         </View>
@@ -243,14 +253,14 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
                     {/* Quantity */}
                     <View style={styles.section}>
-                        <Text style={styles.label}>Quantity</Text>
-                        <View style={styles.stepperContainer}>
+                        <Text style={[styles.label, { color: colors.text }]}>Quantity</Text>
+                        <View style={[styles.stepperContainer, { backgroundColor: colors.iconBg }]}>
                             <TouchableOpacity style={styles.stepBtn} onPress={() => setQty(Math.max(1, qty - 1))}>
-                                <Feather name="minus" size={20} color="#111" />
+                                <Feather name="minus" size={20} color={colors.text} />
                             </TouchableOpacity>
-                            <Text style={styles.stepVal}>{qty}</Text>
+                            <Text style={[styles.stepVal, { color: colors.text }]}>{qty}</Text>
                             <TouchableOpacity style={styles.stepBtn} onPress={() => setQty(qty + 1)}>
-                                <Feather name="plus" size={20} color="#111" />
+                                <Feather name="plus" size={20} color={colors.text} />
                             </TouchableOpacity>
                         </View>
                     </View>
@@ -258,13 +268,13 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
             </ScrollView>
 
             {/* Sticky Bottom Bar */}
-            <View style={styles.bottomBar}>
-                <TouchableOpacity style={styles.wishBtn} onPress={handleToggleWishlist}>
-                    <Ionicons name={isWishlisted ? "heart" : "heart-outline"} size={28} color={isWishlisted ? "red" : "#111"} />
+            <View style={[styles.bottomBar, { backgroundColor: colors.card, borderColor: colors.border }]}>
+                <TouchableOpacity style={[styles.wishBtn, { borderColor: colors.border }]} onPress={handleToggleWishlist}>
+                    <Ionicons name={isWishlisted ? "heart" : "heart-outline"} size={28} color={isWishlisted ? "red" : colors.text} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={styles.buyBtn} onPress={handleBuyNow}>
-                    <Text style={styles.buyBtnText}>Buy Now</Text>
+                <TouchableOpacity style={[styles.buyBtn, { borderColor: colors.text }]} onPress={handleBuyNow}>
+                    <Text style={[styles.buyBtnText, { color: colors.text }]}>Buy Now</Text>
                 </TouchableOpacity>
 
                 <Animated.View style={{ flex: 1.5, transform: [{ scale: buttonScale }] }}>
@@ -295,38 +305,25 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                 onRequestClose={() => setSizeGuideVisible(false)}
             >
                 <View style={styles.modalOverlay}>
-                    <View style={styles.modalContent}>
+                    <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
                         <View style={styles.modalHeader}>
-                            <Text style={styles.modalTitle}>Size Guide</Text>
+                            <Text style={[styles.modalTitle, { color: colors.text }]}>Size Guide</Text>
                             <TouchableOpacity onPress={() => setSizeGuideVisible(false)} style={{ padding: 4 }}>
-                                <Feather name="x" size={24} color="#111" />
+                                <Feather name="x" size={24} color={colors.text} />
                             </TouchableOpacity>
                         </View>
                         <View style={styles.tableRow}>
-                            <Text style={[styles.tableCell, styles.tableHeader]}>Size</Text>
-                            <Text style={[styles.tableCell, styles.tableHeader]}>Chest (in)</Text>
-                            <Text style={[styles.tableCell, styles.tableHeader]}>Waist (in)</Text>
+                            <Text style={[styles.tableCell, styles.tableHeader, { color: colors.text }]}>Size</Text>
+                            <Text style={[styles.tableCell, styles.tableHeader, { color: colors.text }]}>Chest (in)</Text>
+                            <Text style={[styles.tableCell, styles.tableHeader, { color: colors.text }]}>Waist (in)</Text>
                         </View>
-                        <View style={styles.tableRow}>
-                            <Text style={styles.tableCell}>S</Text>
-                            <Text style={styles.tableCell}>34-36</Text>
-                            <Text style={styles.tableCell}>28-30</Text>
-                        </View>
-                        <View style={styles.tableRow}>
-                            <Text style={styles.tableCell}>M</Text>
-                            <Text style={styles.tableCell}>38-40</Text>
-                            <Text style={styles.tableCell}>32-34</Text>
-                        </View>
-                        <View style={styles.tableRow}>
-                            <Text style={styles.tableCell}>L</Text>
-                            <Text style={styles.tableCell}>42-44</Text>
-                            <Text style={styles.tableCell}>36-38</Text>
-                        </View>
-                        <View style={styles.tableRow}>
-                            <Text style={styles.tableCell}>XL</Text>
-                            <Text style={styles.tableCell}>46-48</Text>
-                            <Text style={styles.tableCell}>40-42</Text>
-                        </View>
+                        {[['S','34-36','28-30'],['M','38-40','32-34'],['L','42-44','36-38'],['XL','46-48','40-42']].map(([s,c,w]) => (
+                            <View key={s} style={styles.tableRow}>
+                                <Text style={[styles.tableCell, { color: colors.textSecondary }]}>{s}</Text>
+                                <Text style={[styles.tableCell, { color: colors.textSecondary }]}>{c}</Text>
+                                <Text style={[styles.tableCell, { color: colors.textSecondary }]}>{w}</Text>
+                            </View>
+                        ))}
                     </View>
                 </View>
             </Modal>

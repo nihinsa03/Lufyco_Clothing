@@ -79,13 +79,32 @@ const HomeScreen = ({ navigation }: Props) => {
         <View style={styles.header}>
           <Text style={[styles.logo, { color: colors.text }]}>Fashion</Text>
           <View style={styles.headerIcons}>
-            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate("Notifications" as any)}>
+            <TouchableOpacity 
+              style={styles.iconBtn} 
+              onPress={() => navigation.navigate("AIStylist" as any)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <Ionicons name="sparkles-outline" size={24} color="#667eea" />
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.iconBtn} 
+              onPress={() => navigation.navigate("Notifications" as any)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               <Feather name="bell" size={24} color={colors.text} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate("Main", { screen: "Wishlist" } as any)}>
+            <TouchableOpacity 
+              style={styles.iconBtn} 
+              onPress={() => navigation.navigate("Main", { screen: "Wishlist" } as any)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               <Feather name="heart" size={24} color={colors.text} />
             </TouchableOpacity>
-            <TouchableOpacity style={styles.iconBtn} onPress={() => navigation.navigate("Main", { screen: "Profile" } as any)}>
+            <TouchableOpacity 
+              style={styles.iconBtn} 
+              onPress={() => navigation.navigate("Main", { screen: "Profile" } as any)}
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
               <Feather name="user" size={24} color={colors.text} />
             </TouchableOpacity>
           </View>
@@ -95,7 +114,10 @@ const HomeScreen = ({ navigation }: Props) => {
         <TouchableOpacity style={[styles.searchBox, { backgroundColor: colors.searchBg }]} onPress={() => navigation.navigate("Search")}>
           <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
           <Text style={[styles.searchInput, { color: colors.textSecondary }]}>Search for brands and products</Text>
-          <TouchableOpacity onPress={() => navigation.navigate("ImageSearch")}>
+          <TouchableOpacity 
+            onPress={() => navigation.navigate("ImageSearch")}
+            hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+          >
             <Feather name="camera" size={20} color="#667eea" />
           </TouchableOpacity>
         </TouchableOpacity>
@@ -159,7 +181,9 @@ const HomeScreen = ({ navigation }: Props) => {
             <ScrollView
               ref={bannerScrollRef}
               horizontal
-              pagingEnabled
+              pagingEnabled={false}
+              snapToInterval={bannerWidth}
+              decelerationRate="fast"
               showsHorizontalScrollIndicator={false}
               onMomentumScrollEnd={handleBannerScroll}
               style={{ borderRadius: 20 }}

@@ -4,10 +4,12 @@ import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useProfileStore } from "../../store/useProfileStore";
 import { PaymentMethod } from "../../store/useCheckoutStore";
+import { useTheme } from "../../context/ThemeContext";
 
 const PaymentMethodScreen = () => {
     const navigation = useNavigation();
     const { savedPayment, savePayment } = useProfileStore();
+    const { colors } = useTheme();
 
     const [cardNumber, setCardNumber] = useState("");
     const [holder, setHolder] = useState("");
@@ -41,12 +43,12 @@ const PaymentMethodScreen = () => {
     };
 
     return (
-        <SafeAreaView style={styles.safe}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { borderColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Feather name="arrow-left" size={24} color="#111" />
+                    <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Payment Method</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Payment Method</Text>
                 <View style={{ width: 24 }} />
             </View>
 
@@ -61,26 +63,26 @@ const PaymentMethodScreen = () => {
                 </View>
 
                 <View style={styles.form}>
-                    <Text style={styles.label}>Card Holder Name</Text>
-                    <TextInput style={styles.input} value={holder} onChangeText={setHolder} placeholder="Full Name" />
+                    <Text style={[styles.label, { color: colors.text }]}>Card Holder Name</Text>
+                    <TextInput style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]} value={holder} onChangeText={setHolder} placeholder="Full Name" placeholderTextColor={colors.textMuted} />
 
-                    <Text style={styles.label}>Card Number</Text>
-                    <TextInput style={styles.input} value={cardNumber} onChangeText={setCardNumber} placeholder="0000 0000 0000 0000" keyboardType="numeric" />
+                    <Text style={[styles.label, { color: colors.text }]}>Card Number</Text>
+                    <TextInput style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]} value={cardNumber} onChangeText={setCardNumber} placeholder="0000 0000 0000 0000" keyboardType="numeric" placeholderTextColor={colors.textMuted} />
 
                     <View style={{ flexDirection: 'row', gap: 10 }}>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.label}>Expiration</Text>
-                            <TextInput style={styles.input} value={expiry} onChangeText={setExpiry} placeholder="MM/YY" />
+                            <Text style={[styles.label, { color: colors.text }]}>Expiration</Text>
+                            <TextInput style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]} value={expiry} onChangeText={setExpiry} placeholder="MM/YY" placeholderTextColor={colors.textMuted} />
                         </View>
                         <View style={{ flex: 1 }}>
-                            <Text style={styles.label}>CVV</Text>
-                            <TextInput style={styles.input} value={cvv} onChangeText={setCvv} placeholder="123" keyboardType="numeric" secureTextEntry />
+                            <Text style={[styles.label, { color: colors.text }]}>CVV</Text>
+                            <TextInput style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]} value={cvv} onChangeText={setCvv} placeholder="123" keyboardType="numeric" secureTextEntry placeholderTextColor={colors.textMuted} />
                         </View>
                     </View>
                 </View>
             </ScrollView>
 
-            <View style={styles.footer}>
+            <View style={[styles.footer, { backgroundColor: colors.background, borderColor: colors.border }]}>
                 <TouchableOpacity style={styles.btn} onPress={onSave}>
                     <Text style={styles.btnText}>Save Card</Text>
                 </TouchableOpacity>

@@ -27,6 +27,10 @@ const closetItemSchema = new mongoose.Schema(
             type: String,
             required: false,
             default: '#000000',
+        },
+        featureVector: {
+            type: [Number],
+            default: [],
         }
     },
     {

@@ -3,41 +3,46 @@ import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, Platform
 import { useNavigation } from "@react-navigation/native";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/AppNavigator";
+import { useTheme } from "../../context/ThemeContext";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "OrderSuccess">;
 
 const OrderSuccessScreen = () => {
     const navigation = useNavigation<NavProp>();
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
 
     return (
         <SafeAreaView style={styles.safe}>
             <View style={styles.container}>
-                <View style={styles.iconContainer}>
+                <View style={[styles.iconContainer, { backgroundColor: isDark ? '#1E293B' : '#EFF6FF' }]}>
                     <Image
-                        source={require('../../../assets/images/bag.png')} // Reuse bag or success image
+                        source={require('../../../assets/images/bag.png')}
                         style={{ width: 80, height: 80, tintColor: '#2563EB' }}
                         resizeMode="contain"
                     />
                 </View>
 
-                <Text style={styles.title}>Order Placed Successfully!</Text>
-                <Text style={styles.sub}>
+                <Text style={[styles.title, { color: colors.text }]}>Order Placed Successfully!</Text>
+                <Text style={[styles.sub, { color: colors.textSecondary }]}>
                     Thank you for your purchase. Your order is being processed and will be shipped soon.
                 </Text>
 
                 <View style={styles.btnGroup}>
                     <TouchableOpacity
-                        style={styles.primaryBtn}
-                        onPress={() => navigation.reset({ index: 0, routes: [{ name: "Main" }] })}
+                        style={[styles.primaryBtn, { backgroundColor: colors.text }]}
+                        onPress={() => navigation.navigate("Main", { screen: "Home" })}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
-                        <Text style={styles.primaryText}>Continue Shopping</Text>
+                        <Text style={[styles.primaryText, { color: colors.background }]}>Continue Shopping</Text>
                     </TouchableOpacity>
 
                     <TouchableOpacity
-                        style={styles.secondaryBtn}
-                        onPress={() => navigation.navigate("TrackOrder")}
+                        style={[styles.secondaryBtn, { backgroundColor: colors.card, borderColor: colors.border }]}
+                        onPress={() => navigation.navigate("OrderHistory")}
+                        hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                     >
-                        <Text style={styles.secondaryText}>Track Order</Text>
+                        <Text style={[styles.secondaryText, { color: colors.text }]}>View Orders</Text>
                     </TouchableOpacity>
                 </View>
             </View>
@@ -45,29 +50,29 @@ const OrderSuccessScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
-    container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+    container: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 30 },
     iconContainer: {
-        width: 120, height: 120, borderRadius: 60, backgroundColor: '#EFF6FF',
+        width: 120, height: 120, borderRadius: 60,
         alignItems: 'center', justifyContent: 'center', marginBottom: 24
     },
-    title: { fontSize: 24, fontWeight: '800', textAlign: 'center', color: '#111', marginBottom: 12 },
-    sub: { fontSize: 15, textAlign: 'center', color: '#666', lineHeight: 22, marginBottom: 40 },
+    title: { fontSize: 24, fontWeight: '800', textAlign: 'center', marginBottom: 12 },
+    sub: { fontSize: 15, textAlign: 'center', lineHeight: 22, marginBottom: 40 },
 
     btnGroup: { width: '100%' },
     primaryBtn: {
-        backgroundColor: '#111', height: 56, borderRadius: 14,
+        height: 56, borderRadius: 14,
         alignItems: 'center', justifyContent: 'center', marginBottom: 16
     },
-    primaryText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+    primaryText: { fontWeight: '700', fontSize: 16 },
 
     secondaryBtn: {
-        backgroundColor: '#fff', height: 56, borderRadius: 14,
+        height: 56, borderRadius: 14,
         alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: '#E5E7EB'
+        borderWidth: 1
     },
-    secondaryText: { color: '#111', fontWeight: '700', fontSize: 16 },
+    secondaryText: { fontWeight: '700', fontSize: 16 },
 });
 
 export default OrderSuccessScreen;

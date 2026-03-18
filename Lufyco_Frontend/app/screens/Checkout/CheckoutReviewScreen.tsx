@@ -7,6 +7,7 @@ import { useCheckoutStore } from "../../store/useCheckoutStore";
 import { useOrdersStore, Order } from "../../store/useOrdersStore";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/AppNavigator";
+import { useTheme } from "../../context/ThemeContext";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "CheckoutReview">;
 
@@ -15,6 +16,7 @@ const CheckoutReviewScreen = () => {
     const { items, getTotalPrice, clearCart } = useCartStore();
     const { shippingAddress, paymentMethod } = useCheckoutStore();
     const { addOrder } = useOrdersStore();
+    const { colors } = useTheme();
 
     const subtotal = getTotalPrice();
     const shippingCost = 0; // Free shipping logic for now
@@ -50,13 +52,13 @@ const CheckoutReviewScreen = () => {
     };
 
     return (
-        <SafeAreaView style={styles.safe}>
+        <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
             {/* Header */}
-            <View style={styles.header}>
+            <View style={[styles.header, { borderColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Feather name="arrow-left" size={24} color="#111" />
+                    <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Review Order</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Review Order</Text>
                 <View style={{ width: 24 }} />
             </View>
 
@@ -87,39 +89,39 @@ const CheckoutReviewScreen = () => {
             <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 100 }}>
 
                 {/* Shipping Summary */}
-                <View style={styles.card}>
+                <View style={[styles.card, { backgroundColor: colors.card }]}>
                     <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle}>Shipping Address</Text>
+                        <Text style={[styles.cardTitle, { color: colors.text }]}>Shipping Address</Text>
                         <TouchableOpacity onPress={() => navigation.navigate("CheckoutShipping")}>
                             <Feather name="edit-2" size={16} color="#2563EB" />
                         </TouchableOpacity>
                     </View>
-                    <Text style={styles.cardText}>{shippingAddress?.fullName}</Text>
-                    <Text style={styles.cardText}>{shippingAddress?.phone}</Text>
-                    <Text style={[styles.cardText, { color: '#666' }]}>
+                    <Text style={[styles.cardText, { color: colors.text }]}>{shippingAddress?.fullName}</Text>
+                    <Text style={[styles.cardText, { color: colors.text }]}>{shippingAddress?.phone}</Text>
+                    <Text style={[styles.cardText, { color: colors.textSecondary }]}>
                         {shippingAddress?.addressLine}, {shippingAddress?.city}, {shippingAddress?.country} {shippingAddress?.postalCode}
                     </Text>
                 </View>
 
                 {/* Payment Summary */}
-                <View style={styles.card}>
+                <View style={[styles.card, { backgroundColor: colors.card }]}>
                     <View style={styles.cardHeader}>
-                        <Text style={styles.cardTitle}>Payment Method</Text>
+                        <Text style={[styles.cardTitle, { color: colors.text }]}>Payment Method</Text>
                         <TouchableOpacity onPress={() => navigation.navigate("CheckoutPayment")}>
                             <Feather name="edit-2" size={16} color="#2563EB" />
                         </TouchableOpacity>
                     </View>
                     <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-                        <Feather name="credit-card" size={16} color="#444" style={{ marginRight: 8 }} />
-                        <Text style={styles.cardText}>
-                            {paymentMethod?.method.toUpperCase()} ending in {paymentMethod?.last4}
+                        <Feather name="credit-card" size={16} color={colors.textSecondary} style={{ marginRight: 8 }} />
+                        <Text style={[styles.cardText, { color: colors.text }]}>
+                            {paymentMethod?.method === 'cash' ? 'Cash on Delivery' : `${paymentMethod?.method?.toUpperCase()} ending in ${paymentMethod?.last4}`}
                         </Text>
                     </View>
                 </View>
 
                 {/* Items Preview */}
-                <View style={styles.card}>
-                    <Text style={[styles.cardTitle, { marginBottom: 12 }]}>Items ({items.length})</Text>
+                <View style={[styles.card, { backgroundColor: colors.card }]}>
+                    <Text style={[styles.cardTitle, { color: colors.text, marginBottom: 12 }]}>Items ({items.length})</Text>
                     {items.map((item) => (
                         <View key={item.id} style={styles.itemRow}>
                             <Image
@@ -127,11 +129,11 @@ const CheckoutReviewScreen = () => {
                                 style={styles.thumb}
                             />
                             <View style={{ flex: 1, marginLeft: 10 }}>
-                                <Text style={styles.itemTitle}>{item.title}</Text>
-                                <Text style={styles.itemMeta}>Size: {item.size} • Color: {item.color}</Text>
+                                <Text style={[styles.itemTitle, { color: colors.text }]}>{item.title}</Text>
+                                <Text style={[styles.itemMeta, { color: colors.textSecondary }]}>Size: {item.size} • Color: {item.color}</Text>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
-                                    <Text style={styles.itemPrice}>${item.price}</Text>
-                                    <Text style={styles.itemQty}>x{item.qty}</Text>
+                                    <Text style={[styles.itemPrice, { color: colors.text }]}>${item.price}</Text>
+                                    <Text style={[styles.itemQty, { color: colors.textSecondary }]}>x{item.qty}</Text>
                                 </View>
                             </View>
                         </View>
@@ -139,30 +141,30 @@ const CheckoutReviewScreen = () => {
                 </View>
 
                 {/* Delivery Option */}
-                <View style={styles.deliveryCard}>
-                    <Text style={styles.cardTitle}>Delivery</Text>
-                    <Text style={{ color: '#666', fontSize: 13, marginTop: 4 }}>Estimated delivery in next 7 days</Text>
+                <View style={[styles.deliveryCard, { backgroundColor: colors.card }]}>
+                    <Text style={[styles.cardTitle, { color: colors.text }]}>Delivery</Text>
+                    <Text style={{ color: colors.textSecondary, fontSize: 13, marginTop: 4 }}>Estimated delivery in next 7 days</Text>
                 </View>
 
                 {/* Totals */}
                 <View style={styles.totalsSection}>
                     <View style={styles.row}>
-                        <Text style={styles.label}>Subtotal</Text>
-                        <Text style={styles.val}>${subtotal.toFixed(2)}</Text>
+                        <Text style={[styles.label, { color: colors.textSecondary }]}>Subtotal</Text>
+                        <Text style={[styles.val, { color: colors.text }]}>${subtotal.toFixed(2)}</Text>
                     </View>
                     <View style={styles.row}>
-                        <Text style={styles.label}>Shipping</Text>
-                        <Text style={styles.val}>${shippingCost.toFixed(2)}</Text>
+                        <Text style={[styles.label, { color: colors.textSecondary }]}>Shipping</Text>
+                        <Text style={[styles.val, { color: colors.text }]}>${shippingCost.toFixed(2)}</Text>
                     </View>
                     <View style={[styles.row, { marginTop: 12 }]}>
-                        <Text style={[styles.label, { fontSize: 18, color: '#111' }]}>Total</Text>
-                        <Text style={[styles.val, { fontSize: 18, color: '#111' }]}>${total.toFixed(2)}</Text>
+                        <Text style={[styles.label, { fontSize: 18, color: colors.text }]}>Total</Text>
+                        <Text style={[styles.val, { fontSize: 18, color: colors.text }]}>${total.toFixed(2)}</Text>
                     </View>
                 </View>
 
             </ScrollView>
 
-            <View style={styles.footer}>
+            <View style={[styles.footer, { backgroundColor: colors.background, borderColor: colors.border }]}>
                 <TouchableOpacity style={styles.btn} onPress={onPlaceOrder}>
                     <Text style={styles.btnText}>Place Order</Text>
                 </TouchableOpacity>

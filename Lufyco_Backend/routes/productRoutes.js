@@ -1,6 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const { extractFeatures } = require('../services/mlFeatureExtractor');
+const axios = require('axios');
 
 // @route   GET /api/products
 // @desc    Get all products with filtering, search, and sorting
@@ -58,6 +60,19 @@ router.post('/', async (req, res) => {
             image,
             category,
         });
+
+        // Extract features for AI similarity search
+        if (image && image.startsWith('http')) {
+            try {
+                const response = await axios.get(image, { responseType: 'arraybuffer' });
+                const buffer = Buffer.from(response.data);
+                const features = await extractFeatures(buffer);
+                product.featureVector = features;
+                console.log(`🤖 Auto-indexed new product: ${name}`);
+            } catch (err) {
+                console.warn(`⚠️ Failed to auto-index new product ${name}:`, err.message);
+            }
+        }
 
         const createdProduct = await product.save();
         res.status(201).json(createdProduct);

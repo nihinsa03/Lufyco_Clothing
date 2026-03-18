@@ -1,6 +1,7 @@
 import React from "react";
 import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Alert, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import { useTheme } from "../context/ThemeContext";
 import * as ImagePicker from "expo-image-picker";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
@@ -8,7 +9,10 @@ import type { RootStackParamList } from "../navigation/AppNavigator";
 type Props = NativeStackScreenProps<RootStackParamList, "AddToCloset">;
 
 const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
-  const [processing, setProcessing] = React.useState(false);
+  const { colors, isDark } = useTheme();
+  const styles = getStyles(colors, isDark);
+  const [status, setStatus] = React.useState<"idle" | "processing" | "success" | "error">("idle");
+  const [uploadedUri, setUploadedUri] = React.useState<string | null>(null);
 
   const ensurePermission = async (kind: "camera" | "gallery") => {
     if (kind === "camera") {
@@ -21,12 +25,12 @@ const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
   };
 
   const handleProcess = (uri: string) => {
-    setProcessing(true);
+    setStatus("processing");
+    setUploadedUri(uri);
     // Simulate API/Processing delay
     setTimeout(() => {
-      setProcessing(false);
-      navigation.navigate("AddToClosetPreview", { uri });
-    }, 2000);
+      setStatus("success");
+    }, 1500);
   };
 
   const openCamera = async () => {
@@ -57,14 +61,41 @@ const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
     }
   };
 
-  if (processing) {
+  if (status === "processing" || status === "success" || status === "error") {
     return (
       <SafeAreaView style={[styles.safe, { justifyContent: 'center', alignItems: 'center' }]}>
-        <Text style={{ fontSize: 20, fontWeight: '700', marginBottom: 20 }}>Processing...</Text>
-        {/* Simple loading indicator visual matching prompt requirements */}
-        <View style={{ width: 200, height: 10, backgroundColor: '#eee', borderRadius: 5 }}>
-          <View style={{ width: '50%', height: '100%', backgroundColor: '#111', borderRadius: 5 }} />
-        </View>
+        {status === "processing" && (
+          <>
+            <Text style={{ fontSize: 20, fontWeight: '700', marginBottom: 20, color: colors.text }}>Processing...</Text>
+            {/* Simple loading indicator visual matching prompt requirements */}
+            <View style={{ width: 200, height: 10, backgroundColor: isDark ? colors.border : '#eee', borderRadius: 5 }}>
+              <View style={{ width: '50%', height: '100%', backgroundColor: colors.text, borderRadius: 5 }} />
+            </View>
+          </>
+        )}
+        
+        {status === "success" && (
+          <>
+            <Feather name="check-circle" size={60} color="#10B981" style={{ marginBottom: 20 }} />
+            <Text style={{ fontSize: 20, fontWeight: '700', marginBottom: 30 }}>Processing Complete</Text>
+            <TouchableOpacity
+              style={[styles.actionBtn, { width: 250, marginBottom: 15, justifyContent: 'center' }]}
+              onPress={() => {
+                setStatus("idle");
+                if(uploadedUri) navigation.navigate("AddToClosetPreview", { uri: uploadedUri });
+              }}
+            >
+              <Text style={styles.actionText}>Proceed to Details</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity
+              style={[styles.actionBtn, { width: 250, backgroundColor: '#F3F4F6', justifyContent: 'center' }]}
+              onPress={() => setStatus("idle")}
+            >
+              <Text style={[styles.actionText, { color: '#111' }]}>Retry Upload</Text>
+            </TouchableOpacity>
+          </>
+        )}
       </SafeAreaView>
     );
   }
@@ -130,8 +161,8 @@ const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   header: {
     flexDirection: "row",
@@ -142,14 +173,16 @@ const styles = StyleSheet.create({
     justifyContent: "space-between",
   },
   hIcon: { padding: 4 },
-  headerTitle: { fontSize: 24, fontWeight: "700" },
+  headerTitle: { fontSize: 24, fontWeight: "700", color: colors.text },
 
   cardWrap: { paddingHorizontal: 16, marginTop: 8 },
   card: {
-    backgroundColor: "#DEDEDE",
+    backgroundColor: dark ? colors.card : "#DEDEDE",
     borderRadius: 16,
     paddingVertical: 18,
     paddingHorizontal: 16,
+    borderWidth: dark ? 1 : 0,
+    borderColor: colors.border,
   },
   badge: {
     height: 6,
@@ -164,30 +197,30 @@ const styles = StyleSheet.create({
     width: 88,
     height: 88,
     borderRadius: 44,
-    backgroundColor: "#E7F1FF",
+    backgroundColor: dark ? colors.border : "#E7F1FF",
     alignItems: "center",
     justifyContent: "center",
   },
-  title: { textAlign: "center", fontSize: 20, fontWeight: "800", color: "#111" },
-  sub: { textAlign: "center", color: "#444", marginTop: 6, lineHeight: 20 },
+  title: { textAlign: "center", fontSize: 20, fontWeight: "800", color: colors.text },
+  sub: { textAlign: "center", color: colors.textSecondary, marginTop: 6, lineHeight: 20 },
 
   actionsRow: { flexDirection: "row", justifyContent: "space-evenly", marginTop: 16 },
   actionBtn: {
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: "#111",
+    backgroundColor: colors.text,
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 12,
   },
-  actionText: { color: "#fff", fontWeight: "700" },
+  actionText: { color: colors.background, fontWeight: "700" },
 
   bottomBar: {
     position: "absolute",
     left: 0, right: 0, bottom: 0,
-    height: 84, borderTopWidth: 1, borderColor: "#eee",
-    backgroundColor: "#fff", flexDirection: "row",
+    height: 84, borderTopWidth: 1, borderColor: colors.border,
+    backgroundColor: colors.background, flexDirection: "row",
     alignItems: "center", justifyContent: "space-around", paddingBottom: 8,
   },
   tabBtn: { alignItems: "center" },

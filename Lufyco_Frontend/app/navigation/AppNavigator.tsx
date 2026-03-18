@@ -144,7 +144,7 @@ export type RootStackParamList = {
   CheckoutReview: undefined;
   OrderSuccess: undefined;
   OrderDetails: { orderId: string };
-  TrackOrder: undefined;
+  TrackOrder: { orderId: string };
 
   // Profile
   ShippingAddress: undefined;

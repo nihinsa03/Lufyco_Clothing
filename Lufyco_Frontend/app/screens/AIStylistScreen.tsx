@@ -5,22 +5,8 @@ import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useWeather } from "../hooks/useWeather";
 import { useTheme } from "../context/ThemeContext";
-
-type RootStackParamList = {
-  Home: undefined;
-  AIStylist: undefined;
-  Categories: undefined;
-  MyCloset: undefined;
-  PlanMyLook: undefined;
-  ShopNewStyles: undefined;
-  UpcomingEvents: undefined;
-  SavedLooks: undefined;
-  // Optional future routes:
-  MyCart?: undefined;
-  Wishlist?: undefined;
-  Profile?: undefined;
-  Notifications?: undefined;
-};
+import type { RootStackParamList } from "../navigation/AppNavigator";
+import { useEventsStore } from "../store/useEventsStore";
 
 type Props = NativeStackScreenProps<RootStackParamList, "AIStylist">;
 
@@ -29,29 +15,12 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
   const { weather, loading, error } = useWeather();
   const { colors, isDark } = useTheme();
 
-  const upcomingLooks = [
-    {
-      title: "Office Meeting",
-      date: "Fri, Aug 8",
-      items: [
-        { id: '1', name: "Blue Shirt", image: require("../../assets/images/shirt.png") },
-        { id: '2', name: "Casual Shoe", image: require("../../assets/images/shoe.png") }
-      ]
-    },
-    {
-      title: "Weekend Party",
-      date: "Sat, Aug 9",
-      items: [
-        { id: '3', name: "White Polo", image: { uri: "https://images.unsplash.com/photo-1596755094514-f87e32f85e2c?w=400&q=80" } },
-        { id: '4', name: "Sneakers", image: { uri: "https://images.unsplash.com/photo-1595950653106-6c9ebd614d3a?w=400&q=80" } }
-      ]
-    }
-  ];
+  const { events: upcomingLooks } = useEventsStore();
 
   const [currentLookIndex, setCurrentLookIndex] = React.useState(0);
-  const handlePrev = () => setCurrentLookIndex(prev => (prev > 0 ? prev - 1 : upcomingLooks.length - 1));
+  const handlePrev = () => setCurrentLookIndex(prev => (prev > 0 ? prev - 1 : Math.max(0, upcomingLooks.length - 1)));
   const handleNext = () => setCurrentLookIndex(prev => (prev < upcomingLooks.length - 1 ? prev + 1 : 0));
-  const currentLook = upcomingLooks[currentLookIndex];
+  const currentLook = upcomingLooks.length > 0 ? upcomingLooks[currentLookIndex] : null;
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
@@ -117,37 +86,51 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
 
         {/* Upcoming looks */}
         <Text style={[styles.sectionTitle, { color: isDark ? '#60A5FA' : '#2C63FF' }]}>Your Upcoming Looks</Text>
-        <View style={[styles.lookCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <TouchableOpacity style={styles.lookHeader} onPress={() => navigation.navigate("UpcomingEvents")}>
-            <View>
-              <Text style={[styles.lookTitle, { color: colors.text }]}>{currentLook.title}</Text>
-              <Text style={[styles.lookSub, { color: colors.textMuted }]}>{currentLook.date}</Text>
+        {currentLook ? (
+          <View style={[styles.lookCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
+            <TouchableOpacity style={styles.lookHeader} onPress={() => navigation.navigate("UpcomingEvents")}>
+              <View>
+                <Text style={[styles.lookTitle, { color: colors.text }]}>{currentLook.title}</Text>
+                <Text style={[styles.lookSub, { color: colors.textMuted }]}>{currentLook.dateLine}</Text>
+              </View>
+              <Feather name="more-horizontal" size={20} color={colors.textMuted} />
+            </TouchableOpacity>
+
+            <View style={[styles.separator, { backgroundColor: colors.border }]} />
+
+            <TouchableOpacity style={styles.lookItems} onPress={() => navigation.navigate("UpcomingEvents")}>
+              {currentLook.outfit.length > 0 ? (
+                currentLook.outfit.map((item, idx) => (
+                  <LookItem key={idx} image={item.image} label={item.label} />
+                ))
+              ) : (
+                <Text style={{ color: colors.textMuted, fontStyle: 'italic', paddingVertical: 10 }}>No outfit planned for this event</Text>
+              )}
+            </TouchableOpacity>
+
+            <View style={[styles.separator, { backgroundColor: colors.border }]} />
+
+            <View style={styles.lookFooter}>
+              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handlePrev} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+                <Feather name="chevron-left" size={20} color={colors.text} />
+              </TouchableOpacity>
+
+              <Text style={[styles.pageText, { color: colors.text }]}>{currentLookIndex + 1} of {upcomingLooks.length}</Text>
+
+              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handleNext} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+                <Feather name="chevron-right" size={20} color={colors.text} />
+              </TouchableOpacity>
             </View>
-            <Feather name="more-horizontal" size={20} color={colors.textMuted} />
-          </TouchableOpacity>
-
-          <View style={[styles.separator, { backgroundColor: colors.border }]} />
-
-          <TouchableOpacity style={styles.lookItems} onPress={() => navigation.navigate("UpcomingEvents")}>
-            {currentLook.items.map(item => (
-              <LookItem key={item.id} image={item.image} label={item.name} />
-            ))}
-          </TouchableOpacity>
-
-          <View style={[styles.separator, { backgroundColor: colors.border }]} />
-
-          <View style={styles.lookFooter}>
-            <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handlePrev} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
-              <Feather name="chevron-left" size={20} color={colors.text} />
-            </TouchableOpacity>
-
-            <Text style={[styles.pageText, { color: colors.text }]}>{currentLookIndex + 1} of {upcomingLooks.length}</Text>
-
-            <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handleNext} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
-              <Feather name="chevron-right" size={20} color={colors.text} />
-            </TouchableOpacity>
           </View>
-        </View>
+        ) : (
+          <TouchableOpacity 
+            style={[styles.lookCard, { backgroundColor: colors.card, borderColor: colors.border, alignItems: 'center', paddingVertical: 30 }]}
+            onPress={() => navigation.navigate("UpcomingEvents")}
+          >
+            <Feather name="calendar" size={32} color={colors.textMuted} />
+            <Text style={{ color: colors.textMuted, marginTop: 10 }}>No upcoming events planned</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Weather */}
         <Text style={[styles.sectionTitle, { marginTop: 16, color: isDark ? '#60A5FA' : '#2C63FF' }]}>Today’s Weather</Text>

@@ -6,6 +6,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import api from "../api/api";
 import { useFocusEffect } from "@react-navigation/native";
+import { useTheme } from "../context/ThemeContext";
 
 type Props = NativeStackScreenProps<RootStackParamList, "MyCloset">;
 
@@ -24,6 +25,8 @@ interface ClosetItem {
 
 const MyClosetScreen = ({ navigation }: Props) => {
   const [items, setItems] = useState<ClosetItem[]>([]);
+  const { colors, isDark } = useTheme();
+  const styles = getStyles(colors, isDark);
   const [active, setActive] = useState("All");
   const [q, setQ] = useState("");
   const [loading, setLoading] = useState(true);
@@ -97,23 +100,23 @@ const MyClosetScreen = ({ navigation }: Props) => {
   return (
     <SafeAreaView style={styles.safe}>
       {/* Header */}
-      <View style={styles.header}>
-        <TouchableOpacity onPress={() => navigation.goBack()}>
-          <Feather name="arrow-left" size={24} color="#000" />
+      <View style={[styles.header, { backgroundColor: colors.background }]}>
+        <TouchableOpacity onPress={() => navigation.goBack()} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
+          <Feather name="arrow-left" size={24} color={colors.text} />
         </TouchableOpacity>
-        <Text style={styles.headerTitle}>My Closet</Text>
+        <Text style={[styles.headerTitle, { color: colors.text }]}>My Closet</Text>
         <View style={{ width: 24 }} />
       </View>
 
       {/* Search */}
-      <View style={styles.searchBar}>
-        <Ionicons name="search" size={20} color="#111" />
+      <View style={[styles.searchBar, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+        <Ionicons name="search" size={20} color={colors.textSecondary} />
         <TextInput
           placeholder="Search for clothes..."
-          style={styles.searchInput}
+          style={[styles.searchInput, { color: colors.text }]}
           value={q}
           onChangeText={setQ}
-          placeholderTextColor="#6B7280"
+          placeholderTextColor={colors.textMuted}
         />
       </View>
 
@@ -137,13 +140,13 @@ const MyClosetScreen = ({ navigation }: Props) => {
       {loading ? (
         <View style={styles.loadingWrap}>
           <ActivityIndicator size="large" color="#2563EB" />
-          <Text style={styles.loadingText}>Loading your closet...</Text>
+          <Text style={[styles.loadingText, { color: colors.textSecondary }]}>Loading your closet...</Text>
         </View>
       ) : items.length === 0 ? (
         <View style={styles.emptyWrap}>
-          <Feather name="inbox" size={48} color="#ccc" />
-          <Text style={styles.emptyText}>No items in your closet yet</Text>
-          <Text style={styles.emptySubText}>Tap + to add your first item!</Text>
+          <Feather name="inbox" size={48} color={isDark ? "#444" : "#ccc"} />
+          <Text style={[styles.emptyText, { color: colors.textSecondary }]}>No items in your closet yet</Text>
+          <Text style={[styles.emptySubText, { color: colors.textMuted }]}>Tap + to add your first item!</Text>
         </View>
       ) : (
         <ScrollView
@@ -153,33 +156,33 @@ const MyClosetScreen = ({ navigation }: Props) => {
           }
         >
           {items.map((item) => (
-            <View key={item._id} style={styles.itemCard}>
+            <View key={item._id} style={[styles.itemCard, { backgroundColor: colors.card }]}>
               <View style={styles.itemRow}>
                 <Image
                   source={{ uri: item.image }}
                   style={styles.itemImage}
                 />
                 <View style={{ flex: 1, marginLeft: 16 }}>
-                  <Text style={styles.itemTitle}>{item.name}</Text>
-                  <Text style={styles.itemSub}>{item.category}</Text>
+                  <Text style={[styles.itemTitle, { color: colors.text }]}>{item.name}</Text>
+                  <Text style={[styles.itemSub, { color: colors.textSecondary }]}>{item.category}</Text>
 
                   {/* Color Dot */}
                   {item.color && (
-                    <View style={[styles.colorDot, { backgroundColor: item.color }]} />
+                    <View style={[styles.colorDot, { backgroundColor: item.color, borderColor: colors.border }]} />
                   )}
                 </View>
               </View>
 
-              <View style={styles.separator} />
+              <View style={[styles.separator, { backgroundColor: colors.border }]} />
 
-              <View style={styles.actions}>
+              <View style={[styles.actions, { backgroundColor: isDark ? colors.inputBg : '#E5E7EB' }]}>
                 <TouchableOpacity style={styles.actionBtn} onPress={() => {
                   setEditItem(item);
                   setEditName(item.name);
                   setEditCategory(item.category || "Tops");
                   setEditColor(item.color || "#000000");
                 }}>
-                  <Feather name="edit-2" size={18} color="#000" />
+                  <Feather name="edit-2" size={18} color={colors.text} />
                 </TouchableOpacity>
                 <TouchableOpacity
                   style={[styles.actionBtn, { marginLeft: 12 }]}
@@ -207,26 +210,30 @@ const MyClosetScreen = ({ navigation }: Props) => {
       {/* Edit Modal */}
       <Modal visible={!!editItem} transparent animationType="slide">
         <View style={styles.modalOverlay}>
-          <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Edit Item</Text>
+          <View style={[styles.modalContent, { backgroundColor: colors.card }]}>
+            <Text style={[styles.modalTitle, { color: colors.text }]}>Edit Item</Text>
 
-            <Text style={styles.label}>Name</Text>
-            <TextInput style={styles.input} value={editName} onChangeText={setEditName} />
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Name</Text>
+            <TextInput 
+              style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]} 
+              value={editName} 
+              onChangeText={setEditName} 
+            />
 
-            <Text style={styles.label}>Category</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Category</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
               {["Men's Wear", "Women's Wear", "Kids' Wear", "Foot Wear", "Beauty Products", "Jewellery", "Accessories", "Tops", "Bottoms", "Dresses", "Outerwear"].map(cat => (
                 <TouchableOpacity
                   key={cat}
-                  style={[styles.catChip, editCategory === cat && styles.catChipActive]}
+                  style={[styles.catChip, { backgroundColor: isDark ? colors.inputBg : '#F3F4F6' }, editCategory === cat && styles.catChipActive]}
                   onPress={() => setEditCategory(cat)}
                 >
-                  <Text style={[styles.catChipText, editCategory === cat && styles.catChipTextActive]}>{cat}</Text>
+                  <Text style={[styles.catChipText, { color: colors.textSecondary }, editCategory === cat && styles.catChipTextActive]}>{cat}</Text>
                 </TouchableOpacity>
               ))}
             </ScrollView>
 
-            <Text style={styles.label}>Color</Text>
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Color</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
               {["#000000", "#FFFFFF", "#FF0000", "#0000FF", "#00FF00", "#FFFF00", "#808080", "#FFC0CB", "#A52A2A", "#800080"].map(c => (
                 <TouchableOpacity
@@ -234,14 +241,14 @@ const MyClosetScreen = ({ navigation }: Props) => {
                   style={[styles.modalColorDotBtn, editColor === c && styles.modalColorDotBtnActive]}
                   onPress={() => setEditColor(c)}
                 >
-                  <View style={[styles.modalColorDot, { backgroundColor: c }]} />
+                  <View style={[styles.modalColorDot, { backgroundColor: c, borderColor: colors.border }]} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
 
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
-              <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#E5E7EB' }]} onPress={() => setEditItem(null)}>
-                <Text style={{ fontWeight: '700', color: '#111' }}>Cancel</Text>
+              <TouchableOpacity style={[styles.modalBtn, { backgroundColor: isDark ? colors.border : '#E5E7EB' }]} onPress={() => setEditItem(null)}>
+                <Text style={{ fontWeight: '700', color: colors.text }}>Cancel</Text>
               </TouchableOpacity>
               <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#2563EB' }]} onPress={async () => {
                 if (!editItem) return;
@@ -263,8 +270,8 @@ const MyClosetScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+  safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   header: {
     flexDirection: "row",
@@ -274,7 +281,7 @@ const styles = StyleSheet.create({
     paddingBottom: 10,
     justifyContent: "space-between",
   },
-  headerTitle: { fontSize: 20, fontWeight: "700", color: '#000' },
+  headerTitle: { fontSize: 20, fontWeight: "700" },
 
   searchBar: {
     flexDirection: "row",
@@ -282,13 +289,11 @@ const styles = StyleSheet.create({
     marginHorizontal: 16,
     borderRadius: 8,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
     paddingHorizontal: 12,
     paddingVertical: 10,
     marginBottom: 15,
-    backgroundColor: "#fff",
   },
-  searchInput: { marginLeft: 10, flex: 1, fontSize: 14, color: '#000' },
+  searchInput: { marginLeft: 10, flex: 1, fontSize: 14 },
 
   // --- Chips (compact pills) ---
   chipsWrap: {
@@ -302,51 +307,49 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     paddingVertical: 8,
     borderRadius: 12,
-    backgroundColor: "#D9D9D9",
+    backgroundColor: dark ? "#333" : "#D9D9D9",
     marginRight: 10,
     marginBottom: 10,
   },
   chipActive: {
     backgroundColor: "#7DD3FC",
   },
-  chipText: { fontWeight: "600", fontSize: 13, color: "#333" },
+  chipText: { fontWeight: "600", fontSize: 13, color: colors.textSecondary },
   chipTextActive: { color: "#000" },
 
   // --- Loading & Empty states ---
   loadingWrap: { flex: 1, justifyContent: "center", alignItems: "center" },
-  loadingText: { marginTop: 12, color: "#666", fontSize: 14 },
+  loadingText: { marginTop: 12, fontSize: 14 },
   emptyWrap: { flex: 1, justifyContent: "center", alignItems: "center", paddingBottom: 80 },
-  emptyText: { marginTop: 12, fontSize: 16, fontWeight: "600", color: "#999" },
-  emptySubText: { marginTop: 4, fontSize: 13, color: "#bbb" },
+  emptyText: { marginTop: 12, fontSize: 16, fontWeight: "600" },
+  emptySubText: { marginTop: 4, fontSize: 13 },
 
   // --- Item card ---
   itemCard: {
-    backgroundColor: "#F3F4F6",
     borderRadius: 12,
     paddingTop: 12,
     marginTop: 15,
     overflow: "hidden",
+    borderWidth: 1,
   },
   itemRow: { flexDirection: "row", alignItems: "center", paddingHorizontal: 12, paddingBottom: 12 },
-  itemImage: { width: 100, height: 110, borderRadius: 8, resizeMode: "cover", backgroundColor: "#E5E7EB" },
-  itemTitle: { fontSize: 16, fontWeight: "700", color: '#000' },
-  itemSub: { marginTop: 2, color: "#4B5563", fontSize: 13 },
+  itemImage: { width: 100, height: 110, borderRadius: 8, resizeMode: "cover", backgroundColor: dark ? "#222" : "#E5E7EB" },
+  itemTitle: { fontSize: 16, fontWeight: "700" },
+  itemSub: { marginTop: 2, fontSize: 13 },
   colorDot: {
     width: 24,
     height: 24,
     borderRadius: 12,
     marginTop: 8,
     borderWidth: 1,
-    borderColor: '#fff'
   },
 
-  separator: { height: 1, backgroundColor: "#fff", marginHorizontal: 0 },
+  separator: { height: 1 },
   actions: {
     flexDirection: "row",
     justifyContent: "flex-end",
     paddingHorizontal: 12,
     paddingVertical: 8,
-    backgroundColor: '#E5E7EB'
   },
   actionBtn: {
     padding: 4,
@@ -369,18 +372,18 @@ const styles = StyleSheet.create({
 
   // Edit Modal Styles
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
-  modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24 },
-  modalTitle: { fontSize: 20, fontWeight: '700', color: '#111', marginBottom: 16 },
-  label: { fontSize: 14, fontWeight: '600', color: '#374151', marginBottom: 8 },
+  modalContent: { borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24 },
+  modalTitle: { fontSize: 20, fontWeight: '700', marginBottom: 16 },
+  label: { fontSize: 14, fontWeight: '600', marginBottom: 8 },
   input: {
-    height: 48, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 10,
-    paddingHorizontal: 16, fontSize: 15, color: '#111', marginBottom: 16
+    height: 48, borderWidth: 1, borderRadius: 10,
+    paddingHorizontal: 16, fontSize: 15, marginBottom: 16
   },
   catChip: {
-    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, backgroundColor: '#F3F4F6', marginRight: 8, height: 36, justifyContent: 'center'
+    paddingHorizontal: 16, paddingVertical: 8, borderRadius: 20, marginRight: 8, height: 36, justifyContent: 'center'
   },
   catChipActive: { backgroundColor: '#2563EB' },
-  catChipText: { fontSize: 13, fontWeight: '600', color: '#4B5563' },
+  catChipText: { fontSize: 13, fontWeight: '600' },
   catChipTextActive: { color: '#fff' },
   modalColorDotBtn: {
     padding: 2, borderRadius: 16, marginRight: 8, height: 32, width: 32, justifyContent: 'center', alignItems: 'center', borderWidth: 2, borderColor: 'transparent'
@@ -389,7 +392,7 @@ const styles = StyleSheet.create({
     borderColor: '#2563EB'
   },
   modalColorDot: {
-    width: 24, height: 24, borderRadius: 12, borderWidth: 1, borderColor: '#ccc'
+    width: 24, height: 24, borderRadius: 12, borderWidth: 1
   },
   modalBtn: {
     flex: 1, paddingVertical: 14, borderRadius: 12, alignItems: 'center'

@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { mockProducts, mockCategories, Product, Category } from '../data/mockData';
+import api from '../api/api';
 
 export interface FilterState {
     query: string;
@@ -26,6 +27,7 @@ export interface FilterState {
 interface ShopState {
     products: Product[];
     categories: Category[];
+    productsLoaded: boolean;
 
     activeFilters: FilterState;
     recentSearches: string[];
@@ -36,6 +38,7 @@ interface ShopState {
     resetFilters: () => void;
     addRecentSearch: (term: string) => void;
     clearRecentSearches: () => void;
+    fetchProducts: () => Promise<void>;
 
     getFilteredProducts: () => Product[];
     getSaleProducts: () => Product[];
@@ -61,9 +64,29 @@ export const useShopStore = create<ShopState>()(
         (set, get) => ({
             products: mockProducts,
             categories: mockCategories,
+            productsLoaded: false,
             activeFilters: initialFilters,
             recentSearches: [],
 
+            fetchProducts: async () => {
+                try {
+                    const [productsRes, categoriesRes] = await Promise.all([
+                        api.get('/products'),
+                        api.get('/products/categories'),
+                    ]);
+                    const fetchedProducts: Product[] = productsRes.data?.products || productsRes.data || [];
+                    const fetchedCategories: Category[] = categoriesRes.data?.categories || categoriesRes.data || [];
+                    if (fetchedProducts.length > 0) {
+                        set({ products: fetchedProducts, productsLoaded: true });
+                    }
+                    if (fetchedCategories.length > 0) {
+                        set({ categories: fetchedCategories });
+                    }
+                } catch (err) {
+                    // Silently fall back to mockData — app still works offline
+                    console.warn('[ShopStore] Failed to fetch products from API, using mock data.', err);
+                }
+            },
             setQuery: (q) => set((state) => ({
                 activeFilters: { ...state.activeFilters, query: q }
             })),

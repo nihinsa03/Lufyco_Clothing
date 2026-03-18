@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { validateEmail, getEmailValidationError, isGmailEmail } from '../utils/emailValidation';
+import { useTheme } from '../context/ThemeContext';
 
 interface Props {
   navigation: StackNavigationProp<any>;
@@ -11,6 +12,7 @@ interface Props {
 
 const SignupScreen = ({ navigation }: Props) => {
   const { signup, loading, error } = useAuthStore();
+  const { colors } = useTheme();
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -87,39 +89,39 @@ const SignupScreen = ({ navigation }: Props) => {
   };
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <Text style={styles.brandName}>Fashion</Text>
+        <Text style={[styles.brandName, { color: colors.text }]}>Fashion</Text>
 
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Ionicons name="arrow-back" size={24} color="#000" />
+          <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
 
         <View style={styles.headerContainer}>
-          <Text style={styles.title}>Create your account</Text>
-          <Text style={styles.subtitle}>Make your life More Smarter</Text>
+          <Text style={[styles.title, { color: colors.text }]}>Create your account</Text>
+          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Make your life More Smarter</Text>
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Full Name</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Full Name</Text>
           <TextInput
-            style={styles.input}
+            style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
             value={name}
             onChangeText={setName}
             placeholder="Enter Name"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.textMuted}
           />
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Phone Number</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Phone Number</Text>
           <View style={styles.phoneInputWrapper}>
             <TextInput
-              style={[styles.input, styles.phoneInputField]}
+              style={[styles.input, styles.phoneInputField, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
               value={phone}
               onChangeText={setPhone}
               placeholder="Enter Phone Number"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               keyboardType="numeric"
               maxLength={15}
             />
@@ -127,20 +129,20 @@ const SignupScreen = ({ navigation }: Props) => {
               style={styles.keypadIconButton}
               onPress={() => setShowPhoneKeypad(true)}
             >
-              <Ionicons name="keypad-outline" size={20} color="#666" />
+              <Ionicons name="keypad-outline" size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Email Address</Text>
+          <Text style={[styles.label, { color: colors.text }]}>Email Address</Text>
           <TextInput
-            style={[styles.input, emailError ? styles.inputError : null]}
+            style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }, emailError ? styles.inputError : null]}
             value={email}
             onChangeText={handleEmailChange}
             onBlur={handleEmailBlur}
             placeholder="Enter your Email Address"
-            placeholderTextColor="#999"
+            placeholderTextColor={colors.textMuted}
             keyboardType="email-address"
             autoCapitalize="none"
           />
@@ -158,35 +160,35 @@ const SignupScreen = ({ navigation }: Props) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Password</Text>
-          <View style={styles.passwordContainer}>
+          <Text style={[styles.label, { color: colors.text }]}>Password</Text>
+          <View style={[styles.passwordContainer, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
             <TextInput
-              style={styles.passwordInput}
+              style={[styles.passwordInput, { color: colors.text }]}
               value={password}
               onChangeText={setPassword}
               placeholder="Enter your Password"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               secureTextEntry={!showPassword}
             />
             <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
-              <Ionicons name={showPassword ? "eye" : "eye-off"} size={20} color="#666" />
+              <Ionicons name={showPassword ? "eye" : "eye-off"} size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={styles.label}>Confirm Password</Text>
-          <View style={styles.passwordContainer}>
+          <Text style={[styles.label, { color: colors.text }]}>Confirm Password</Text>
+          <View style={[styles.passwordContainer, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
             <TextInput
-              style={styles.passwordInput}
+              style={[styles.passwordInput, { color: colors.text }]}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="Confirm your Password"
-              placeholderTextColor="#999"
+              placeholderTextColor={colors.textMuted}
               secureTextEntry={!showConfirmPassword}
             />
             <TouchableOpacity onPress={() => setShowConfirmPassword(!showConfirmPassword)} style={styles.eyeIcon}>
-              <Ionicons name={showConfirmPassword ? "eye" : "eye-off"} size={20} color="#666" />
+              <Ionicons name={showConfirmPassword ? "eye" : "eye-off"} size={20} color={colors.textSecondary} />
             </TouchableOpacity>
           </View>
         </View>
@@ -204,19 +206,19 @@ const SignupScreen = ({ navigation }: Props) => {
         </TouchableOpacity>
 
         <View style={styles.footerContainer}>
-          <Text style={styles.footerText}>
-            Already have an account? <Text style={{ fontWeight: 'bold' }} onPress={() => navigation.navigate('Login')}>Login</Text>
+          <Text style={[styles.footerText, { color: colors.text }]}>
+            Already have an account? <Text style={{ fontWeight: 'bold', color: colors.text }} onPress={() => navigation.navigate('Login')}>Login</Text>
           </Text>
         </View>
 
         <View style={styles.orContainer}>
-          <View style={styles.divider} />
-          <Text style={styles.orText}>OR</Text>
-          <View style={styles.divider} />
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <Text style={[styles.orText, { color: colors.text }]}>OR</Text>
+          <View style={[styles.divider, { backgroundColor: colors.border }]} />
         </View>
 
         <View style={{ alignItems: 'center' }}>
-          <Text style={styles.socialLoginText}>Sign up with Social Networks</Text>
+          <Text style={[styles.socialLoginText, { color: colors.textSecondary }]}>Sign up with Social Networks</Text>
           <View style={styles.socialIconsContainer}>
             <TouchableOpacity>
               <Image source={require('../../assets/images/facebook.png')} style={styles.socialIcon} />

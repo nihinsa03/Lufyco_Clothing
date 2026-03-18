@@ -34,8 +34,8 @@ export const useCartStore = create<CartState>()(
             addItem: (item) => {
                 console.log('Adding item:', item);
                 const currentItems = get().items;
-                // Sanitize image - require() returns a number which can't be serialized
-                const safeImage = typeof item.image === 'number' ? '' : (item.image || '');
+                // Sanitize image - allow numbers (local assets) and strings (URLs)
+                const safeImage = item.image || '';
                 const safeItem = { ...item, image: safeImage };
                 const uniqueId = `${safeItem.productId}-${safeItem.size || 'def'}-${safeItem.color || 'def'}`;
                 const qtyToAdd = safeItem.qty || 1;
