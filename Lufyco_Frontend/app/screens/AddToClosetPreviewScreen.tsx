@@ -40,7 +40,7 @@ const VISUAL_CATEGORIES = [
   { name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
   { name: "Accessories", image: require('../../assets/images/categories/accessories/handbag_hero.png') },
   { name: "Shirts", image: require('../../assets/images/shirt.png') },
-  { name: "T-Shirts", image: require('../../assets/images/shirt.png') },
+  { name: "T-Shirts", image: require('../../assets/images/men/casual/tshirts.jpg') },
   { name: "Jeans", image: require('../../assets/images/categories/women/jeans.jpg') },
   { name: "Trousers", image: require('../../assets/images/categories/women/trousers.jpg') },
   { name: "Tops", image: require('../../assets/images/categories/women/tops_new.jpg') },
