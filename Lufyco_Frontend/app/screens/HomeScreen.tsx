@@ -7,6 +7,7 @@ import { useShopStore } from "../store/useShopStore";
 import { useWishlistStore } from "../store/useWishlistStore";
 import { useTheme } from "../context/ThemeContext";
 import { RootStackParamList } from "../navigation/AppNavigator";
+import { mockCategories } from "../data/mockData";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -149,7 +150,7 @@ const HomeScreen = ({ navigation }: Props) => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 0, marginBottom: 12 }}
             >
-              {categories.filter((_, i) => i % 2 === 0).map((item) => (
+              {mockCategories.slice(0, 12).map((item) => (
                 <TouchableOpacity key={item.id} style={[styles.sliderCategoryItem, { marginRight: 8 }]} onPress={() => handleCategoryPress(item.id)}>
                   <View style={styles.categoryImageContainer}>
                     <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} style={styles.categoryImage} resizeMode="cover" />
@@ -165,7 +166,7 @@ const HomeScreen = ({ navigation }: Props) => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 0 }}
             >
-              {categories.filter((_, i) => i % 2 === 1).map((item) => (
+              {mockCategories.slice(12, 24).map((item) => (
                 <TouchableOpacity key={item.id} style={[styles.sliderCategoryItem, { marginRight: 8 }]} onPress={() => handleCategoryPress(item.id)}>
                   <View style={styles.categoryImageContainer}>
                     <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} style={styles.categoryImage} resizeMode="cover" />
