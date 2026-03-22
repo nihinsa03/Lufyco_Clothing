@@ -137,9 +137,9 @@ const UpcomingEventsScreen: React.FC<Props> = ({ navigation }) => {
       {/* Floating add button */}
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => setAddVisible(true)}
+        onPress={() => navigation.navigate("PlanMyLook")}
         accessibilityRole="button"
-        accessibilityLabel="Add event"
+        accessibilityLabel="Plan My Look"
       >
         <View style={styles.fabInner}>
           <Feather name="plus" size={30} color="#fff" />
