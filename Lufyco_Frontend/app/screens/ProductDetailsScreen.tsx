@@ -12,6 +12,22 @@ type Props = NativeStackScreenProps<RootStackParamList, "ProductDetails">;
 
 const { width } = Dimensions.get("window");
 
+// Returns true if the hex color is light (should use dark tick)
+const isLightColor = (hex: string): boolean => {
+    try {
+        const h = hex.replace('#', '');
+        const fullHex = h.length === 3 ? h.split('').map(c => c + c).join('') : h;
+        const r = parseInt(fullHex.substring(0, 2), 16);
+        const g = parseInt(fullHex.substring(2, 4), 16);
+        const b = parseInt(fullHex.substring(4, 6), 16);
+        // Perceived luminance formula
+        const luminance = 0.299 * r + 0.587 * g + 0.114 * b;
+        return luminance > 160;
+    } catch {
+        return false;
+    }
+};
+
 const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     // Params
     const { id, product: paramProduct } = route.params;
@@ -221,7 +237,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                                         selectedColor === c && styles.colorSelected
                                     ]}
                                 >
-                                    {selectedColor === c && <Feather name="check" size={14} color={c === '#fff' ? '#000' : '#fff'} />}
+                                    {selectedColor === c && <Feather name="check" size={14} color={isLightColor(c) ? '#000' : '#fff'} />}
                                 </TouchableOpacity>
                             ))}
                         </View>
