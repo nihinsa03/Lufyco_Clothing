@@ -142,37 +142,38 @@ const HomeScreen = ({ navigation }: Props) => {
             </TouchableOpacity>
           </View>
 
-          {/* Categories - 2-row horizontal scrolling grid */}
+          {/* Categories - 2 separate scrolling rows */}
           <View style={{ marginBottom: 32 }}>
+            {/* Top Row */}
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 0, marginBottom: 12 }}
+            >
+              {categories.filter((_, i) => i % 2 === 0).map((item) => (
+                <TouchableOpacity key={item.id} style={[styles.sliderCategoryItem, { marginRight: 8 }]} onPress={() => handleCategoryPress(item.id)}>
+                  <View style={styles.categoryImageContainer}>
+                    <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} style={styles.categoryImage} resizeMode="cover" />
+                  </View>
+                  <Text style={[styles.categoryName, { color: colors.text }]}>{item.name.toUpperCase()}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
+            {/* Bottom Row */}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 0 }}
             >
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((colIndex) => {
-                const topItem = mockCategories[colIndex];
-                const bottomItem = mockCategories[colIndex + 12];
-                return (
-                  <View key={colIndex} style={{ marginRight: 16, rowGap: 16 }}>
-                    {topItem && (
-                      <TouchableOpacity style={styles.sliderCategoryItem} onPress={() => handleCategoryPress(topItem.id)}>
-                        <View style={styles.categoryImageContainer}>
-                          <Image source={typeof topItem.image === 'string' ? { uri: topItem.image } : topItem.image} style={styles.categoryImage} resizeMode="cover" />
-                        </View>
-                        <Text style={[styles.categoryName, { color: colors.text }]}>{topItem.name.toUpperCase()}</Text>
-                      </TouchableOpacity>
-                    )}
-                    {bottomItem && (
-                      <TouchableOpacity style={styles.sliderCategoryItem} onPress={() => handleCategoryPress(bottomItem.id)}>
-                        <View style={styles.categoryImageContainer}>
-                          <Image source={typeof bottomItem.image === 'string' ? { uri: bottomItem.image } : bottomItem.image} style={styles.categoryImage} resizeMode="cover" />
-                        </View>
-                        <Text style={[styles.categoryName, { color: colors.text }]}>{bottomItem.name.toUpperCase()}</Text>
-                      </TouchableOpacity>
-                    )}
+              {categories.filter((_, i) => i % 2 === 1).map((item) => (
+                <TouchableOpacity key={item.id} style={[styles.sliderCategoryItem, { marginRight: 8 }]} onPress={() => handleCategoryPress(item.id)}>
+                  <View style={styles.categoryImageContainer}>
+                    <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} style={styles.categoryImage} resizeMode="cover" />
                   </View>
-                );
-              })}
+                  <Text style={[styles.categoryName, { color: colors.text }]}>{item.name.toUpperCase()}</Text>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
           </View>
 
