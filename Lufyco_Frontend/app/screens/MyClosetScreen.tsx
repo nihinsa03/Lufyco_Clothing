@@ -11,7 +11,7 @@ import { useTheme } from "../context/ThemeContext";
 type Props = NativeStackScreenProps<RootStackParamList, "MyCloset">;
 
 // Updated order as per Figma
-const chips = ["All", "Men's Wear", "Women's Wear", "Kids' Wear", "Foot Wear", "Beauty Products", "Jewellery", "Accessories", "Tops", "Bottoms", "Dresses", "Outerwear"];
+const chips = ["All", "Men's Wear", "Women's Wear", "Kids' Wear", "Footwear", "Beauty Products", "Jewellery", "Accessories", "Tops", "Shirts", "Dresses", "T-Shirts", "Trousers"];
 
 interface ClosetItem {
   _id: string;
@@ -214,15 +214,15 @@ const MyClosetScreen = ({ navigation }: Props) => {
             <Text style={[styles.modalTitle, { color: colors.text }]}>Edit Item</Text>
 
             <Text style={[styles.label, { color: colors.textSecondary }]}>Name</Text>
-            <TextInput 
-              style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]} 
-              value={editName} 
-              onChangeText={setEditName} 
+            <TextInput
+              style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+              value={editName}
+              onChangeText={setEditName}
             />
 
             <Text style={[styles.label, { color: colors.textSecondary }]}>Category</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-              {["Men's Wear", "Women's Wear", "Kids' Wear", "Foot Wear", "Beauty Products", "Jewellery", "Accessories", "Tops", "Bottoms", "Dresses", "Outerwear"].map(cat => (
+              {["Men's Wear", "Women's Wear", "Kids' Wear", "Footwear", "Beauty Products", "Jewellery", "Accessories", "Tops", "Shirts", "Dresses", "T-Shirts", "Trousers"].map(cat => (
                 <TouchableOpacity
                   key={cat}
                   style={[styles.catChip, { backgroundColor: isDark ? colors.inputBg : '#F3F4F6' }, editCategory === cat && styles.catChipActive]}
@@ -271,7 +271,7 @@ const MyClosetScreen = ({ navigation }: Props) => {
 };
 
 const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  safe: { flex: 1, backgroundColor: colors.background, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   header: {
     flexDirection: "row",

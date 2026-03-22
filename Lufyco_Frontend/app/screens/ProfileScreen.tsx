@@ -93,6 +93,7 @@ const ProfileScreen = () => {
         { label: "Shipping Address", icon: "map-pin", action: () => navigation.navigate("ShippingAddress") },
         { label: "Payment Method", icon: "credit-card", action: () => navigation.navigate("PaymentMethod") },
         { label: "Order History", icon: "clock", action: () => navigation.navigate("OrderHistory") },
+        { label: "My Closet", icon: "briefcase", action: () => navigation.navigate("MyCloset") },
     ];
 
     const supportItems = [
