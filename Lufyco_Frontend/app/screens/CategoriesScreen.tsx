@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, SafeAreaView
 import { useShopStore } from '../store/useShopStore';
 import { useNavigation } from '@react-navigation/native';
 import { Feather, Ionicons } from '@expo/vector-icons';
-import { mockCategories, Category } from '../data/mockData';
+import { Category } from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
@@ -19,41 +19,40 @@ const SIDEBAR_ITEMS = [
   { id: 'accessories', name: "Accessories", image: require('../../assets/images/categories/accessories/handbag_hero.png') },
 ];
 
-// Map sidebar ID to mockCategories filter or specific subcategories
-const getSubCategories = (sidebarId: string) => {
+// Map sidebar ID to store categories filter or specific subcategories
+const getSubCategories = (sidebarId: string, storeCategories: Category[]) => {
   switch (sidebarId) {
     case 'men':
-      return mockCategories.filter(c => c.gender === 'men');
+      return storeCategories.filter(c => c.gender === 'men');
     case 'women':
-      return mockCategories.filter(c => c.gender === 'women');
+      return storeCategories.filter(c => c.gender === 'women');
     case 'footwear':
-      return mockCategories.filter(c =>
+      return storeCategories.filter(c =>
         c.id.includes('shoes') || c.id.includes('heels') || c.name.toLowerCase().includes('shoe')
       );
     case 'kids':
-      // Show a curated mix for kids
-      return mockCategories.filter(c =>
+      return storeCategories.filter(c =>
         ['cat_tshirts', 'cat_jeans', 'cat_dresses', 'cat_sports_shoes', 'cat_jackets', 'cat_sweater'].includes(c.id)
       );
     case 'beauty':
-      return mockCategories.filter(c =>
+      return storeCategories.filter(c =>
         ['cat_skincare', 'cat_makeup', 'cat_haircare', 'cat_nailpolish', 'cat_perfume'].includes(c.id)
       );
     case 'jewellery':
-      return mockCategories.filter(c =>
+      return storeCategories.filter(c =>
         ['cat_necklaces', 'cat_rings', 'cat_earrings', 'cat_bracelets'].includes(c.id)
       );
     case 'accessories':
-      return mockCategories.filter(c =>
+      return storeCategories.filter(c =>
         ['cat_handbags', 'cat_watches', 'cat_belts', 'cat_sunglasses'].includes(c.id)
       );
     default:
-      return mockCategories;
+      return storeCategories;
   }
 };
 
 const CategoriesScreen = () => {
-  const { setFilter, resetFilters } = useShopStore();
+  const { setFilter, resetFilters, categories } = useShopStore();
   const navigation = useNavigation<any>();
   const [selectedCategory, setSelectedCategory] = useState<string>('men');
   const { colors, isDark } = useTheme();
@@ -175,7 +174,7 @@ const CategoriesScreen = () => {
     }
   ];
 
-  const subCategories = getSubCategories(selectedCategory);
+  const subCategories = getSubCategories(selectedCategory, categories);
 
   // All items in the grid
   const gridItems = subCategories;
@@ -233,7 +232,7 @@ const CategoriesScreen = () => {
   const renderGridItem = (item: Category) => (
     <TouchableOpacity key={item.id} style={styles.subCategoryItem} onPress={() => handleSubCategoryPress(item.id, item.name)}>
       <View style={[styles.subCategoryImageContainer, { backgroundColor: colors.iconBg }]}>
-        <Image source={item.image} style={styles.subCategoryImage} resizeMode="cover" />
+        <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} style={styles.subCategoryImage} resizeMode="cover" />
       </View>
       <Text style={[styles.subCategoryName, { color: colors.text }]}>{item.name}</Text>
     </TouchableOpacity>

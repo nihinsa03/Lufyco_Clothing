@@ -41,7 +41,71 @@ router.get('/', async (req, res) => {
         }
 
         const products = await productsQuery;
-        res.json(products);
+
+        // Map to match Expo Frontend Product Interface
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
+        
+        const mappedProducts = products.map(p => {
+            const isLocal = p.image && p.image.startsWith('/uploads');
+            const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
+
+            return {
+                id: p._id.toString(),
+                title: p.name,
+                name: p.name,
+                price: p.price,
+                description: p.description,
+                images: [fullImageUrl], // Wrap string in array for frontend carousel and logic
+                categoryId: p.category, 
+                category: p.category,
+                tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
+                colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
+                sizes: ['S', 'M', 'L', 'XL'],
+                isNewArrival: true, // Defaulting flags to true to populate "Latest Products"
+                isPopular: p.reviewsCount > 5 || p.price > 2000, 
+                rating: p.rating || 4.5,
+                reviews: p.reviewsCount || Math.floor(Math.random() * 50) + 10,
+                oldPrice: p.compareAtPrice,
+                featureVector: p.featureVector
+            };
+        });
+
+        res.json({ products: mappedProducts });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   GET /api/products/categories
+// @desc    Get dynamically aggregated categories from products
+router.get('/categories', async (req, res) => {
+    try {
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
+        
+        const categories = await Product.aggregate([
+            {
+                $group: {
+                    _id: "$category",
+                    image: { $first: "$image" },
+                    gender: { $first: "$gender" }
+                }
+            }
+        ]);
+
+        const mappedCategories = categories.map((cat, index) => {
+            const isLocal = cat.image && cat.image.startsWith('/uploads');
+            const fullImageUrl = isLocal ? `${hostUrl}${cat.image}` : cat.image;
+
+            return {
+                id: `cat_dyn_${index}`, // Unique dynamic ID
+                name: cat._id || 'Uncategorized',
+                image: fullImageUrl,
+                gender: cat.gender ? cat.gender.toLowerCase() : 'unisex'
+            };
+        });
+
+        // Filter out null names if any
+        res.json({ categories: mappedCategories.filter(c => c.name !== 'Uncategorized') });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

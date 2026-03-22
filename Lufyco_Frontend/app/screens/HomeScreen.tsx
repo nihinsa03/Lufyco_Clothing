@@ -152,7 +152,7 @@ const HomeScreen = ({ navigation }: Props) => {
               {categories.filter((_, i) => i % 2 === 0).map((item) => (
                 <TouchableOpacity key={item.id} style={[styles.sliderCategoryItem, { marginRight: 8 }]} onPress={() => handleCategoryPress(item.id)}>
                   <View style={styles.categoryImageContainer}>
-                    <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
+                    <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} style={styles.categoryImage} resizeMode="cover" />
                   </View>
                   <Text style={[styles.categoryName, { color: colors.text }]}>{item.name}</Text>
                 </TouchableOpacity>
@@ -168,7 +168,7 @@ const HomeScreen = ({ navigation }: Props) => {
               {categories.filter((_, i) => i % 2 === 1).map((item) => (
                 <TouchableOpacity key={item.id} style={[styles.sliderCategoryItem, { marginRight: 8 }]} onPress={() => handleCategoryPress(item.id)}>
                   <View style={styles.categoryImageContainer}>
-                    <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
+                    <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} style={styles.categoryImage} resizeMode="cover" />
                   </View>
                   <Text style={[styles.categoryName, { color: colors.text }]}>{item.name}</Text>
                 </TouchableOpacity>
