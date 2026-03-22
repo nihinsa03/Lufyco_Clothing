@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView, SafeAreaView, Alert, ActivityIndicator, Image, Modal, Dimensions, Platform, StatusBar } from "react-native";
+import { View, StyleSheet, TouchableOpacity, Text, TextInput, ScrollView, SafeAreaView, Alert, ActivityIndicator, Image, Modal, Dimensions, Platform, StatusBar, KeyboardAvoidingView } from "react-native";
 import { Ionicons } from '@expo/vector-icons';
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
@@ -91,7 +91,11 @@ const SignupScreen = ({ navigation }: Props) => {
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
+      <KeyboardAvoidingView 
+        style={{ flex: 1 }} 
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      >
+        <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
         <Text style={styles.brandName}>Fashion</Text>
 
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
@@ -237,6 +241,7 @@ const SignupScreen = ({ navigation }: Props) => {
           </View>
         </View>
       </ScrollView>
+      </KeyboardAvoidingView>
 
       {/* Phone Number Keypad Modal */}
       <Modal
