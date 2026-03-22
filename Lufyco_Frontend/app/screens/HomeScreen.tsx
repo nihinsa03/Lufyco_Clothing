@@ -149,9 +149,9 @@ const HomeScreen = ({ navigation }: Props) => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 0 }}
             >
-              {[0, 1, 2, 3, 4, 5].map((colIndex) => {
-                const topItem = mockCategories[colIndex]; // 0 to 5
-                const bottomItem = mockCategories[colIndex + 16]; // 16 to 21
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((colIndex) => {
+                const topItem = mockCategories[colIndex];
+                const bottomItem = mockCategories[colIndex + 12];
                 return (
                   <View key={colIndex} style={{ marginRight: 16, rowGap: 16 }}>
                     {topItem && (
