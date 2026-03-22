@@ -36,14 +36,15 @@ const VISUAL_CATEGORIES = [
   { name: "Women's Wear", image: require('../../assets/images/categories/women/womens_wear_hero.png') },
   { name: "Kids' Wear", image: require('../../assets/images/categories/kids_wear_hero.png') },
   { name: "Footwear", image: require('../../assets/images/categories/footwear/footwear_hero_new.jpg') },
-  { name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
   { name: "Jewellery", image: require('../../assets/images/categories/jewellery/jewellery.png') },
+  { name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
   { name: "Accessories", image: require('../../assets/images/categories/accessories/handbag_hero.png') },
-  { name: "Tops", image: require('../../assets/images/categories/women/tops_new.jpg') },
   { name: "Shirts", image: require('../../assets/images/categories/women/shirts.jpg') },
-  { name: "Dresses", image: require('../../assets/images/categories/women/dresses.jpg') },
   { name: "T-Shirts", image: require('../../assets/images/categories/women/tshirts.jpg') },
+  { name: "Jeans", image: require('../../assets/images/categories/women/jeans.jpg') },
   { name: "Trousers", image: require('../../assets/images/categories/women/trousers.jpg') },
+  { name: "Tops", image: require('../../assets/images/categories/women/tops_new.jpg') },
+  { name: "Dresses", image: require('../../assets/images/categories/women/dresses.jpg') },
 ];
 
 const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {

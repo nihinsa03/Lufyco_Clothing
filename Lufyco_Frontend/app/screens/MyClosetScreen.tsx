@@ -11,7 +11,7 @@ import { useTheme } from "../context/ThemeContext";
 type Props = NativeStackScreenProps<RootStackParamList, "MyCloset">;
 
 // Updated order as per Figma
-const chips = ["All", "Men's Wear", "Women's Wear", "Kids' Wear", "Footwear", "Beauty Products", "Jewellery", "Accessories", "Tops", "Shirts", "Dresses", "T-Shirts", "Trousers"];
+const chips = ["All", "Men's Wear", "Women's Wear", "Kids' Wear", "Footwear", "Jewellery", "Beauty Products", "Accessories", "Shirts", "T-Shirts", "Jeans", "Trousers", "Tops", "Dresses"];
 
 interface ClosetItem {
   _id: string;
@@ -222,7 +222,7 @@ const MyClosetScreen = ({ navigation }: Props) => {
 
             <Text style={[styles.label, { color: colors.textSecondary }]}>Category</Text>
             <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
-              {["Men's Wear", "Women's Wear", "Kids' Wear", "Footwear", "Beauty Products", "Jewellery", "Accessories", "Tops", "Shirts", "Dresses", "T-Shirts", "Trousers"].map(cat => (
+              {["Men's Wear", "Women's Wear", "Kids' Wear", "Footwear", "Jewellery", "Beauty Products", "Accessories", "Shirts", "T-Shirts", "Jeans", "Trousers", "Tops", "Dresses"].map(cat => (
                 <TouchableOpacity
                   key={cat}
                   style={[styles.catChip, { backgroundColor: isDark ? colors.inputBg : '#F3F4F6' }, editCategory === cat && styles.catChipActive]}

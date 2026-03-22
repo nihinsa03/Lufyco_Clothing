@@ -14,8 +14,8 @@ const SIDEBAR_ITEMS = [
   { id: 'women', name: "Women's Wear", image: require('../../assets/images/categories/women/womens_wear_hero.png') },
   { id: 'kids', name: "Kids' Wear", image: require('../../assets/images/categories/kids_wear_hero.png') },
   { id: 'footwear', name: "Footwear", image: require('../../assets/images/categories/footwear/footwear_hero_new.jpg') },
-  { id: 'beauty', name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
   { id: 'jewellery', name: "Jewellery", image: require('../../assets/images/categories/jewellery/jewellery.png') },
+  { id: 'beauty', name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
   { id: 'accessories', name: "Accessories", image: require('../../assets/images/categories/accessories/handbag_hero.png') },
 ];
 
