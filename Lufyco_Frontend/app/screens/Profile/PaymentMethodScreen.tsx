@@ -9,7 +9,8 @@ import { useTheme } from "../../context/ThemeContext";
 const PaymentMethodScreen = () => {
     const navigation = useNavigation();
     const { savedPayment, savePayment } = useProfileStore();
-    const { colors } = useTheme();
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
 
     const [cardNumber, setCardNumber] = useState("");
     const [holder, setHolder] = useState("");
@@ -43,12 +44,12 @@ const PaymentMethodScreen = () => {
     };
 
     return (
-        <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
-            <View style={[styles.header, { borderColor: colors.border }]}>
+        <SafeAreaView style={styles.safe}>
+            <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={[styles.headerTitle, { color: colors.text }]}>Payment Method</Text>
+                <Text style={styles.headerTitle}>Payment Method</Text>
                 <View style={{ width: 24 }} />
             </View>
 
@@ -63,26 +64,26 @@ const PaymentMethodScreen = () => {
                 </View>
 
                 <View style={styles.form}>
-                    <Text style={[styles.label, { color: colors.text }]}>Card Holder Name</Text>
-                    <TextInput style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]} value={holder} onChangeText={setHolder} placeholder="Full Name" placeholderTextColor={colors.textMuted} />
+                    <Text style={styles.label}>Card Holder Name</Text>
+                    <TextInput style={styles.input} value={holder} onChangeText={setHolder} placeholder="Full Name" placeholderTextColor={colors.textMuted} />
 
-                    <Text style={[styles.label, { color: colors.text }]}>Card Number</Text>
-                    <TextInput style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]} value={cardNumber} onChangeText={setCardNumber} placeholder="0000 0000 0000 0000" keyboardType="numeric" placeholderTextColor={colors.textMuted} />
+                    <Text style={styles.label}>Card Number</Text>
+                    <TextInput style={styles.input} value={cardNumber} onChangeText={setCardNumber} placeholder="0000 0000 0000 0000" keyboardType="numeric" placeholderTextColor={colors.textMuted} />
 
                     <View style={{ flexDirection: 'row', gap: 10 }}>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.label, { color: colors.text }]}>Expiration</Text>
-                            <TextInput style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]} value={expiry} onChangeText={setExpiry} placeholder="MM/YY" placeholderTextColor={colors.textMuted} />
+                            <Text style={styles.label}>Expiration</Text>
+                            <TextInput style={styles.input} value={expiry} onChangeText={setExpiry} placeholder="MM/YY" placeholderTextColor={colors.textMuted} />
                         </View>
                         <View style={{ flex: 1 }}>
-                            <Text style={[styles.label, { color: colors.text }]}>CVV</Text>
-                            <TextInput style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]} value={cvv} onChangeText={setCvv} placeholder="123" keyboardType="numeric" secureTextEntry placeholderTextColor={colors.textMuted} />
+                            <Text style={styles.label}>CVV</Text>
+                            <TextInput style={styles.input} value={cvv} onChangeText={setCvv} placeholder="123" keyboardType="numeric" secureTextEntry placeholderTextColor={colors.textMuted} />
                         </View>
                     </View>
                 </View>
             </ScrollView>
 
-            <View style={[styles.footer, { backgroundColor: colors.background, borderColor: colors.border }]}>
+            <View style={styles.footer}>
                 <TouchableOpacity style={styles.btn} onPress={onSave}>
                     <Text style={styles.btnText}>Save Card</Text>
                 </TouchableOpacity>
@@ -91,13 +92,13 @@ const PaymentMethodScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F3F4F6'
+        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: colors.border
     },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: '#111' },
+    headerTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
 
     cardPreview: {
         backgroundColor: '#1E293B', borderRadius: 16, padding: 24, marginBottom: 30, height: 180, justifyContent: 'space-between'
@@ -107,15 +108,15 @@ const styles = StyleSheet.create({
     cardMeta: { color: '#CBD5E1', fontSize: 14, fontWeight: '600' },
 
     form: {},
-    label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#374151', marginTop: 12 },
+    label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: colors.text, marginTop: 12 },
     input: {
-        height: 50, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12,
-        paddingHorizontal: 16, fontSize: 15, color: '#111'
+        height: 50, borderWidth: 1, borderColor: colors.border, borderRadius: 12, backgroundColor: colors.inputBg,
+        paddingHorizontal: 16, fontSize: 15, color: colors.text
     },
 
-    footer: { position: 'absolute', bottom: 0, width: '100%', padding: 20, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#F3F4F6' },
-    btn: { backgroundColor: '#111', height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+    footer: { position: 'absolute', bottom: 0, width: '100%', padding: 20, backgroundColor: colors.background, borderTopWidth: 1, borderColor: colors.border },
+    btn: { backgroundColor: isDark ? '#fff' : '#111', height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    btnText: { color: isDark ? '#111' : '#fff', fontSize: 16, fontWeight: '700' },
 });
 
 export default PaymentMethodScreen;

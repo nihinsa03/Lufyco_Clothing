@@ -14,6 +14,7 @@ const CheckoutPaymentScreen = () => {
     const navigation = useNavigation<NavProp>();
     const { setPaymentMethod } = useCheckoutStore();
     const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
 
     const [selectedMethod, setSelectedMethod] = useState<MethodId>('visa');
     const [cardName, setCardName] = useState("");
@@ -223,25 +224,25 @@ const CheckoutPaymentScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    safe: { flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+    safe: { flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0, backgroundColor: colors.background },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1,
+        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: colors.border
     },
-    headerTitle: { fontSize: 18, fontWeight: '700' },
+    headerTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
 
     stepperContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 20 },
     stepItem: { alignItems: 'center' },
-    stepCircle: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+    stepCircle: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.iconBg, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
     stepActive: { backgroundColor: '#2563EB' },
     stepDone: { backgroundColor: '#2563EB' },
-    stepText: { fontSize: 12, color: '#999', fontWeight: '500' },
+    stepText: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
     stepTextActive: { color: '#2563EB', fontWeight: '700' },
     stepTextDone: { color: '#2563EB', fontWeight: '700' },
-    line: { width: 40, height: 2, backgroundColor: '#F3F4F6', marginBottom: 16, marginHorizontal: 8 },
+    line: { width: 40, height: 2, backgroundColor: colors.border, marginBottom: 16, marginHorizontal: 8 },
 
-    sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16 },
+    sectionTitle: { fontSize: 18, fontWeight: '700', marginBottom: 16, color: colors.text },
     methodsRow: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 12 },
     payOption: {
         flex: 1, height: 56, borderWidth: 1.5, borderRadius: 12,
@@ -249,7 +250,7 @@ const styles = StyleSheet.create({
         position: 'relative', marginHorizontal: 4,
     },
     payOptionActive: { borderColor: '#2563EB', borderWidth: 2 },
-    methodLabel: { fontSize: 13, fontWeight: '600', color: '#6B7280' },
+    methodLabel: { fontSize: 13, fontWeight: '600', color: colors.textSecondary },
     methodLabelActive: { color: '#2563EB', fontWeight: '700' },
     checkBadge: {
         position: 'absolute', top: 6, right: 6,
@@ -259,24 +260,24 @@ const styles = StyleSheet.create({
 
     cashOption: {
         borderWidth: 1.5, borderRadius: 12, padding: 14,
-        marginBottom: 20,
+        marginBottom: 20, backgroundColor: colors.card
     },
-    cashTitle: { fontSize: 15, fontWeight: '700' },
-    cashSub: { fontSize: 13, marginTop: 2 },
+    cashTitle: { fontSize: 15, fontWeight: '700', color: colors.text },
+    cashSub: { fontSize: 13, marginTop: 2, color: colors.textSecondary },
 
     cardForm: { marginTop: 6 },
-    label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginTop: 12 },
+    label: { fontSize: 14, fontWeight: '600', marginBottom: 8, marginTop: 12, color: colors.text },
     input: {
-        height: 50, borderWidth: 1, borderRadius: 12,
-        paddingHorizontal: 16, fontSize: 15,
+        height: 50, borderWidth: 1, borderRadius: 12, borderColor: colors.border,
+        paddingHorizontal: 16, fontSize: 15, color: colors.text, backgroundColor: colors.inputBg
     },
     row: { flexDirection: 'row' },
 
-    infoBox: { padding: 20, borderRadius: 12, alignItems: 'center', marginTop: 20 },
+    infoBox: { padding: 20, borderRadius: 12, alignItems: 'center', marginTop: 20, backgroundColor: colors.iconBg },
 
-    footer: { position: 'absolute', bottom: 0, width: '100%', padding: 20, borderTopWidth: 1 },
-    btn: { backgroundColor: '#111', height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+    footer: { position: 'absolute', bottom: 0, width: '100%', padding: 20, borderTopWidth: 1, borderColor: colors.border, backgroundColor: colors.background },
+    btn: { backgroundColor: isDark ? '#fff' : '#111', height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    btnText: { color: isDark ? '#111' : '#fff', fontSize: 16, fontWeight: '700' },
 });
 
 export default CheckoutPaymentScreen;

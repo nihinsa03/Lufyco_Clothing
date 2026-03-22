@@ -12,6 +12,7 @@ interface Props {
 const LoginScreen = ({ navigation }: Props) => {
   const { login, loading } = useAuthStore();
   const { colors, isDark } = useTheme();
+  const styles = getStyles(colors, isDark);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
@@ -44,10 +45,10 @@ const LoginScreen = ({ navigation }: Props) => {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container}>
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
-          <Text style={[styles.backArrow, { color: colors.text }]}>←</Text>
+          <Text style={styles.backArrow}>←</Text>
         </TouchableOpacity>
 
         <AuthHeader
@@ -76,7 +77,7 @@ const LoginScreen = ({ navigation }: Props) => {
         />
 
         <TouchableOpacity onPress={() => navigation.navigate('ForgotPassword')}>
-          <Text style={[styles.forgotPass, { color: colors.text }]}>Forgot Password?</Text>
+          <Text style={styles.forgotPass}>Forgot Password?</Text>
         </TouchableOpacity>
 
         <PrimaryButton
@@ -85,14 +86,14 @@ const LoginScreen = ({ navigation }: Props) => {
           loading={loading}
         />
 
-        <Text style={[styles.orText, { color: colors.textSecondary }]}>or continue with</Text>
+        <Text style={styles.orText}>or continue with</Text>
 
         <SocialRow />
 
         <View style={styles.footer}>
-          <Text style={[styles.footerText, { color: colors.textSecondary }]}>Don't have an account? </Text>
+          <Text style={styles.footerText}>Don't have an account? </Text>
           <TouchableOpacity onPress={() => navigation.navigate('Signup')}>
-            <Text style={[styles.link, { color: colors.text }]}>Sign up</Text>
+            <Text style={styles.link}>Sign up</Text>
           </TouchableOpacity>
         </View>
 
@@ -101,16 +102,16 @@ const LoginScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: '#fff' , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+  safeArea: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   container: { padding: 24, paddingBottom: 50 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   backBtn: { marginBottom: 20 },
-  backArrow: { fontSize: 24, fontWeight: 'bold' },
-  forgotPass: { textAlign: 'right', color: '#000', fontWeight: 'bold', marginBottom: 20 },
-  orText: { textAlign: 'center', marginVertical: 20, color: '#666' },
+  backArrow: { fontSize: 24, fontWeight: 'bold', color: colors.text },
+  forgotPass: { textAlign: 'right', color: colors.text, fontWeight: 'bold', marginBottom: 20 },
+  orText: { textAlign: 'center', marginVertical: 20, color: colors.textSecondary },
   footer: { flexDirection: 'row', justifyContent: 'center', marginTop: 30 },
-  footerText: { color: '#666' },
-  link: { color: '#000', fontWeight: 'bold' }
+  footerText: { color: colors.textSecondary },
+  link: { color: colors.text, fontWeight: 'bold' }
 });
 
 export default LoginScreen;

@@ -12,7 +12,8 @@ interface Props {
 
 const SignupScreen = ({ navigation }: Props) => {
   const { signup, loading, error } = useAuthStore();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
+  const styles = getStyles(colors, isDark);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
   const [email, setEmail] = useState('');
@@ -89,23 +90,23 @@ const SignupScreen = ({ navigation }: Props) => {
   };
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
+    <SafeAreaView style={styles.safeArea}>
       <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false}>
-        <Text style={[styles.brandName, { color: colors.text }]}>Fashion</Text>
+        <Text style={styles.brandName}>Fashion</Text>
 
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
         </TouchableOpacity>
 
         <View style={styles.headerContainer}>
-          <Text style={[styles.title, { color: colors.text }]}>Create your account</Text>
-          <Text style={[styles.subtitle, { color: colors.textSecondary }]}>Make your life More Smarter</Text>
+          <Text style={styles.title}>Create your account</Text>
+          <Text style={styles.subtitle}>Make your life More Smarter</Text>
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: colors.text }]}>Full Name</Text>
+          <Text style={styles.label}>Full Name</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+            style={styles.input}
             value={name}
             onChangeText={setName}
             placeholder="Enter Name"
@@ -114,10 +115,10 @@ const SignupScreen = ({ navigation }: Props) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: colors.text }]}>Phone Number</Text>
+          <Text style={styles.label}>Phone Number</Text>
           <View style={styles.phoneInputWrapper}>
             <TextInput
-              style={[styles.input, styles.phoneInputField, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }]}
+              style={[styles.input, styles.phoneInputField]}
               value={phone}
               onChangeText={setPhone}
               placeholder="Enter Phone Number"
@@ -135,9 +136,9 @@ const SignupScreen = ({ navigation }: Props) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: colors.text }]}>Email Address</Text>
+          <Text style={styles.label}>Email Address</Text>
           <TextInput
-            style={[styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }, emailError ? styles.inputError : null]}
+            style={[styles.input, emailError ? styles.inputError : null]}
             value={email}
             onChangeText={handleEmailChange}
             onBlur={handleEmailBlur}
@@ -160,10 +161,10 @@ const SignupScreen = ({ navigation }: Props) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: colors.text }]}>Password</Text>
-          <View style={[styles.passwordContainer, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+          <Text style={styles.label}>Password</Text>
+          <View style={styles.passwordContainer}>
             <TextInput
-              style={[styles.passwordInput, { color: colors.text }]}
+              style={styles.passwordInput}
               value={password}
               onChangeText={setPassword}
               placeholder="Enter your Password"
@@ -177,10 +178,10 @@ const SignupScreen = ({ navigation }: Props) => {
         </View>
 
         <View style={styles.inputContainer}>
-          <Text style={[styles.label, { color: colors.text }]}>Confirm Password</Text>
-          <View style={[styles.passwordContainer, { backgroundColor: colors.inputBg, borderColor: colors.border }]}>
+          <Text style={styles.label}>Confirm Password</Text>
+          <View style={styles.passwordContainer}>
             <TextInput
-              style={[styles.passwordInput, { color: colors.text }]}
+              style={styles.passwordInput}
               value={confirmPassword}
               onChangeText={setConfirmPassword}
               placeholder="Confirm your Password"
@@ -206,19 +207,19 @@ const SignupScreen = ({ navigation }: Props) => {
         </TouchableOpacity>
 
         <View style={styles.footerContainer}>
-          <Text style={[styles.footerText, { color: colors.text }]}>
+          <Text style={styles.footerText}>
             Already have an account? <Text style={{ fontWeight: 'bold', color: colors.text }} onPress={() => navigation.navigate('Login')}>Login</Text>
           </Text>
         </View>
 
         <View style={styles.orContainer}>
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
-          <Text style={[styles.orText, { color: colors.text }]}>OR</Text>
-          <View style={[styles.divider, { backgroundColor: colors.border }]} />
+          <View style={styles.divider} />
+          <Text style={styles.orText}>OR</Text>
+          <View style={styles.divider} />
         </View>
 
         <View style={{ alignItems: 'center' }}>
-          <Text style={[styles.socialLoginText, { color: colors.textSecondary }]}>Sign up with Social Networks</Text>
+          <Text style={styles.socialLoginText}>Sign up with Social Networks</Text>
           <View style={styles.socialIconsContainer}>
             <TouchableOpacity>
               <Image source={require('../../assets/images/facebook.png')} style={styles.socialIcon} />
@@ -253,7 +254,7 @@ const SignupScreen = ({ navigation }: Props) => {
             <View style={styles.keypadHeader}>
               <Text style={styles.keypadTitle}>Enter Phone Number</Text>
               <TouchableOpacity onPress={() => setShowPhoneKeypad(false)}>
-                <Ionicons name="close" size={24} color="#000" />
+                <Ionicons name="close" size={24} color={colors.text} />
               </TouchableOpacity>
             </View>
 
@@ -287,10 +288,10 @@ const SignupScreen = ({ navigation }: Props) => {
   );
 };
 
-const styles = StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: '#fff'
+    backgroundColor: colors.background
   , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   container: {
     padding: 24,
@@ -300,7 +301,7 @@ const styles = StyleSheet.create({
   brandName: {
     fontSize: 20,
     fontWeight: 'bold',
-    color: '#000',
+    color: colors.text,
     marginBottom: 5,
     marginTop: 10
   },
@@ -314,13 +315,13 @@ const styles = StyleSheet.create({
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    color: '#000',
+    color: colors.text,
     textAlign: 'center',
     marginBottom: 8
   },
   subtitle: {
     fontSize: 12,
-    color: '#666',
+    color: colors.textSecondary,
     textAlign: 'center'
   },
   inputContainer: {
@@ -329,25 +330,25 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 14,
     fontWeight: '500',
-    color: '#333',
+    color: colors.text,
     marginBottom: 6
   },
   input: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.inputBg,
     borderWidth: 1,
-    borderColor: '#7dd3fc', // Light blue
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 16,
     paddingVertical: 12,
     fontSize: 14,
-    color: '#000'
+    color: colors.text
   },
   passwordContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#fff',
+    backgroundColor: colors.inputBg,
     borderWidth: 1,
-    borderColor: '#7dd3fc', // Light blue matching input
+    borderColor: colors.border,
     borderRadius: 12,
     paddingHorizontal: 16,
   },
@@ -355,23 +356,23 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingVertical: 12,
     fontSize: 14,
-    color: '#000'
+    color: colors.text
   },
   eyeIcon: {
     padding: 4
   },
   signUpButton: {
-    backgroundColor: '#0c0c0c',
+    backgroundColor: isDark ? '#fff' : '#0c0c0c',
     borderRadius: 30,
     paddingVertical: 15,
     alignItems: 'center',
     justifyContent: 'center',
     marginTop: 10,
     marginBottom: 20,
-    marginHorizontal: 30 // Make button narrower as per design
+    marginHorizontal: 30
   },
   signUpButtonText: {
-    color: '#fff',
+    color: isDark ? '#111' : '#fff',
     fontSize: 14,
     fontWeight: '600'
   },
@@ -381,7 +382,7 @@ const styles = StyleSheet.create({
   },
   footerText: {
     fontSize: 13,
-    color: '#000'
+    color: colors.text
   },
   orContainer: {
     flexDirection: 'row',
@@ -392,17 +393,17 @@ const styles = StyleSheet.create({
   divider: {
     flex: 1,
     height: 1,
-    backgroundColor: '#ccc'
+    backgroundColor: colors.border
   },
   orText: {
     marginHorizontal: 10,
     fontSize: 14,
     fontWeight: 'bold',
-    color: '#000'
+    color: colors.text
   },
   socialLoginText: {
     fontSize: 13,
-    color: '#333',
+    color: colors.textSecondary,
     marginBottom: 15
   },
   socialIconsContainer: {
@@ -462,7 +463,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
   },
   keypadContainer: {
-    backgroundColor: '#fff',
+    backgroundColor: colors.card,
     borderTopLeftRadius: 20,
     borderTopRightRadius: 20,
     padding: 20,
@@ -477,10 +478,10 @@ const styles = StyleSheet.create({
   keypadTitle: {
     fontSize: 18,
     fontWeight: '600',
-    color: '#000',
+    color: colors.text,
   },
   phoneDisplay: {
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.inputBg,
     padding: 20,
     borderRadius: 12,
     marginBottom: 20,
@@ -489,7 +490,7 @@ const styles = StyleSheet.create({
   phoneDisplayText: {
     fontSize: 28,
     fontWeight: '600',
-    color: '#000',
+    color: colors.text,
     letterSpacing: 2,
   },
   keypad: {
@@ -502,23 +503,23 @@ const styles = StyleSheet.create({
     width: (Dimensions.get('window').width - 80) / 3,
     padding: 20,
     alignItems: 'center',
-    backgroundColor: '#f3f4f6',
+    backgroundColor: colors.inputBg,
     borderRadius: 12,
   },
   keyText: {
     fontSize: 24,
     fontWeight: '600',
-    color: '#000',
+    color: colors.text,
   },
   doneButton: {
-    backgroundColor: '#000',
+    backgroundColor: isDark ? '#fff' : '#000',
     padding: 16,
     borderRadius: 25,
     alignItems: 'center',
     marginTop: 20,
   },
   doneButtonText: {
-    color: '#fff',
+    color: isDark ? '#111' : '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

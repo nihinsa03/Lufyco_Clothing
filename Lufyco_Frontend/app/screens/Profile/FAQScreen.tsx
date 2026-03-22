@@ -12,7 +12,8 @@ if (Platform.OS === 'android') {
 
 const FAQScreen = () => {
     const navigation = useNavigation();
-    const { colors } = useTheme();
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
     const [openIndex, setOpenIndex] = useState<number | null>(null);
 
     const faqs = [
@@ -44,25 +45,25 @@ const FAQScreen = () => {
     };
 
     return (
-        <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
-            <View style={[styles.header, { borderColor: colors.border }]}>
+        <SafeAreaView style={styles.safe}>
+            <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={[styles.headerTitle, { color: colors.text }]}>FAQ</Text>
+                <Text style={styles.headerTitle}>FAQ</Text>
                 <View style={{ width: 24 }} />
             </View>
 
             <ScrollView contentContainerStyle={{ padding: 20 }}>
                 {faqs.map((item, i) => (
-                    <View key={i} style={[styles.item, { borderColor: colors.border }]}>
+                    <View key={i} style={styles.item}>
                         <TouchableOpacity style={styles.questionRow} onPress={() => toggle(i)}>
-                            <Text style={[styles.question, { color: colors.text }]}>{item.q}</Text>
+                            <Text style={styles.question}>{item.q}</Text>
                             <Feather name={openIndex === i ? "chevron-up" : "chevron-down"} size={20} color={colors.textSecondary} />
                         </TouchableOpacity>
                         {openIndex === i && (
                             <View style={styles.answerBox}>
-                                <Text style={[styles.answer, { color: colors.textSecondary }]}>{item.a}</Text>
+                                <Text style={styles.answer}>{item.a}</Text>
                             </View>
                         )}
                     </View>
@@ -72,19 +73,19 @@ const FAQScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F3F4F6'
+        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: colors.border
     },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: '#111' },
+    headerTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
 
-    item: { borderBottomWidth: 1, borderColor: '#F3F4F6', marginBottom: 10 },
+    item: { borderBottomWidth: 1, borderColor: colors.border, marginBottom: 10 },
     questionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 16 },
-    question: { fontSize: 16, fontWeight: '600', color: '#111', flex: 1 },
+    question: { fontSize: 16, fontWeight: '600', color: colors.text, flex: 1 },
     answerBox: { paddingBottom: 16 },
-    answer: { fontSize: 14, color: '#666', lineHeight: 20 },
+    answer: { fontSize: 14, color: colors.textSecondary, lineHeight: 20 },
 });
 
 export default FAQScreen;

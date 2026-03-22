@@ -3,6 +3,7 @@ import { SafeAreaView, View, Text, StyleSheet, TextInput, TouchableOpacity, Scro
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useCheckoutStore, Address } from "../../store/useCheckoutStore";
+import { useTheme } from "../../context/ThemeContext";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/AppNavigator";
 
@@ -165,6 +166,8 @@ const sriLankaData = [
 const CheckoutShippingScreen = () => {
     const navigation = useNavigation<NavProp>();
     const { shippingAddress, setShippingAddress } = useCheckoutStore();
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
 
     const [form, setForm] = useState<Address>({
         fullName: shippingAddress?.fullName || "",
@@ -250,7 +253,7 @@ const CheckoutShippingScreen = () => {
             <TextInput
                 style={[styles.input, errors[field] && styles.inputError]}
                 placeholder={placeholder}
-                placeholderTextColor="#9CA3AF"
+                placeholderTextColor={colors.textMuted}
                 value={form[field]}
                 onChangeText={(t) => setForm({ ...form, [field]: t })}
                 keyboardType={keyboardType}
@@ -264,7 +267,7 @@ const CheckoutShippingScreen = () => {
             {/* Header */}
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Feather name="arrow-left" size={24} color="#111" />
+                    <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Checkout</Text>
                 <View style={{ width: 24 }} />
@@ -275,7 +278,7 @@ const CheckoutShippingScreen = () => {
                 <View style={styles.stepItem}>
                     <View style={styles.stepIconContainer}>
                         {/* Shipping Box Icon */}
-                        <Feather name="package" size={20} color="#111" />
+                        <Feather name="package" size={20} color={colors.background} />
                     </View>
                     <Text style={[styles.stepText, styles.stepTextActive]}>Shipping</Text>
                 </View>
@@ -284,7 +287,7 @@ const CheckoutShippingScreen = () => {
 
                 <View style={styles.stepItem}>
                     <View style={styles.stepIconContainerInactive}>
-                        <Feather name="credit-card" size={20} color="#9CA3AF" />
+                        <Feather name="credit-card" size={20} color={colors.textMuted} />
                     </View>
                     <Text style={styles.stepText}>Payment</Text>
                 </View>
@@ -293,7 +296,7 @@ const CheckoutShippingScreen = () => {
 
                 <View style={styles.stepItem}>
                     <View style={styles.stepIconContainerInactive}>
-                        <Feather name="clipboard" size={20} color="#9CA3AF" />
+                        <Feather name="clipboard" size={20} color={colors.textMuted} />
                     </View>
                     <Text style={styles.stepText}>Review</Text>
                 </View>
@@ -310,13 +313,13 @@ const CheckoutShippingScreen = () => {
                         <View style={[styles.phoneContainer, errors.phone && styles.inputError]}>
                             <View style={styles.flagContainer}>
                                 <Text style={{ fontSize: 20 }}>🇱🇰</Text>
-                                <Feather name="chevron-down" size={16} color="#4B5563" style={{ marginLeft: 4 }} />
+                                <Feather name="chevron-down" size={16} color={colors.textSecondary} style={{ marginLeft: 4 }} />
                                 <Text style={styles.prefixText}>+94</Text>
                             </View>
                             <TextInput
                                 style={styles.phoneInput}
                                 placeholder="Enter phone number"
-                                placeholderTextColor="#9CA3AF"
+                                placeholderTextColor={colors.textMuted}
                                 value={form.phone}
                                 onChangeText={(t) => setForm({ ...form, phone: t })}
                                 keyboardType="phone-pad"
@@ -335,7 +338,7 @@ const CheckoutShippingScreen = () => {
                             <Text style={province ? styles.inputText : styles.placeholderText}>
                                 {province || "Select Province"}
                             </Text>
-                            <Feather name="chevron-down" size={20} color="#4B5563" />
+                            <Feather name="chevron-down" size={20} color={colors.textSecondary} />
                         </TouchableOpacity>
                     </View>
 
@@ -349,7 +352,7 @@ const CheckoutShippingScreen = () => {
                             <Text style={form.city ? styles.inputText : styles.placeholderText}>
                                 {form.city || "Select City"}
                             </Text>
-                            <Feather name="chevron-down" size={20} color="#4B5563" />
+                            <Feather name="chevron-down" size={20} color={colors.textSecondary} />
                         </TouchableOpacity>
                         {errors.city && <Text style={styles.errorText}>{errors.city}</Text>}
                     </View>
@@ -381,7 +384,7 @@ const CheckoutShippingScreen = () => {
                                 Select {selectionMode === 'province' ? 'Province' : 'City'}
                             </Text>
                             <TouchableOpacity onPress={() => setModalVisible(false)}>
-                                <Feather name="x" size={24} color="#111" />
+                                <Feather name="x" size={24} color={colors.text} />
                             </TouchableOpacity>
                         </View>
 
@@ -400,7 +403,7 @@ const CheckoutShippingScreen = () => {
                                 </TouchableOpacity>
                             )}
                             ListEmptyComponent={
-                                <Text style={{ textAlign: 'center', padding: 20, color: '#999' }}>
+                                <Text style={{ textAlign: 'center', padding: 20, color: colors.textMuted }}>
                                     No options available
                                 </Text>
                             }
@@ -412,67 +415,67 @@ const CheckoutShippingScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F3F4F6'
+        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: colors.border
     },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: '#111' },
+    headerTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
 
     // Stepper
     stepperContainer: {
         flexDirection: 'row',
-        alignItems: 'flex-start', // Align to top so text aligns 
+        alignItems: 'flex-start',
         justifyContent: 'center',
         marginVertical: 24
     },
     stepItem: { alignItems: 'center', gap: 6 },
     stepIconContainer: {
         width: 40, height: 40, borderRadius: 20,
-        backgroundColor: '#fff', borderWidth: 1.5, borderColor: '#111', // Active is black/bold
+        backgroundColor: colors.text, borderWidth: 1.5, borderColor: colors.text,
         alignItems: 'center', justifyContent: 'center'
     },
     stepIconContainerInactive: {
         width: 40, height: 40, borderRadius: 20,
-        backgroundColor: '#fff', borderWidth: 1, borderColor: '#E5E7EB',
+        backgroundColor: colors.card, borderWidth: 1, borderColor: colors.border,
         alignItems: 'center', justifyContent: 'center'
     },
-    stepText: { fontSize: 12, color: '#9CA3AF', fontWeight: '500' },
-    stepTextActive: { color: '#000', fontWeight: '700' },
-    stepLine: { width: 30, height: 1, backgroundColor: '#E5E7EB', marginHorizontal: 8, marginTop: 20 },
+    stepText: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
+    stepTextActive: { color: colors.text, fontWeight: '700' },
+    stepLine: { width: 30, height: 1, backgroundColor: colors.border, marginHorizontal: 8, marginTop: 20 },
 
     // Form
     inputGroup: { marginBottom: 16 },
-    label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: '#374151' },
+    label: { fontSize: 14, fontWeight: '600', marginBottom: 8, color: colors.textSecondary },
     input: {
-        height: 52, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12,
-        paddingHorizontal: 16, fontSize: 15, color: '#111', backgroundColor: '#fff'
+        height: 52, borderWidth: 1, borderColor: colors.border, borderRadius: 12,
+        paddingHorizontal: 16, fontSize: 15, color: colors.text, backgroundColor: colors.inputBg
     },
     dropdownInput: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between'
     },
-    inputText: { color: '#111', fontSize: 15 },
-    placeholderText: { color: '#9CA3AF', fontSize: 15 },
+    inputText: { color: colors.text, fontSize: 15 },
+    placeholderText: { color: colors.textMuted, fontSize: 15 },
 
     // Phone Input
     phoneContainer: {
-        flexDirection: 'row', height: 52, borderWidth: 1, borderColor: '#E5E7EB', borderRadius: 12,
+        flexDirection: 'row', height: 52, borderWidth: 1, borderColor: colors.border, borderRadius: 12,
         overflow: 'hidden', alignItems: 'center'
     },
     flagContainer: {
         flexDirection: 'row', alignItems: 'center', paddingHorizontal: 12,
-        borderRightWidth: 1, borderRightColor: '#E5E7EB', height: '100%',
-        backgroundColor: '#F9FAFB'
+        borderRightWidth: 1, borderRightColor: colors.border, height: '100%',
+        backgroundColor: colors.iconBg
     },
-    prefixText: { fontSize: 15, color: '#374151', marginLeft: 6, fontWeight: '500' },
-    phoneInput: { flex: 1, paddingHorizontal: 12, fontSize: 15, color: '#111' },
+    prefixText: { fontSize: 15, color: colors.textSecondary, marginLeft: 6, fontWeight: '500' },
+    phoneInput: { flex: 1, paddingHorizontal: 12, fontSize: 15, color: colors.text, backgroundColor: colors.inputBg },
 
     inputError: { borderColor: '#EF4444' },
     errorText: { color: '#EF4444', fontSize: 12, marginTop: 4 },
 
-    footer: { position: 'absolute', bottom: 0, width: '100%', padding: 20, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#F3F4F6' },
-    btn: { backgroundColor: '#111', height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    footer: { position: 'absolute', bottom: 0, width: '100%', padding: 20, backgroundColor: colors.background, borderTopWidth: 1, borderColor: colors.border },
+    btn: { backgroundColor: isDark ? '#3B5BFF' : '#111', height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
     btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 
     // Modal
@@ -482,7 +485,7 @@ const styles = StyleSheet.create({
         justifyContent: "flex-end",
     },
     modalContent: {
-        backgroundColor: "#fff",
+        backgroundColor: colors.card,
         borderTopLeftRadius: 20,
         borderTopRightRadius: 20,
         paddingBottom: 40,
@@ -494,11 +497,12 @@ const styles = StyleSheet.create({
         alignItems: "center",
         padding: 20,
         borderBottomWidth: 1,
-        borderBottomColor: "#F3F4F6",
+        borderBottomColor: colors.border,
     },
     modalTitle: {
         fontSize: 18,
         fontWeight: "700",
+        color: colors.text
     },
     modalItem: {
         flexDirection: "row",
@@ -507,11 +511,11 @@ const styles = StyleSheet.create({
         paddingVertical: 16,
         paddingHorizontal: 20,
         borderBottomWidth: 1,
-        borderBottomColor: "#F3F4F6",
+        borderBottomColor: colors.border,
     },
     modalItemText: {
         fontSize: 16,
-        color: "#333",
+        color: colors.text,
     },
 });
 

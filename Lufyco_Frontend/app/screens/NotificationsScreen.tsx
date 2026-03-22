@@ -111,7 +111,8 @@ const MOCK_NOTIFICATIONS: Notification[] = [
 ];
 
 const NotificationsScreen = ({ navigation }: Props) => {
-    const { colors, isDark: dark } = useTheme();
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
     const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
 
     const unreadCount = notifications.filter(n => !n.read).length;
@@ -130,8 +131,7 @@ const NotificationsScreen = ({ navigation }: Props) => {
         <TouchableOpacity
             style={[
                 styles.notificationCard, 
-                { backgroundColor: colors.card },
-                !item.read && { backgroundColor: dark ? '#1A1A1A' : '#FAFBFF' }
+                !item.read && styles.unreadCard
             ]}
             onPress={() => markAsRead(item.id)}
             activeOpacity={0.7}
@@ -141,12 +141,12 @@ const NotificationsScreen = ({ navigation }: Props) => {
             </View>
             <View style={styles.notificationContent}>
                 <View style={styles.notificationHeader}>
-                    <Text style={[styles.notificationTitle, { color: colors.text }, !item.read && { fontWeight: '700' }]} numberOfLines={1}>
+                    <Text style={[styles.notificationTitle, !item.read && styles.unreadTitle]} numberOfLines={1}>
                         {item.title}
                     </Text>
                     {!item.read && <View style={styles.unreadDot} />}
                 </View>
-                <Text style={[styles.notificationMessage, { color: colors.textMuted }]} numberOfLines={2}>
+                <Text style={styles.notificationMessage} numberOfLines={2}>
                     {item.message}
                 </Text>
                 <Text style={styles.notificationTime}>{item.time}</Text>
@@ -155,14 +155,14 @@ const NotificationsScreen = ({ navigation }: Props) => {
     );
 
     return (
-        <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.background }]}>
-            <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <SafeAreaView style={styles.safeArea}>
+            <View style={styles.container}>
                 {/* Header */}
-                <View style={[styles.header, { borderBottomColor: colors.border }]}>
+                <View style={styles.header}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
                         <Feather name="arrow-left" size={24} color={colors.text} />
                     </TouchableOpacity>
-                    <Text style={[styles.headerTitle, { color: colors.text }]}>Notifications</Text>
+                    <Text style={styles.headerTitle}>Notifications</Text>
                     <TouchableOpacity onPress={markAllAsRead} disabled={unreadCount === 0}>
                         <Text style={[styles.markAllText, unreadCount === 0 && { opacity: 0.3 }]}>
                             Mark all read
@@ -172,7 +172,7 @@ const NotificationsScreen = ({ navigation }: Props) => {
 
                 {/* Unread Badge */}
                 {unreadCount > 0 && (
-                    <View style={[styles.unreadBanner, { backgroundColor: dark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF' }]}>
+                    <View style={styles.unreadBanner}>
                         <Feather name="bell" size={16} color="#3B82F6" />
                         <Text style={styles.unreadBannerText}>
                             {`You have ${unreadCount} unread notification${unreadCount > 1 ? 's' : ''}`}
@@ -187,12 +187,12 @@ const NotificationsScreen = ({ navigation }: Props) => {
                     renderItem={renderNotification}
                     contentContainerStyle={styles.listContainer}
                     showsVerticalScrollIndicator={false}
-                    ItemSeparatorComponent={() => <View style={[styles.separator, { backgroundColor: colors.border }]} />}
+                    ItemSeparatorComponent={() => <View style={styles.separator} />}
                     ListEmptyComponent={
                         <View style={styles.emptyState}>
                             <Feather name="bell-off" size={48} color={colors.textMuted} />
-                            <Text style={[styles.emptyText, { color: colors.text }]}>No notifications yet</Text>
-                            <Text style={[styles.emptySubtext, { color: colors.textMuted }]}>We'll notify you about deals and order updates!</Text>
+                            <Text style={styles.emptyText}>No notifications yet</Text>
+                            <Text style={styles.emptySubtext}>We'll notify you about deals and order updates!</Text>
                         </View>
                     }
                 />
@@ -201,20 +201,20 @@ const NotificationsScreen = ({ navigation }: Props) => {
     );
 };
 
-const styles = StyleSheet.create({
-    safeArea: { flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
-    container: { flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+    safeArea: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+    container: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1,
+        paddingHorizontal: 16, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: colors.border
     },
     backBtn: { padding: 4 },
-    headerTitle: { fontSize: 20, fontWeight: '700' },
+    headerTitle: { fontSize: 20, fontWeight: '700', color: colors.text },
     markAllText: { fontSize: 13, color: '#3B82F6', fontWeight: '600' },
 
     unreadBanner: {
-        flexDirection: 'row', alignItems: 'center', backgroundColor: '#EFF6FF',
+        flexDirection: 'row', alignItems: 'center', backgroundColor: isDark ? 'rgba(59, 130, 246, 0.15)' : '#EFF6FF',
         paddingHorizontal: 16, paddingVertical: 10, marginHorizontal: 16, marginTop: 12,
         borderRadius: 10,
     },
@@ -223,9 +223,9 @@ const styles = StyleSheet.create({
     listContainer: { padding: 16, paddingBottom: 40 },
 
     notificationCard: {
-        flexDirection: 'row', padding: 14, borderRadius: 14,
+        flexDirection: 'row', padding: 14, borderRadius: 14, backgroundColor: colors.card
     },
-    unreadCard: { },
+    unreadCard: { backgroundColor: isDark ? '#1A1A1A' : '#FAFBFF' },
 
     iconContainer: {
         width: 42, height: 42, borderRadius: 12, justifyContent: 'center',
@@ -234,18 +234,18 @@ const styles = StyleSheet.create({
 
     notificationContent: { flex: 1 },
     notificationHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 },
-    notificationTitle: { fontSize: 14, flex: 1, marginRight: 8 },
+    notificationTitle: { fontSize: 14, flex: 1, marginRight: 8, color: colors.text },
     unreadTitle: { fontWeight: '700' },
     unreadDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#3B82F6' },
 
-    notificationMessage: { fontSize: 13, color: '#666', lineHeight: 18, marginBottom: 6 },
-    notificationTime: { fontSize: 11, color: '#aaa', fontWeight: '500' },
+    notificationMessage: { fontSize: 13, color: colors.textMuted, lineHeight: 18, marginBottom: 6 },
+    notificationTime: { fontSize: 11, color: colors.textSecondary, fontWeight: '500' },
 
-    separator: { height: 1, marginVertical: 4 },
+    separator: { height: 1, marginVertical: 4, backgroundColor: colors.border },
 
     emptyState: { alignItems: 'center', paddingTop: 100 },
-    emptyText: { fontSize: 16, fontWeight: '600', marginTop: 16 },
-    emptySubtext: { fontSize: 13, marginTop: 6 },
+    emptyText: { fontSize: 16, fontWeight: '600', marginTop: 16, color: colors.text },
+    emptySubtext: { fontSize: 13, marginTop: 6, color: colors.textMuted },
 });
 
 export default NotificationsScreen;

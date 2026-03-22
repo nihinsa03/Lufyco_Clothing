@@ -16,7 +16,8 @@ const CheckoutReviewScreen = () => {
     const { items, getTotalPrice, clearCart } = useCartStore();
     const { shippingAddress, paymentMethod } = useCheckoutStore();
     const { addOrder } = useOrdersStore();
-    const { colors } = useTheme();
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
 
     const subtotal = getTotalPrice();
     const shippingCost = 0; // Free shipping logic for now
@@ -173,46 +174,46 @@ const CheckoutReviewScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F3F4F6'
+        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: colors.border
     },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: '#111' },
+    headerTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
 
     stepperContainer: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginVertical: 20 },
     stepItem: { alignItems: 'center' },
-    stepCircle: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F3F4F6', alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
+    stepCircle: { width: 32, height: 32, borderRadius: 16, backgroundColor: colors.iconBg, alignItems: 'center', justifyContent: 'center', marginBottom: 6 },
     stepActive: { backgroundColor: '#2563EB' },
     stepDone: { backgroundColor: '#2563EB' },
-    stepText: { fontSize: 12, color: '#999', fontWeight: '500' },
+    stepText: { fontSize: 12, color: colors.textSecondary, fontWeight: '500' },
     stepTextActive: { color: '#2563EB', fontWeight: '700' },
     stepTextDone: { color: '#2563EB', fontWeight: '700' },
-    line: { width: 40, height: 2, backgroundColor: '#F3F4F6', marginBottom: 16, marginHorizontal: 8 },
+    line: { width: 40, height: 2, backgroundColor: colors.border, marginBottom: 16, marginHorizontal: 8 },
 
-    card: { padding: 16, backgroundColor: '#F9FAFB', borderRadius: 12, marginBottom: 16 },
+    card: { padding: 16, backgroundColor: colors.card, borderRadius: 12, marginBottom: 16 },
     cardHeader: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-    cardTitle: { fontSize: 15, fontWeight: '700', color: '#111' },
-    cardText: { fontSize: 14, color: '#333', marginBottom: 2 },
+    cardTitle: { fontSize: 15, fontWeight: '700', color: colors.text },
+    cardText: { fontSize: 14, color: colors.text, marginBottom: 2 },
 
     itemRow: { flexDirection: 'row', marginBottom: 12 },
-    thumb: { width: 50, height: 50, borderRadius: 8, backgroundColor: '#eee' },
-    itemTitle: { fontSize: 14, fontWeight: '600', color: '#111' },
-    itemMeta: { fontSize: 12, color: '#666' },
-    itemPrice: { fontSize: 13, fontWeight: '700' },
-    itemQty: { fontSize: 13, color: '#666' },
+    thumb: { width: 50, height: 50, borderRadius: 8, backgroundColor: colors.iconBg },
+    itemTitle: { fontSize: 14, fontWeight: '600', color: colors.text },
+    itemMeta: { fontSize: 12, color: colors.textSecondary },
+    itemPrice: { fontSize: 13, fontWeight: '700', color: colors.text },
+    itemQty: { fontSize: 13, color: colors.textSecondary },
 
-    deliveryCard: { padding: 16, backgroundColor: '#F0FDF4', borderRadius: 12, marginBottom: 16, borderWidth: 1, borderColor: '#DCFCE7' },
+    deliveryCard: { padding: 16, backgroundColor: isDark ? '#064E3B' : '#F0FDF4', borderRadius: 12, marginBottom: 16, borderWidth: 1, borderColor: isDark ? '#047857' : '#DCFCE7' },
 
     totalsSection: { marginTop: 10 },
     row: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 8 },
-    label: { fontSize: 14, color: '#666' },
-    val: { fontSize: 14, fontWeight: '600', color: '#111' },
+    label: { fontSize: 14, color: colors.textSecondary },
+    val: { fontSize: 14, fontWeight: '600', color: colors.text },
 
-    footer: { position: 'absolute', bottom: 0, width: '100%', padding: 20, backgroundColor: '#fff', borderTopWidth: 1, borderColor: '#F3F4F6' },
-    btn: { backgroundColor: '#111', height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
-    btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
+    footer: { position: 'absolute', bottom: 0, width: '100%', padding: 20, backgroundColor: colors.background, borderTopWidth: 1, borderColor: colors.border },
+    btn: { backgroundColor: isDark ? '#fff' : '#111', height: 56, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+    btnText: { color: isDark ? '#111' : '#fff', fontSize: 16, fontWeight: '700' },
 });
 
 export default CheckoutReviewScreen;

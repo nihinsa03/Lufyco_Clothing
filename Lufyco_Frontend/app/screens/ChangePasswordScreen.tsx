@@ -2,12 +2,15 @@ import React, { useState } from "react";
 import { SafeAreaView, View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useAuth } from "../context/AuthContext";
+import { useTheme } from "../context/ThemeContext";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ChangePassword">;
 
 const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
     const [oldPassword, setOldPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
@@ -37,7 +40,7 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
         <SafeAreaView style={styles.safe}>
             <View style={styles.header}>
                 <TouchableOpacity onPress={() => navigation.goBack()} style={{ padding: 6 }}>
-                    <Feather name="arrow-left" size={24} />
+                    <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
                 <Text style={styles.headerTitle}>Change Password</Text>
                 <View style={{ width: 24 }} />
@@ -49,6 +52,7 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
                     style={styles.input}
                     secureTextEntry
                     placeholder="Enter old password"
+                    placeholderTextColor={colors.textMuted}
                     value={oldPassword}
                     onChangeText={setOldPassword}
                 />
@@ -58,6 +62,7 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
                     style={styles.input}
                     secureTextEntry
                     placeholder="Enter new password"
+                    placeholderTextColor={colors.textMuted}
                     value={newPassword}
                     onChangeText={setNewPassword}
                 />
@@ -67,29 +72,30 @@ const ChangePasswordScreen: React.FC<Props> = ({ navigation }) => {
                     style={styles.input}
                     secureTextEntry
                     placeholder="Confirm new password"
+                    placeholderTextColor={colors.textMuted}
                     value={confirmPassword}
                     onChangeText={setConfirmPassword}
                 />
 
                 <TouchableOpacity style={styles.btn} onPress={handleSubmit} disabled={loading}>
-                    {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.btnText}>Change Password</Text>}
+                    {loading ? <ActivityIndicator color={isDark ? "#111" : "#fff"} /> : <Text style={styles.btnText}>Change Password</Text>}
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
     );
 };
 
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: { flexDirection: "row", alignItems: "center", justifyContent: "space-between", padding: 16 },
-    headerTitle: { fontSize: 18, fontWeight: "700" },
+    headerTitle: { fontSize: 18, fontWeight: "700", color: colors.text },
 
     content: { padding: 20 },
-    label: { fontWeight: "700", marginBottom: 8, marginTop: 16 },
-    input: { borderWidth: 1, borderColor: "#E5E7EB", borderRadius: 12, padding: 14, backgroundColor: "#F9FAFB" },
+    label: { fontWeight: "700", marginBottom: 8, marginTop: 16, color: colors.text },
+    input: { borderWidth: 1, borderColor: colors.border, borderRadius: 12, padding: 14, backgroundColor: colors.inputBg, color: colors.text },
 
-    btn: { backgroundColor: "#111", height: 50, borderRadius: 12, alignItems: "center", justifyContent: "center", marginTop: 32 },
-    btnText: { color: "#fff", fontWeight: "700", fontSize: 16 },
+    btn: { backgroundColor: isDark ? "#fff" : "#111", height: 50, borderRadius: 12, alignItems: "center", justifyContent: "center", marginTop: 32 },
+    btnText: { color: isDark ? "#111" : "#fff", fontWeight: "700", fontSize: 16 },
 });
 
 export default ChangePasswordScreen;

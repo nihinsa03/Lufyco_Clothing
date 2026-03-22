@@ -21,6 +21,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     const addItemToCart = useCartStore((state) => state.addItem);
     const { toggleWishlist, isInWishlist } = useWishlistStore();
     const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
 
     // Local State
     const fullProduct = getProductById(id) || paramProduct;
@@ -331,8 +332,8 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     );
 };
 
-const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+    safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center',
         paddingHorizontal: 16, paddingVertical: 10, zIndex: 10
@@ -343,57 +344,57 @@ const styles = StyleSheet.create({
     heroImage: {
         width: width,
         height: 420,
-        backgroundColor: '#F3F4F6'
+        backgroundColor: colors.iconBg
     },
     content: {
         padding: 24,
         borderTopLeftRadius: 30,
         borderTopRightRadius: 30,
         marginTop: -30,
-        backgroundColor: '#fff',
+        backgroundColor: colors.card,
     },
 
     topRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 10 },
     ratingRow: { flexDirection: 'row', alignItems: 'center' },
-    reviewCount: { color: '#666', fontSize: 13, marginLeft: 6, fontWeight: '500' },
+    reviewCount: { color: colors.textSecondary, fontSize: 13, marginLeft: 6, fontWeight: '500' },
 
     titlePriceRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: 15 },
-    title: { fontSize: 24, fontWeight: 'bold', color: '#111', lineHeight: 30, marginBottom: 4 },
-    categoryText: { color: '#666', fontSize: 14 },
-    price: { fontSize: 22, fontWeight: 'bold', color: '#111' },
+    title: { fontSize: 24, fontWeight: 'bold', color: colors.text, lineHeight: 30, marginBottom: 4 },
+    categoryText: { color: colors.textSecondary, fontSize: 14 },
+    price: { fontSize: 22, fontWeight: 'bold', color: colors.text },
 
-    description: { color: '#666', lineHeight: 22, fontSize: 14 },
-    readMore: { color: '#111', fontWeight: 'bold' },
-    divider: { height: 1, backgroundColor: '#F3F4F6', marginVertical: 20 },
+    description: { color: colors.textSecondary, lineHeight: 22, fontSize: 14 },
+    readMore: { color: colors.text, fontWeight: 'bold' },
+    divider: { height: 1, backgroundColor: colors.border, marginVertical: 20 },
 
     section: { marginBottom: 24 },
-    label: { fontSize: 16, fontWeight: '700', marginBottom: 12, color: '#111' },
+    label: { fontSize: 16, fontWeight: '700', marginBottom: 12, color: colors.text },
     optionsRow: { flexDirection: 'row', flexWrap: 'wrap' },
 
     // Colors
     colorDot: {
         width: 36, height: 36, borderRadius: 18, marginRight: 15,
         alignItems: 'center', justifyContent: 'center',
-        borderWidth: 1, borderColor: '#ddd'
+        borderWidth: 1, borderColor: colors.border
     },
-    colorSelected: { borderWidth: 2, borderColor: '#111' },
+    colorSelected: { borderWidth: 2, borderColor: colors.text },
 
     // Sizes
     sizeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
-    sizeGuide: { color: '#666', textDecorationLine: 'underline', fontSize: 13 },
+    sizeGuide: { color: colors.textSecondary, textDecorationLine: 'underline', fontSize: 13 },
     sizeChip: {
         width: 48, height: 48, borderRadius: 24,
-        borderWidth: 1, borderColor: '#E5E7EB',
+        borderWidth: 1, borderColor: colors.border,
         alignItems: 'center', justifyContent: 'center', marginRight: 12,
     },
-    sizeChipSelected: { backgroundColor: '#111', borderColor: '#111' },
-    sizeText: { fontSize: 14, fontWeight: '600', color: '#111' },
-    sizeTextSelected: { color: '#fff' },
+    sizeChipSelected: { backgroundColor: colors.text, borderColor: colors.text },
+    sizeText: { fontSize: 14, fontWeight: '600', color: colors.text },
+    sizeTextSelected: { color: colors.background },
 
     // Stepper
     stepperContainer: {
         flexDirection: 'row', alignItems: 'center',
-        backgroundColor: '#F9FAFB', alignSelf: 'flex-start',
+        backgroundColor: colors.iconBg, alignSelf: 'flex-start',
         borderRadius: 12, paddingHorizontal: 5
     },
     stepBtn: {
@@ -404,28 +405,29 @@ const styles = StyleSheet.create({
     // Bottom Bar
     bottomBar: {
         position: 'absolute', bottom: 0, width: '100%',
-        backgroundColor: '#fff', padding: 20, paddingBottom: 30,
-        borderTopWidth: 1, borderColor: '#F3F4F6',
+        backgroundColor: colors.card, padding: 20, paddingBottom: 30,
+        borderTopWidth: 1, borderColor: colors.border,
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
         shadowColor: '#000', shadowOpacity: 0.05, shadowRadius: 10, elevation: 10,
     },
     wishBtn: {
         width: 52, height: 52, borderRadius: 16,
-        borderWidth: 1, borderColor: '#E5E7EB',
-        alignItems: 'center', justifyContent: 'center', marginRight: 12
+        borderWidth: 1, borderColor: colors.border,
+        alignItems: 'center', justifyContent: 'center', marginRight: 12,
+        backgroundColor: colors.card
     },
     buyBtn: {
         flex: 1, height: 52, borderRadius: 16,
-        backgroundColor: '#fff', borderWidth: 1, borderColor: '#111',
+        backgroundColor: colors.card, borderWidth: 1, borderColor: colors.text,
         alignItems: 'center', justifyContent: 'center', marginRight: 12
     },
-    buyBtnText: { fontWeight: '700', fontSize: 15, color: '#111' },
+    buyBtnText: { fontWeight: '700', fontSize: 15, color: colors.text },
     addBtn: {
         width: '100%', height: 52, borderRadius: 16,
-        backgroundColor: '#111',
+        backgroundColor: colors.text,
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center'
     },
-    addBtnText: { fontWeight: '700', fontSize: 15, color: '#fff' },
+    addBtnText: { fontWeight: '700', fontSize: 15, color: colors.background },
 
     // Success Overlay
     successOverlay: {
@@ -434,7 +436,7 @@ const styles = StyleSheet.create({
         zIndex: 200, pointerEvents: 'none'
     },
     successBox: {
-        backgroundColor: 'rgba(0,0,0,0.85)',
+        backgroundColor: isDark ? '#333' : 'rgba(0,0,0,0.85)',
         paddingHorizontal: 25, paddingVertical: 20,
         borderRadius: 16,
         alignItems: 'center',
@@ -447,13 +449,13 @@ const styles = StyleSheet.create({
     successText: { color: '#fff', fontSize: 16, fontWeight: '600' },
 
     // Modal Styles
-    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
-    modalContent: { width: '85%', backgroundColor: '#fff', borderRadius: 16, padding: 20 },
+    modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.7)', justifyContent: 'center', alignItems: 'center', zIndex: 1000 },
+    modalContent: { width: '85%', backgroundColor: colors.card, borderRadius: 16, padding: 20 },
     modalHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 },
-    modalTitle: { fontSize: 18, fontWeight: '700', color: '#111' },
-    tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: '#F3F4F6', paddingVertical: 12 },
-    tableCell: { flex: 1, textAlign: 'center', fontSize: 14, color: '#333' },
-    tableHeader: { fontWeight: '700', color: '#111' }
+    modalTitle: { fontSize: 18, fontWeight: '700', color: colors.text },
+    tableRow: { flexDirection: 'row', borderBottomWidth: 1, borderBottomColor: colors.border, paddingVertical: 12 },
+    tableCell: { flex: 1, textAlign: 'center', fontSize: 14, color: colors.text },
+    tableHeader: { fontWeight: '700', color: colors.text }
 });
 
 export default ProductDetailsScreen;
