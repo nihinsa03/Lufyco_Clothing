@@ -114,8 +114,6 @@ const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
       {/* Upload Card */}
       <View style={styles.cardWrap}>
         <View style={styles.card}>
-          <View style={styles.badge} />
-
           <View style={styles.bigIconWrap}>
             <View style={styles.bigIconBg}>
               <Feather name="camera" size={30} color="#5B8DFF" />
@@ -138,8 +136,6 @@ const AddToClosetScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.actionText}>Gallery</Text>
             </TouchableOpacity>
           </View>
-
-          <View style={styles.badge} />
         </View>
       </View>
 
@@ -209,12 +205,12 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    backgroundColor: colors.text,
+    backgroundColor: "#2563EB",
     paddingHorizontal: 16,
     paddingVertical: 10,
     borderRadius: 12,
   },
-  actionText: { color: colors.background, fontWeight: "700" },
+  actionText: { color: "#fff", fontWeight: "700" },
 
   bottomBar: {
     position: "absolute",
