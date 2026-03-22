@@ -1,13 +1,15 @@
 import React, { useState } from "react";
-import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Alert, Platform, StatusBar } from "react-native";
+import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, ScrollView, Image, Alert, ActivityIndicator, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { useCartStore } from "../../store/useCartStore";
 import { useCheckoutStore } from "../../store/useCheckoutStore";
 import { useOrdersStore, Order } from "../../store/useOrdersStore";
+import { useAuthStore } from "../../store/useAuthStore";
 import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../../navigation/AppNavigator";
 import { useTheme } from "../../context/ThemeContext";
+import api from "../../api/api";
 
 type NavProp = NativeStackNavigationProp<RootStackParamList, "CheckoutReview">;
 
@@ -16,8 +18,10 @@ const CheckoutReviewScreen = () => {
     const { items, getTotalPrice, clearCart } = useCartStore();
     const { shippingAddress, paymentMethod } = useCheckoutStore();
     const { addOrder } = useOrdersStore();
+    const { user } = useAuthStore();
     const { colors, isDark } = useTheme();
     const styles = getStyles(colors, isDark);
+    const [placing, setPlacing] = useState(false);
 
     const subtotal = getTotalPrice();
     const shippingCost = 0; // Free shipping logic for now
@@ -25,17 +29,21 @@ const CheckoutReviewScreen = () => {
 
     const [deliveryType, setDeliveryType] = useState<'standard' | 'express'>('standard');
 
-    const onPlaceOrder = () => {
+    const onPlaceOrder = async () => {
         if (!shippingAddress || !paymentMethod) {
             Alert.alert("Error", "Missing shipping or payment info.");
             return;
         }
 
+        setPlacing(true);
+
+        const localOrderId = `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+
         const newOrder: Order = {
-            id: `ORD-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+            id: localOrderId,
             date: new Date().toISOString(),
             status: 'Processing',
-            items: [...items], // Clone items
+            items: [...items],
             address: shippingAddress,
             payment: paymentMethod,
             subtotal,
@@ -44,8 +52,45 @@ const CheckoutReviewScreen = () => {
             total
         };
 
+        // Save to local Zustand store first (works offline too)
         addOrder(newOrder);
         clearCart();
+
+        // Also save to MongoDB via backend API
+        try {
+            if (user?.id) {
+                const apiOrderItems = items.map(item => ({
+                    name: item.title,
+                    qty: item.qty,
+                    image: typeof item.image === 'string' ? item.image : '',
+                    price: item.price,
+                    product: item.productId,
+                    size: item.size,
+                    color: item.color,
+                }));
+
+                await api.post('/orders', {
+                    user: user.id,
+                    orderItems: apiOrderItems,
+                    shippingAddress: {
+                        address: shippingAddress.addressLine,
+                        city: shippingAddress.city,
+                        postalCode: shippingAddress.postalCode,
+                        country: shippingAddress.country,
+                    },
+                    paymentMethod: paymentMethod.method,
+                    taxPrice: 0,
+                    shippingPrice: shippingCost,
+                    totalPrice: total,
+                });
+            }
+        } catch (err) {
+            // Non-blocking: order already saved locally; just log the error
+            console.warn('Failed to sync order to MongoDB:', err);
+        }
+
+        setPlacing(false);
+
         navigation.reset({
             index: 0,
             routes: [{ name: 'OrderSuccess' }],
@@ -166,8 +211,11 @@ const CheckoutReviewScreen = () => {
             </ScrollView>
 
             <View style={[styles.footer, { backgroundColor: colors.background, borderColor: colors.border }]}>
-                <TouchableOpacity style={styles.btn} onPress={onPlaceOrder}>
-                    <Text style={styles.btnText}>Place Order</Text>
+                <TouchableOpacity style={[styles.btn, placing && { opacity: 0.7 }]} onPress={onPlaceOrder} disabled={placing}>
+                    {placing
+                        ? <ActivityIndicator color={isDark ? '#111' : '#fff'} />
+                        : <Text style={styles.btnText}>Place Order</Text>
+                    }
                 </TouchableOpacity>
             </View>
         </SafeAreaView>
