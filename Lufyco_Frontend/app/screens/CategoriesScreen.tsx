@@ -12,8 +12,8 @@ const { width } = Dimensions.get('window');
 const SIDEBAR_ITEMS = [
   { id: 'men', name: "Men's Wear", image: require('../../assets/images/categories/men/mens_wear_hero.png') },
   { id: 'women', name: "Women's Wear", image: require('../../assets/images/categories/women/womens_wear_hero.png') },
-  { id: 'kids', name: "Kids's Wear", image: require('../../assets/images/categories/kids_wear_hero.png') },
-  { id: 'footwear', name: "Foot Wear", image: require('../../assets/images/categories/footwear/footwear_hero_new.jpg') },
+  { id: 'kids', name: "Kids' Wear", image: require('../../assets/images/categories/kids_wear_hero.png') },
+  { id: 'footwear', name: "Footwear", image: require('../../assets/images/categories/footwear/footwear_hero_new.jpg') },
   { id: 'beauty', name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
   { id: 'jewellery', name: "Jewellery", image: require('../../assets/images/categories/jewellery/jewellery.png') },
   { id: 'accessories', name: "Accessories", image: require('../../assets/images/categories/accessories/handbag_hero.png') },
@@ -136,7 +136,7 @@ const CategoriesScreen = () => {
         { id: "cat_kids_girls_clothing_sets", name: "CLOTHING SETS", image: require("../../assets/images/categories/kids/clothing_sets.jpg") },
         { id: "cat_kids_girls_shorts_skirts", name: "SHORTS & SKIRTS", image: require("../../assets/images/categories/kids/shorts_skirts.jpg") },
         { id: "cat_kids_girls_jeans", name: "JEANS", image: require("../../assets/images/categories/kids/jeans.jpg") },
-        { id: "cat_kids_girls_footwear", name: "FOOT WEAR", image: require("../../assets/images/categories/kids/footwear.jpg") },
+        { id: "cat_kids_girls_footwear", name: "FOOTWEAR", image: require("../../assets/images/categories/kids/footwear.jpg") },
       ]
     },
     {
@@ -146,7 +146,7 @@ const CategoriesScreen = () => {
         { id: "cat_kids_boys_clothing_sets", name: "CLOTHING SETS", image: require("../../assets/images/categories/kids/boys_clothing_sets.jpg") },
         { id: "cat_kids_boys_jeans", name: "JEANS", image: require("../../assets/images/categories/kids/boys_jeans.jpg") },
         { id: "cat_kids_boys_shirts", name: "SHIRTS", image: require("../../assets/images/categories/kids/boys_shirts.jpg") },
-        { id: "cat_kids_boys_footwear", name: "FOOT WEAR", image: require("../../assets/images/categories/kids/boys_footwear.jpg") },
+        { id: "cat_kids_boys_footwear", name: "FOOTWEAR", image: require("../../assets/images/categories/kids/boys_footwear.jpg") },
       ]
     }
   ];
