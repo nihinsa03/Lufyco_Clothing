@@ -54,8 +54,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-end',
     width: '100%',
-    minHeight: height,
-  paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  },
   overlay: {
     ...StyleSheet.absoluteFillObject,
     backgroundColor: 'rgba(0,0,0,0.3)'

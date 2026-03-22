@@ -142,49 +142,16 @@ const HomeScreen = ({ navigation }: Props) => {
             </TouchableOpacity>
           </View>
 
-          {/* Categories - 2 separate scrolling grids (6 columns x 2 rows each) */}
+          {/* Categories - 1 scrolling grid (12 columns x 2 rows) */}
           <View style={{ marginBottom: 32 }}>
-            {/* Top Grid (Items 0-11) */}
-            <ScrollView
-              horizontal
-              showsHorizontalScrollIndicator={false}
-              contentContainerStyle={{ paddingHorizontal: 0, marginBottom: 24 }}
-            >
-              {[0, 1, 2, 3, 4, 5].map((colIndex) => {
-                const topItem = mockCategories[colIndex];
-                const bottomItem = mockCategories[colIndex + 6];
-                return (
-                  <View key={colIndex} style={{ marginRight: 16, rowGap: 16 }}>
-                    {topItem && (
-                      <TouchableOpacity style={styles.sliderCategoryItem} onPress={() => handleCategoryPress(topItem.id)}>
-                        <View style={styles.categoryImageContainer}>
-                          <Image source={typeof topItem.image === 'string' ? { uri: topItem.image } : topItem.image} style={styles.categoryImage} resizeMode="cover" />
-                        </View>
-                        <Text style={[styles.categoryName, { color: colors.text }]}>{topItem.name}</Text>
-                      </TouchableOpacity>
-                    )}
-                    {bottomItem && (
-                      <TouchableOpacity style={styles.sliderCategoryItem} onPress={() => handleCategoryPress(bottomItem.id)}>
-                        <View style={styles.categoryImageContainer}>
-                          <Image source={typeof bottomItem.image === 'string' ? { uri: bottomItem.image } : bottomItem.image} style={styles.categoryImage} resizeMode="cover" />
-                        </View>
-                        <Text style={[styles.categoryName, { color: colors.text }]}>{bottomItem.name}</Text>
-                      </TouchableOpacity>
-                    )}
-                  </View>
-                );
-              })}
-            </ScrollView>
-
-            {/* Bottom Grid (Items 12-23) */}
             <ScrollView
               horizontal
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 0 }}
             >
-              {[0, 1, 2, 3, 4, 5].map((colIndex) => {
-                const topItem = mockCategories[12 + colIndex];
-                const bottomItem = mockCategories[12 + colIndex + 6];
+              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((colIndex) => {
+                const topItem = mockCategories[colIndex];
+                const bottomItem = mockCategories[colIndex + 12];
                 return (
                   <View key={colIndex} style={{ marginRight: 16, rowGap: 16 }}>
                     {topItem && (
