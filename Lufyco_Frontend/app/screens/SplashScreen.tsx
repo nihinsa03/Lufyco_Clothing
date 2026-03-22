@@ -1,10 +1,10 @@
 import React, { useEffect } from 'react';
-import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Platform, StatusBar } from "react-native";
-
-const { width, height } = Dimensions.get('screen');
+import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions } from 'react-native';
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
+
+const { width, height } = Dimensions.get('screen');
 
 type RootStackParamList = {
   Splash: undefined;
@@ -27,20 +27,20 @@ const SplashScreen = ({ navigation }: Props) => {
   }, []);
 
   return (
-    <View style={styles.container}>
+    <View style={styles.root}>
+      {/* Full-bleed background image */}
       <Image
         source={require('../../assets/images/first_screen.png')}
-        style={StyleSheet.absoluteFillObject}
+        style={styles.bgImage}
         resizeMode="cover"
       />
+      {/* Dark overlay */}
       <View style={styles.overlay} pointerEvents="none" />
+      {/* Buttons at the bottom */}
       <View style={styles.content}>
-
-
         <TouchableOpacity style={styles.primaryBtn} onPress={() => navigation.navigate('Onboarding')}>
           <Text style={styles.btnText}>Get Started</Text>
         </TouchableOpacity>
-
         <TouchableOpacity style={styles.secondaryBtn} onPress={() => navigation.navigate('Login')}>
           <Text style={styles.secondaryBtnText}>Sign in</Text>
         </TouchableOpacity>
@@ -50,34 +50,34 @@ const SplashScreen = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
+  root: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: width,
+    height: height,
     justifyContent: 'flex-end',
-    backgroundColor: '#000',
+  },
+  bgImage: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: width,
+    height: height,
   },
   overlay: {
-    ...StyleSheet.absoluteFillObject,
-    backgroundColor: 'rgba(0,0,0,0.3)'
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: width,
+    height: height,
+    backgroundColor: 'rgba(0,0,0,0.25)',
   },
   content: {
     padding: 30,
     paddingBottom: 50,
     width: '100%',
     alignItems: 'center',
-    zIndex: 1, // Bring to front on Web
-  },
-  title: {
-    fontSize: 48,
-    fontWeight: 'bold',
-    color: '#fff',
-    marginBottom: 10
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#eee',
-    marginBottom: 40
   },
   primaryBtn: {
     backgroundColor: '#fff',
@@ -86,21 +86,21 @@ const styles = StyleSheet.create({
     borderRadius: 30,
     justifyContent: 'center',
     alignItems: 'center',
-    marginBottom: 15
+    marginBottom: 15,
   },
   btnText: {
     color: '#000',
     fontSize: 16,
-    fontWeight: 'bold'
+    fontWeight: 'bold',
   },
   secondaryBtn: {
-    padding: 10
+    padding: 10,
   },
   secondaryBtnText: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '600'
-  }
+    fontWeight: '600',
+  },
 });
 
 export default SplashScreen;
