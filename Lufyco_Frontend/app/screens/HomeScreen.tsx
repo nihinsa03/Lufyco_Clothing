@@ -142,32 +142,38 @@ const HomeScreen = ({ navigation }: Props) => {
             </TouchableOpacity>
           </View>
 
-          {/* Categories - 2-row grid (Fits 6 items horizontally) */}
-          <View style={{ marginBottom: 32, flexDirection: 'row', justifyContent: 'space-between' }}>
-            {[0, 1, 2, 3, 4, 5].map((colIndex) => {
-              const topItem = mockCategories[colIndex]; // 0 to 5
-              const bottomItem = mockCategories[colIndex + 16]; // 16 to 21
-              return (
-                <View key={colIndex} style={{ rowGap: 16, alignItems: 'center', width: (screenWidth - 32) / 6 }}>
-                  {topItem && (
-                    <TouchableOpacity style={{ alignItems: 'center', width: '100%' }} onPress={() => handleCategoryPress(topItem.id)}>
-                      <View style={[styles.categoryImageContainer, { width: 46, height: 46 }]}>
-                        <Image source={typeof topItem.image === 'string' ? { uri: topItem.image } : topItem.image} style={styles.categoryImage} resizeMode="cover" />
-                      </View>
-                      <Text style={[styles.categoryName, { color: colors.text, fontSize: 9, lineHeight: 11 }]} numberOfLines={2}>{topItem.name.toUpperCase()}</Text>
-                    </TouchableOpacity>
-                  )}
-                  {bottomItem && (
-                    <TouchableOpacity style={{ alignItems: 'center', width: '100%' }} onPress={() => handleCategoryPress(bottomItem.id)}>
-                      <View style={[styles.categoryImageContainer, { width: 46, height: 46 }]}>
-                        <Image source={typeof bottomItem.image === 'string' ? { uri: bottomItem.image } : bottomItem.image} style={styles.categoryImage} resizeMode="cover" />
-                      </View>
-                      <Text style={[styles.categoryName, { color: colors.text, fontSize: 9, lineHeight: 11 }]} numberOfLines={2}>{bottomItem.name.toUpperCase()}</Text>
-                    </TouchableOpacity>
-                  )}
-                </View>
-              );
-            })}
+          {/* Categories - 2-row horizontal scrolling grid */}
+          <View style={{ marginBottom: 32 }}>
+            <ScrollView
+              horizontal
+              showsHorizontalScrollIndicator={false}
+              contentContainerStyle={{ paddingHorizontal: 0 }}
+            >
+              {[0, 1, 2, 3, 4, 5].map((colIndex) => {
+                const topItem = mockCategories[colIndex]; // 0 to 5
+                const bottomItem = mockCategories[colIndex + 16]; // 16 to 21
+                return (
+                  <View key={colIndex} style={{ marginRight: 16, rowGap: 16 }}>
+                    {topItem && (
+                      <TouchableOpacity style={styles.sliderCategoryItem} onPress={() => handleCategoryPress(topItem.id)}>
+                        <View style={styles.categoryImageContainer}>
+                          <Image source={typeof topItem.image === 'string' ? { uri: topItem.image } : topItem.image} style={styles.categoryImage} resizeMode="cover" />
+                        </View>
+                        <Text style={[styles.categoryName, { color: colors.text }]}>{topItem.name.toUpperCase()}</Text>
+                      </TouchableOpacity>
+                    )}
+                    {bottomItem && (
+                      <TouchableOpacity style={styles.sliderCategoryItem} onPress={() => handleCategoryPress(bottomItem.id)}>
+                        <View style={styles.categoryImageContainer}>
+                          <Image source={typeof bottomItem.image === 'string' ? { uri: bottomItem.image } : bottomItem.image} style={styles.categoryImage} resizeMode="cover" />
+                        </View>
+                        <Text style={[styles.categoryName, { color: colors.text }]}>{bottomItem.name.toUpperCase()}</Text>
+                      </TouchableOpacity>
+                    )}
+                  </View>
+                );
+              })}
+            </ScrollView>
           </View>
 
           {/* Banner Carousel */}
