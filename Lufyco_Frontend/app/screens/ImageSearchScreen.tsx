@@ -224,7 +224,7 @@ const ImageSearchScreen: React.FC<Props> = ({ navigation }) => {
                     </TouchableOpacity>
 
                     <TouchableOpacity style={styles.actionButton} onPress={pickImage}>
-                        <View style={[styles.iconCircle, { backgroundColor: '#764ba2' }]}>
+                        <View style={styles.iconCircle}>
                             <Feather name="image" size={24} color="#fff" />
                         </View>
                         <Text style={styles.buttonLabel}>Choose from Gallery</Text>
@@ -382,25 +382,23 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
     actionButton: {
         flex: 1,
         alignItems: 'center',
-        backgroundColor: dark ? '#1c1c1e' : '#f9fafb',
+        backgroundColor: '#2563EB',
         paddingVertical: 20,
         borderRadius: 12,
-        borderWidth: 1.5,
-        borderColor: dark ? '#333' : '#e5e7eb',
     },
     iconCircle: {
         width: 56,
         height: 56,
         borderRadius: 28,
-        backgroundColor: '#667eea',
+        backgroundColor: 'rgba(255,255,255,0.2)',
         alignItems: 'center',
         justifyContent: 'center',
         marginBottom: 12,
     },
     buttonLabel: {
         fontSize: 14,
-        fontWeight: '600',
-        color: colors.text,
+        fontWeight: '700',
+        color: '#fff',
     },
 
     imagePreviewContainer: {

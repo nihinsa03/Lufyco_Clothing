@@ -229,7 +229,9 @@ const ProfileScreen = () => {
                                     <Feather name="camera" size={13} color="#fff" />
                                 </View>
                             </View>
-                            <Text style={{ marginTop: 8, fontSize: 14, fontWeight: '600', color: isDark ? '#60A5FA' : '#4A90D9' }}>Upload from Device</Text>
+                            <View style={{ marginTop: 12, backgroundColor: '#2563EB', paddingHorizontal: 16, paddingVertical: 8, borderRadius: 8 }}>
+                                <Text style={{ fontSize: 14, fontWeight: '700', color: '#fff' }}>Upload from Device</Text>
+                            </View>
                         </TouchableOpacity>
 
                         <View style={styles.inputContainer}>

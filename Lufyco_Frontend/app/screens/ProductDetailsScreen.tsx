@@ -280,8 +280,8 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
                 <Animated.View style={{ flex: 1.5, transform: [{ scale: buttonScale }] }}>
                     <TouchableOpacity style={styles.addBtn} onPress={handleAddToCart} activeOpacity={0.9}>
-                        <Feather name="shopping-bag" size={20} color="#fff" style={{ marginRight: 8 }} />
-                        <Text style={styles.addBtnText}>Add to Cart</Text>
+                        <Feather name="shopping-bag" size={20} color={isDark ? '#000' : '#fff'} style={{ marginRight: 8 }} />
+                        <Text style={[styles.addBtnText, { color: isDark ? '#000' : '#fff' }]}>Add to Cart</Text>
                     </TouchableOpacity>
                 </Animated.View>
             </View>
