@@ -51,13 +51,11 @@ const SplashScreen = ({ navigation }: Props) => {
 
 const styles = StyleSheet.create({
   container: {
-    width: width,
-    height: height,
+    flex: 1,
+    width: '100%',
+    height: '100%',
     justifyContent: 'flex-end',
     backgroundColor: '#000',
-    position: 'absolute',
-    top: 0,
-    left: 0,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
