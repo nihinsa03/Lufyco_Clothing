@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { View, Text, StyleSheet, Image, TouchableOpacity, Dimensions, Platform, StatusBar } from "react-native";
 
-const { height } = Dimensions.get('window');
+const { width, height } = Dimensions.get('screen');
 import { useAuthStore } from '../store/useAuthStore';
 import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
@@ -51,16 +51,13 @@ const SplashScreen = ({ navigation }: Props) => {
 
 const styles = StyleSheet.create({
   container: {
-    flex: 1,
+    width: width,
+    height: height,
     justifyContent: 'flex-end',
-    width: '100%',
-    height: '100%',
     backgroundColor: '#000',
     position: 'absolute',
     top: 0,
-    bottom: 0,
     left: 0,
-    right: 0,
   },
   overlay: {
     ...StyleSheet.absoluteFillObject,
