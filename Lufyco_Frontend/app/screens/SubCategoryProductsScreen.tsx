@@ -6,7 +6,7 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
 import FilterSheet, { FilterKey } from "../screens/FilterSheet";
 import SearchOverlay from "../screens/SearchOverlay";
-import { CATEGORY_IMAGE_MAP } from "../data/categoryImages";
+import { useShopStore } from "../store/useShopStore";
 
 type Props = NativeStackScreenProps<RootStackParamList, "SubCategoryProducts">;
 
@@ -43,8 +43,8 @@ const SubCategoryProductsScreen: React.FC<Props> = ({ navigation, route }) => {
   const styles = getStyles(colors, dark);
   const { title, categoryId } = route.params;
 
-  // Look up the image from the central map – reliable, no param serialisation issues
-  const resolvedImage = CATEGORY_IMAGE_MAP[categoryId] ?? require('../../assets/images/categories/men/shirts.png');
+  const categoryImage = useShopStore.getState().categories.find(c => c.id === categoryId)?.image;
+  const resolvedImage = categoryImage ? (typeof categoryImage === 'string' ? { uri: categoryImage } : categoryImage) : require('../../assets/images/categories/men/shirts.png');
 
   const [filterVisible, setFilterVisible] = useState(false);
   const [searchVisible, setSearchVisible] = useState(false);

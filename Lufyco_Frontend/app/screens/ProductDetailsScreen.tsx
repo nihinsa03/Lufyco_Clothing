@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaVi
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useCartStore } from "../store/useCartStore";
 import { useWishlistStore } from "../store/useWishlistStore";
-import { useProductsStore } from "../store/useProductsStore";
+import { useShopStore } from "../store/useShopStore";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useTheme } from "../context/ThemeContext";
@@ -35,7 +35,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     console.log('[ProductDetails] id:', id, '| paramProduct:', JSON.stringify(paramProduct)?.slice(0, 200));
 
     // Store Hooks
-    const getProductById = useProductsStore((state) => state.getProductById);
+    const getProductById = (id: string) => useShopStore.getState().products.find(p => p.id === id || (p as any)._id === id);
     const addItemToCart = useCartStore((state) => state.addItem);
     const { toggleWishlist, isInWishlist } = useWishlistStore();
     const { colors, isDark } = useTheme();

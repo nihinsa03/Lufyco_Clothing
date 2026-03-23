@@ -7,7 +7,8 @@ import { useShopStore } from "../store/useShopStore";
 import { useWishlistStore } from "../store/useWishlistStore";
 import { useTheme } from "../context/ThemeContext";
 import { RootStackParamList } from "../navigation/AppNavigator";
-import { mockCategories } from "../data/mockData";
+
+import api from "../api/api";
 
 const screenWidth = Dimensions.get("window").width;
 
@@ -16,20 +17,39 @@ type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 const HomeScreen = ({ navigation }: Props) => {
   const { products, categories, setFilter, fetchProducts } = useShopStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
-  // Fetch live products from MongoDB when HomeScreen loads
+  // Live latest products from API
+  const [latestProducts, setLatestProducts] = useState<any[]>([]);
+  const [latestLoading, setLatestLoading] = useState(true);
+
+  // Fetch live products + latest from MongoDB when HomeScreen loads
   useEffect(() => {
     fetchProducts();
+    fetchLatest();
   }, []);
+
+  const fetchLatest = async () => {
+    try {
+      const res = await api.get('/products/latest');
+      const data = res.data?.products || res.data || [];
+      setLatestProducts(data);
+    } catch (err) {
+      console.warn('[HomeScreen] Failed to fetch latest products:', err);
+      // Fallback: use store products
+      setLatestProducts(products.slice(0, 10));
+    } finally {
+      setLatestLoading(false);
+    }
+  };
 
   // Banner carousel data
   const banners = [
-    { image: require("../../assets/images/categories/men/watches.jpg"), discount: "30% OFF", title: "On Watches", subtitle: "Exclusive Sales" },
-    { image: require("../../assets/images/categories/men/jackets.jpg"), discount: "25% OFF", title: "On Jackets", subtitle: "Winter Collection" },
-    { image: require("../../assets/images/categories/men/perfume.jpg"), discount: "40% OFF", title: "On Perfumes", subtitle: "Premium Fragrances" },
-    { image: require("../../assets/images/categories/men/sports-shoes.jpg"), discount: "20% OFF", title: "On Sneakers", subtitle: "Trending Now" },
-    { image: require("../../assets/images/categories/men/sweater.jpg"), discount: "35% OFF", title: "On Sweaters", subtitle: "Season Sale" },
+    { image: "https://images.unsplash.com/photo-1523275335684-37898b6baf30?q=80&w=600&auto=format&fit=crop", discount: "30% OFF", title: "On Watches", subtitle: "Exclusive Sales" },
+    { image: "https://images.unsplash.com/photo-1551028719-00167b16eac5?q=80&w=600&auto=format&fit=crop", discount: "25% OFF", title: "On Jackets", subtitle: "Winter Collection" },
+    { image: "https://images.unsplash.com/photo-1523293115678-02a500e57ba5?q=80&w=600&auto=format&fit=crop", discount: "40% OFF", title: "On Perfumes", subtitle: "Premium Fragrances" },
+    { image: "https://images.unsplash.com/photo-1542291026-7eec264c27ff?q=80&w=600&auto=format&fit=crop", discount: "20% OFF", title: "On Sneakers", subtitle: "Trending Now" },
+    { image: "https://images.unsplash.com/photo-1576566588028-4147f3842f27?q=80&w=600&auto=format&fit=crop", discount: "35% OFF", title: "On Sweaters", subtitle: "Season Sale" },
   ];
 
   const [activeBanner, setActiveBanner] = useState(0);
@@ -53,25 +73,15 @@ const HomeScreen = ({ navigation }: Props) => {
     setActiveBanner(index);
   };
 
-  // Filter for Latest Products (New Arrivals)
-  const latestProducts = products.filter(p => p.isNewArrival);
 
   const handleCategoryPress = (catId: string) => {
     const cat = categories.find(c => c.id === catId);
-    setFilter({
-      query: '',
-      newArrivals: false,
-      popularThisWeek: false,
-      priceDropping: false,
-      discountOnly: false,
-      popularity: false,
-      priceLowToHigh: false,
-      priceHighToLow: false,
-      priceMin: undefined,
-      priceMax: undefined,
-      categoryId: catId,
+    if (!cat) return;
+    const searchableName = cat.name.toLowerCase().replace(/\s+/g, '');
+    navigation.navigate("ProductListing", {
+      search: searchableName,
+      title: cat.name,
     });
-    navigation.navigate("ProductListing", { search: cat?.name, title: cat?.name });
   };
 
   const handleProductPress = (item: any) => {
@@ -155,8 +165,8 @@ const HomeScreen = ({ navigation }: Props) => {
               contentContainerStyle={{ paddingHorizontal: 0 }}
             >
               {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((colIndex) => {
-                const topItem = mockCategories[colIndex];
-                const bottomItem = mockCategories[colIndex + 12];
+                const topItem = categories[colIndex];
+                const bottomItem = categories[colIndex + 12];
                 const colWidth = (screenWidth - 32) / 5.5; // fits ~5.5 items in view to exactly show 6 columns gracefully
                 return (
                   <View key={colIndex} style={{ width: colWidth, paddingRight: 8, rowGap: 16 }}>
@@ -201,7 +211,7 @@ const HomeScreen = ({ navigation }: Props) => {
                   activeOpacity={0.9}
                   onPress={() => navigation.navigate("Sale")}
                 >
-                  <Image source={banner.image} style={styles.banner} resizeMode="cover" />
+                  <Image source={{ uri: banner.image }} style={styles.banner} resizeMode="cover" />
                   <View style={styles.bannerOverlay}>
                     <View style={styles.discountTag}>
                       <Text style={styles.discountText}>{banner.discount}</Text>
@@ -226,6 +236,9 @@ const HomeScreen = ({ navigation }: Props) => {
             <TouchableOpacity onPress={() => navigation.navigate("ShopNewStyles")}><Text style={styles.seeAll}>SEE ALL</Text></TouchableOpacity>
           </View>
 
+          {latestLoading ? (
+            <ActivityIndicator size="small" color={colors.text} style={{ marginTop: 20 }} />
+          ) : (
           <FlatList
             key={'2col'}
             data={latestProducts}
@@ -235,48 +248,72 @@ const HomeScreen = ({ navigation }: Props) => {
             columnWrapperStyle={{ justifyContent: 'space-between' }}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 4 }}
-            keyExtractor={(item) => item.id}
+            keyExtractor={(item) => item.id || item._id}
             renderItem={({ item }) => (
-              <TouchableOpacity style={[styles.productCard, { backgroundColor: colors.card }]} onPress={() => navigation.navigate('ProductDetails', { id: item.id, product: item })}>
+              <TouchableOpacity
+                style={[styles.productCard, { backgroundColor: colors.card }]}
+                onPress={() => navigation.navigate('ProductDetails', { id: item.id || item._id, product: item })}
+              >
                 <View style={styles.imageWrapper}>
                   <Image
-                    source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}
+                    source={
+                      item.images && item.images[0]
+                        ? { uri: item.images[0] }
+                        : typeof item.images?.[0] !== 'string' && item.images?.[0]
+                          ? item.images[0]
+                          : require('../../assets/images/clothing.png')
+                    }
                     style={styles.productImage}
                   />
+                  {(item.oldPrice || item.discountPercent) && (
+                    <View style={styles.saleBadge}>
+                      <Text style={styles.saleBadgeText}>
+                        {item.discountPercent ? `-${item.discountPercent}%` : 'SALE'}
+                      </Text>
+                    </View>
+                  )}
                   <TouchableOpacity
-                    style={[styles.wishlistBtn, { backgroundColor: colors.card === '#1E1E1E' ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.9)' }]}
+                    style={[styles.wishlistBtn, { backgroundColor: isDark ? 'rgba(30,30,30,0.85)' : 'rgba(255,255,255,0.9)' }]}
                     onPress={(e) => {
                       e.stopPropagation();
                       toggleWishlist({
-                        id: item.id,
-                        productId: item.id,
-                        title: item.title,
+                        id: item.id || item._id,
+                        productId: item.id || item._id,
+                        title: item.title || item.name,
                         price: item.price,
-                        image: item.images[0],
+                        image: item.images?.[0] || '',
                       });
                     }}
                   >
                     <Feather
                       name="heart"
                       size={16}
-                      color={isInWishlist(item.id) ? "#ef4444" : "#000"}
+                      color={isInWishlist(item.id || item._id) ? "#ef4444" : colors.text}
                     />
                   </TouchableOpacity>
                 </View>
 
                 <View style={[styles.productInfo, { paddingBottom: 10 }]}>
                   <View style={styles.cardColorRow}>
-                    <View style={[styles.colorCircle, { backgroundColor: '#000', borderColor: colors.card }]} />
-                    <View style={[styles.colorCircle, { backgroundColor: '#2ba', borderColor: colors.card }]} />
-                    <View style={[styles.colorCircle, { backgroundColor: '#0f0', borderColor: colors.card }]} />
-                    <Text style={[styles.moreColors, { color: colors.textSecondary }]}>All 5 Colors</Text>
+                    {(item.colors || []).slice(0, 3).map((c: string, i: number) => (
+                      <View key={i} style={[styles.colorCircle, { backgroundColor: c, borderColor: colors.card }]} />
+                    ))}
+                    {(item.colors?.length || 0) > 3 && (
+                      <Text style={[styles.moreColors, { color: colors.textSecondary }]}>+{item.colors.length - 3}</Text>
+                    )}
                   </View>
-                  <Text numberOfLines={1} style={[styles.productName, { color: colors.text }]}>{item.title}</Text>
-                  <Text style={[styles.productPrice, { color: colors.text }]}>LKR {item.price * 300}.00</Text>
+                  <Text numberOfLines={1} style={[styles.productName, { color: colors.text }]}>{item.title || item.name}</Text>
+                  <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+                    <Text style={[styles.productPrice, { color: colors.text }]}>LKR {item.price.toFixed(2)}</Text>
+                    {item.oldPrice && (
+                      <Text style={[styles.oldPrice, { color: colors.textSecondary }]}>LKR {item.oldPrice.toFixed(2)}</Text>
+                    )}
+                  </View>
                 </View>
               </TouchableOpacity>
             )}
           />
+          )}
 
         </ScrollView>
       </View>
@@ -366,8 +403,15 @@ const styles = StyleSheet.create({
   cardColorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   colorCircle: { width: 10, height: 10, borderRadius: 5, marginRight: -3, borderWidth: 1 },
   moreColors: { fontSize: 9, color: '#666', marginLeft: 8, textDecorationLine: 'underline' },
-  productName: { fontSize: 13, fontWeight: "500", marginBottom: 4 }, // overridden inline
-  productPrice: { fontSize: 13, fontWeight: "bold" }, // overridden inline
+  productName: { fontSize: 13, fontWeight: "500", marginBottom: 4 },
+  productPrice: { fontSize: 13, fontWeight: "bold" },
+  oldPrice: { fontSize: 11, color: '#999', textDecorationLine: 'line-through', marginLeft: 6 },
+  saleBadge: {
+    position: 'absolute', top: 8, left: 8,
+    backgroundColor: '#EF4444', paddingHorizontal: 6, paddingVertical: 2,
+    borderRadius: 4, zIndex: 1
+  },
+  saleBadgeText: { color: '#fff', fontSize: 9, fontWeight: 'bold' },
 });
 
 export default HomeScreen;

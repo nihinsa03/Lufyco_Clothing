@@ -7,20 +7,23 @@ import { RootStackParamList } from "../navigation/AppNavigator";
 import FilterSheet, { FilterKey } from "./FilterSheet";
 import SearchOverlay from "./SearchOverlay";
 import api from "../api/api";
-import { MOCK_PRODUCTS } from "../data/mockProducts";
+
 import { useWishlistStore } from "../store/useWishlistStore";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductListing">;
 
 type Product = {
     _id: string;
+    id?: string;
     name?: string;
     title?: string;
     price: number;
     compareAtPrice?: number;
-    image: string; // URL or base64
+    oldPrice?: number;
+    image?: string;
+    images?: string[];
     colors: string[];
-    reviewsCount: number;
+    reviewsCount?: number;
     category?: string;
     subCategory?: string;
     gender?: string;
@@ -63,7 +66,6 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            // Build query string
             const params: any = {};
             if (gender) params.gender = gender;
             if (category) params.category = category;
@@ -71,81 +73,27 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
             if (type) params.type = type;
             if (search) params.search = search;
             if (isSale) params.isSale = 'true';
-            if (selectedFilter) params.sort = selectedFilter;
+            if (selectedFilter && selectedFilter !== 'whats_new') params.sort = selectedFilter;
 
-            // Use MOCK_PRODUCTS for now
-            let data = [...MOCK_PRODUCTS];
+            const response = await api.get("/products", { params });
+            const data: any[] = response.data?.products || response.data || [];
 
-            // If the route has specific filters, start with those
-            if (params.category === "Shoes") {
-                data = data.filter((p: Product) => p.category === "Shoes");
-            } else if (params.category === "Accessories") {
-                data = data.filter((p: Product) => p.category === "Accessories");
-            } else if (params.gender === "Men") {
-                data = data.filter((p: Product) => p.gender === "Men" || (p.gender === "Unisex" && p.category !== "Women"));
-            } else if (params.gender === "Women") {
-                data = data.filter((p: Product) => p.gender === "Women" || (p.gender === "Unisex" && p.category !== "Men"));
-            } else if (params.gender === "Kids") {
-                data = data.filter((p: Product) => p.gender === "Kids" || p.category === "Kids");
+            if (selectedFilter === 'whats_new') {
+                data.sort((a, b) => (b.isNewArrival ? 1 : 0) - (a.isNewArrival ? 1 : 0));
             }
 
-            // Apply specific params if not already scoped
-            if (params.category && params.category !== "Shoes" && params.category !== "Accessories") {
-                data = data.filter((p: Product) => p.category === params.category || p.subCategory === params.category);
-            }
-            if (params.subCategory) {
-                data = data.filter((p: Product) => p.subCategory === params.subCategory);
-            }
-            if (params.type) {
-                data = data.filter((p: Product) => p.type === params.type);
-            }
-
-            // Handle Search Query properly
-            if (params.search) {
-                const query = params.search.toLowerCase();
-                data = data.filter((p: Product) => {
-                    const itemName = (p.name || p.title || "").toLowerCase();
-                    const itemType = (p.type || "").toLowerCase();
-                    const itemCategory = (p.category || "").toLowerCase();
-                    const itemSubCategory = (p.subCategory || "").toLowerCase();
-                    return itemName.includes(query) || 
-                           itemType.includes(query) ||
-                           itemCategory.includes(query) ||
-                           itemSubCategory.includes(query);
-                });
-            }
-
-            // Apply sorting & filtering from selectedFilter
-            if (selectedFilter === "price_low_to_high") {
-                data.sort((a, b) => (a.price || 0) - (b.price || 0));
-            } else if (selectedFilter === "price_high_to_low") {
-                data.sort((a, b) => (b.price || 0) - (a.price || 0));
-            } else if (selectedFilter === "discount") {
-                data = data.filter((p: any) => p.compareAtPrice && p.compareAtPrice > p.price);
-            } else if (selectedFilter === "popularity") {
-                data.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
-            } else if (selectedFilter === "whats_new") {
-                const newArrivals = data.filter((p: any) => p.isNewArrival);
-                data = newArrivals.length > 0 ? newArrivals : [...data].reverse();
-            }
-
-            // Simulate delay
-            setTimeout(() => {
-                setProducts(data);
-                setLoading(false);
-            }, 500);
-
-            // const response = await api.get("/products", { params });
-            // setProducts(response.data);
+            setProducts(data);
         } catch (error) {
-            console.error("Error fetching products:", error);
+            console.error("Error fetching from API:", error);
+            setProducts([]);
+        } finally {
             setLoading(false);
         }
     };
 
     const handleProductPress = (product: Product) => {
-        // Pass both ID and product object to ProductDetails
-        navigation.navigate("ProductDetails", { id: product._id, product: product });
+        const productId = product.id || product._id;
+        navigation.navigate("ProductDetails", { id: productId, product: product });
     };
 
     const displayName = title || type || subCategory || category || "Products";
@@ -188,7 +136,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
             ) : (
                 <FlatList
                     data={products}
-                    keyExtractor={(item) => item._id}
+                    keyExtractor={(item) => item.id || item._id}
                     numColumns={2}
                     columnWrapperStyle={{ justifyContent: "space-between" }}
                     contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
@@ -199,27 +147,35 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                             style={styles.card}
                             onPress={() => handleProductPress(item)}
                         >
-                            {/* Image handling: check if it's http or require */}
+                            {/* Use images[] array from API, fallback to image string */}
                             <Image
-                                source={item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png")}
+                                source={
+                                    item.images && item.images[0]
+                                        ? { uri: item.images[0] }
+                                        : item.image && item.image.startsWith('http')
+                                            ? { uri: item.image }
+                                            : require("../../assets/images/clothing.png")
+                                }
                                 style={styles.image}
                             />
                             <TouchableOpacity
                                 style={styles.wishBtn}
                                 onPress={() => {
+                                    const productId = item.id || item._id;
+                                    const imageUrl = (item.images && item.images[0]) || item.image || '';
                                     toggleWishlist({
-                                        id: item._id,
-                                        productId: item._id,
+                                        id: productId,
+                                        productId: productId,
                                         title: item.name || item.title || "Product",
                                         price: item.price,
-                                        image: item.image,
+                                        image: imageUrl,
                                     });
                                 }}
                             >
                                 <Ionicons
-                                    name={isInWishlist(item._id) ? "heart" : "heart-outline"}
+                                    name={isInWishlist(item.id || item._id) ? "heart" : "heart-outline"}
                                     size={18}
-                                    color={isInWishlist(item._id) ? "red" : isDark ? "#fff" : "#111"}
+                                    color={isInWishlist(item.id || item._id) ? "red" : isDark ? "#fff" : "#111"}
                                 />
                             </TouchableOpacity>
 
@@ -228,13 +184,13 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                             </View>
 
                             <Text numberOfLines={1} style={styles.pTitle}>
-                                {item.name || item.title || "Unknown Product"}
+                                {item.title || item.name || "Unknown Product"}
                             </Text>
 
                             <View style={styles.priceRow}>
-                                <Text style={styles.price}>${item.price.toFixed(2)}</Text>
-                                {item.compareAtPrice && item.compareAtPrice > item.price && (
-                                    <Text style={styles.compare}>${item.compareAtPrice.toFixed(2)}</Text>
+                                <Text style={styles.price}>LKR {item.price.toFixed(2)}</Text>
+                                {(item.compareAtPrice || item.oldPrice) && (item.compareAtPrice || item.oldPrice)! > item.price && (
+                                    <Text style={styles.compare}>LKR {(item.compareAtPrice || item.oldPrice)!.toFixed(2)}</Text>
                                 )}
                             </View>
                         </TouchableOpacity>

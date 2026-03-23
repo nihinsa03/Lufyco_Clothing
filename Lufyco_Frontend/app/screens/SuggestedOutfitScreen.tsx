@@ -20,7 +20,7 @@ const moodEmoji: Record<string, string> = {
 
 // import api from "../api/api";
 // import { ClothingItem } from "../models";
-import { MOCK_PRODUCTS } from "../data/mockProducts";
+import { useShopStore } from "../store/useShopStore";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 // ... (keep props and emoji map)
@@ -50,7 +50,7 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
   const generateLook = () => {
     setLoading(true);
 
-    let relevantItems = [...MOCK_PRODUCTS];
+    let relevantItems = [...useShopStore.getState().products];
 
     const w = weather.toLowerCase();
     const isCold = w.includes("rain") || w.includes("snow") || w.includes("fog") || w.includes("cloud") || w.includes("cool");

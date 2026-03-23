@@ -3,7 +3,8 @@ import { View, Text, Image, StyleSheet, Dimensions, TouchableOpacity, ScrollView
 import { useNavigation } from "@react-navigation/native";
 import { StackNavigationProp } from "@react-navigation/stack";
 import { RootStackParamList } from "../navigation/AppNavigator";
-import { mockCategories, Category } from "../data/mockData";
+import { Category } from "../types";
+import { useShopStore } from "../store/useShopStore";
 
 const { width } = Dimensions.get("window");
 
@@ -11,13 +12,14 @@ type OffersScreenNavigationProp = StackNavigationProp<RootStackParamList, "Offer
 
 const OffersScreen = () => {
   const navigation = useNavigation<OffersScreenNavigationProp>();
+  const { categories } = useShopStore();
 
-  const menCategories = mockCategories.filter(c => c.gender === 'men');
-  const womenCategories = mockCategories.filter(c => c.gender === 'women');
+  const menCategories = categories.filter(c => c.gender === 'men');
+  const womenCategories = categories.filter(c => c.gender === 'women');
 
   const renderCategoryItem = ({ item }: { item: Category }) => (
     <View style={styles.categoryCard}>
-      <Image source={item.image} style={styles.categoryImage} resizeMode="cover" />
+      <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} style={styles.categoryImage} resizeMode="cover" />
       <Text style={styles.categoryName} numberOfLines={1}>{item.name}</Text>
     </View>
   );

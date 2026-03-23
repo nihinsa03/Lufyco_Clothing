@@ -111,6 +111,80 @@ router.get('/categories', async (req, res) => {
     }
 });
 
+// @route   GET /api/products/latest
+// @desc    Get the 10 newest products sorted by createdAt desc
+router.get('/latest', async (req, res) => {
+    try {
+        const baseUrl = req.app.locals.serverBaseUrl || `${req.protocol}://${req.get('host')}`;
+        const products = await Product.find({}).sort({ createdAt: -1 }).limit(10);
+
+        const mapped = products.map(p => {
+            const imageUrl = p.image && p.image.startsWith('/uploads')
+                ? `${baseUrl}${p.image}` : p.image;
+            return {
+                id: p._id.toString(),
+                title: p.name,
+                name: p.name,
+                price: p.price,
+                description: p.description,
+                images: [imageUrl],
+                category: p.category,
+                colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
+                sizes: p.sizes && p.sizes.length > 0 ? p.sizes : ['S', 'M', 'L', 'XL'],
+                rating: p.rating || 4.5,
+                reviews: p.reviewsCount || 0,
+                oldPrice: p.compareAtPrice,
+                isNewArrival: true,
+                featureVector: p.featureVector
+            };
+        });
+
+        res.json({ products: mapped });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   GET /api/products/sales
+// @desc    Get products on sale (compareAtPrice > price)
+router.get('/sales', async (req, res) => {
+    try {
+        const baseUrl = req.app.locals.serverBaseUrl || `${req.protocol}://${req.get('host')}`;
+        const products = await Product.find({
+            compareAtPrice: { $gt: 0 },
+            $expr: { $gt: ['$compareAtPrice', '$price'] }
+        }).limit(20);
+
+        const mapped = products.map(p => {
+            const imageUrl = p.image && p.image.startsWith('/uploads')
+                ? `${baseUrl}${p.image}` : p.image;
+            const discountPct = p.compareAtPrice
+                ? Math.round((1 - p.price / p.compareAtPrice) * 100)
+                : 0;
+            return {
+                id: p._id.toString(),
+                title: p.name,
+                name: p.name,
+                price: p.price,
+                description: p.description,
+                images: [imageUrl],
+                category: p.category,
+                colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
+                sizes: p.sizes && p.sizes.length > 0 ? p.sizes : ['S', 'M', 'L', 'XL'],
+                rating: p.rating || 4.5,
+                reviews: p.reviewsCount || 0,
+                oldPrice: p.compareAtPrice,
+                discountPercent: discountPct,
+                featureVector: p.featureVector
+            };
+        });
+
+        res.json({ products: mapped });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // @route   GET /api/products/:id
 // @desc    Get a single product by ID
 router.get('/:id', async (req, res) => {

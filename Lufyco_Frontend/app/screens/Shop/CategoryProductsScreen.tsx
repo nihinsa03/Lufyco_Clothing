@@ -4,7 +4,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { useShopStore } from '../../store/useShopStore';
 import { useWishlistStore } from '../../store/useWishlistStore';
 import { useNavigation } from '@react-navigation/native';
-import { Product } from '../../data/mockData';
+import { Product } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');

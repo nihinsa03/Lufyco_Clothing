@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, FlatList, TouchableOpacity, Pressable, Image, S
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useShopStore } from '../../store/useShopStore';
 import { useNavigation } from '@react-navigation/native';
-import { Product } from '../../data/mockData';
+import { Product } from '../../types';
 import { useTheme } from '../../context/ThemeContext';
 import api from '../../api/api';
 
