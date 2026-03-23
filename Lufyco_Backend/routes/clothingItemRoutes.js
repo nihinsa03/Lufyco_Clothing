@@ -6,19 +6,17 @@ const ClothingItem = require('../models/ClothingItem');
 // @desc    Get all clothing items from clothing_items collection
 router.get('/', async (req, res) => {
     try {
-        const { category, gender, subCategory, type, isSale, isNewArrival, search } = req.query;
+        const { category, gender, isSale, isNewArrival, search } = req.query;
         let query = {};
 
-        if (category)    query.category     = { $regex: category,    $options: 'i' };
-        if (gender)      query.gender       = { $regex: gender,      $options: 'i' };
-        if (subCategory) query.sub_category = { $regex: subCategory, $options: 'i' };
-        if (type)        query.type         = { $regex: type,        $options: 'i' };
-        if (isSale === 'true')       query.is_sale       = true;
-        if (isNewArrival === 'true') query.is_new_arrival = true;
+        if (category)     query.category = { $regex: category, $options: 'i' };
+        if (gender)       query.gender   = { $regex: gender,   $options: 'i' };
+        if (isSale === 'true')       query.isSale       = true;
+        if (isNewArrival === 'true') query.isNewArrival = true;
 
         if (search) {
             query.$or = [
-                { image_title:  { $regex: search, $options: 'i' } },
+                { image_name:   { $regex: search, $options: 'i' } },
                 { description:  { $regex: search, $options: 'i' } },
                 { category:     { $regex: search, $options: 'i' } },
                 { sub_category: { $regex: search, $options: 'i' } },
@@ -31,13 +29,10 @@ router.get('/', async (req, res) => {
         const hostUrl = `${req.protocol}://${req.get('host')}`;
 
         const mapped = items.map(item => {
-            let imageUrl = '';
-            if (item.file_path && item.file_path.startsWith('Images/')) {
-                imageUrl = `${hostUrl}/${item.file_path}`;
-            } else {
-                const fileName = item.image_file_name || (item.file_path ? item.file_path.split('/').pop() : '');
-                imageUrl = `${hostUrl}/uploads/products/${fileName}`;
-            }
+            // Logic to handle image path mismatches
+            const fileName = item.image_file_name || (item.file_path ? item.file_path.split('/').pop() : '');
+            // Some files might be .png on disk but .jpg in DB
+            const imageUrl = `${hostUrl}/uploads/products/${fileName}`;
 
             return {
                 id:           item._id.toString(),
@@ -82,14 +77,8 @@ router.get('/:id', async (req, res) => {
         if (!item) return res.status(404).json({ message: 'Item not found' });
 
         const hostUrl = `${req.protocol}://${req.get('host')}`;
-        
-        let imageUrl = '';
-        if (item.file_path && item.file_path.startsWith('Images/')) {
-            imageUrl = `${hostUrl}/${item.file_path}`;
-        } else {
-            const fileName = item.image_file_name || (item.file_path ? item.file_path.split('/').pop() : '');
-            imageUrl = `${hostUrl}/uploads/products/${fileName}`;
-        }
+        const fileName = item.image_file_name || (item.file_path ? item.file_path.split('/').pop() : '');
+        const imageUrl = `${hostUrl}/uploads/products/${fileName}`;
 
         res.json({
             id:           item._id.toString(),

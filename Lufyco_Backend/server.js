@@ -6,23 +6,15 @@ const os = require('os');
 
 // Detect LAN IP for image URL construction
 const getLanIP = () => {
-    if (process.env.HOST_IP) return process.env.HOST_IP;
-    
     const interfaces = os.networkInterfaces();
-    let fallbackIp = 'localhost';
-
     for (const name of Object.keys(interfaces)) {
         for (const iface of interfaces[name]) {
             if (iface.family === 'IPv4' && !iface.internal) {
-                // Prioritize common local network ranges
-                if (iface.address.startsWith('192.168.') || iface.address.startsWith('10.')) {
-                    return iface.address;
-                }
-                fallbackIp = iface.address;
+                return iface.address;
             }
         }
     }
-    return fallbackIp;
+    return 'localhost';
 };
 
 dotenv.config();
@@ -42,11 +34,10 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Serve uploaded product images and dataset images as static files
-// DB stores paths as /uploads/products/... or Images/...
+// Serve uploaded product images as static files
+// DB stores paths as /uploads/products/... so we map /uploads -> public/uploads
 app.use('/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
 app.use('/public/uploads', express.static(path.join(__dirname, 'public', 'uploads')));
-app.use('/Images', express.static(path.join(__dirname, 'public', 'Images')));
 
 // Request Logger
 app.use((req, res, next) => {

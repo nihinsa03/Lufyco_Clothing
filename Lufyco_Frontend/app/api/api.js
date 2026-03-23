@@ -1,26 +1,17 @@
 import axios from 'axios';
 import Constants from 'expo-constants';
-import { Platform } from 'react-native';
 
-// Dynamic host IP detection for Expo development (connects phone to PC)
+// Dynamic host IP detection for Expo development
 const getDevHost = () => {
-    // Priority 1: Expo host pointer (best for physical devices)
     const hostUri = Constants.expoConfig?.hostUri;
-    if (hostUri) return hostUri.split(':')[0];
-
-    // Priority 2: Manifest debugger (alternative for some environments)
-    const debuggerHost = Constants.manifest?.debuggerHost;
-    if (debuggerHost) return debuggerHost.split(':')[0];
-
-    // Fallback: Localhost for simulators/emulators
-    if (Platform.OS === 'android') return '10.0.2.2';
-    return 'localhost';
+    if (!hostUri) return 'localhost'; // Fallback
+    const host = hostUri.split(':')[0];
+    return host;
 };
 
-// Use the dynamic host if in dev mode, otherwise fallback
-const HOST_IP = __DEV__ ? getDevHost() : '192.168.1.217'; // Update to current LAN IP
+// Use the dynamic host if in dev mode, otherwise fallback to local IP
+const HOST_IP = __DEV__ ? getDevHost() : '10.10.41.93';
 const API_URL = `http://${HOST_IP}:5001/api`;
-const FALLBACK_URL = 'http://localhost:5001/api'; // For web/simulators if devHost fails
 
 // Special cases for simulators/emulators if dynamic detection fails:
 // Android Emulator: http://10.0.2.2:5001/api
