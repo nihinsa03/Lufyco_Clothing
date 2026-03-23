@@ -1,5 +1,6 @@
 import axios from 'axios';
 import Constants from 'expo-constants';
+import { Platform } from 'react-native';
 
 // Dynamic host IP detection for Expo development (connects phone to PC)
 const getDevHost = () => {
@@ -12,7 +13,8 @@ const getDevHost = () => {
     if (debuggerHost) return debuggerHost.split(':')[0];
 
     // Fallback: Localhost for simulators/emulators
-    return '10.0.2.2'; // Android emulator default gateway to host
+    if (Platform.OS === 'android') return '10.0.2.2';
+    return 'localhost';
 };
 
 // Use the dynamic host if in dev mode, otherwise fallback

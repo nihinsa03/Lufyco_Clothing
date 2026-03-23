@@ -220,6 +220,7 @@ CLOUDINARY_API_SECRET=your_api_secret
 EMAIL_SERVICE=gmail
 EMAIL_USER=your-email@gmail.com
 EMAIL_PASSWORD=your-16-char-app-specific-password
+HOST_IP=your_computer_lan_ip_e.g_192.168.1.217
 ```
 
 Start the backend:
@@ -229,7 +230,8 @@ npm run dev
 ```
 
 > The server runs on `http://localhost:5001` by default. 
-> **Important**: Ensure the backend is running *before* starting the frontend to avoid "Network Error" issues.
+> **Important**: For physical devices (iOS/Android), ensure `HOST_IP` is set to your computer's LAN IP in `.env`.
+> **Product Images**: Place your organized product photos in `Lufyco_Backend/public/Images/` (e.g., `public/Images/Mens Wear/Blazers/1.jpg`).
 
 ### 3. Frontend Setup
 
@@ -320,6 +322,9 @@ If you want to test the app on a physical device that is **not** on the same Wi-
 - 🛒 **Wishlist Cart** – "Add to Cart" from Wishlist now correctly adds items and navigates to cart
 - 🖼️ **Profile Picture** – Profile picture upload with Cloudinary persistence and graceful error handling for storage limits
 - 📊 **Order Tracking Bar** – Visual step-by-step progress bar added to Order Details screen
+- 📦 **Categorized Product Integration** – Integrated 100+ products from a structured JSON dataset with full support for sub-categories (Men/Women) and types (Blazers, Shirts, etc.)
+- 🖼️ **Static Image Serving** – Backend now serves organized product images from a dedicated `public/Images` directory
+- 📡 **Stable Connectivity** – Added `HOST_IP` configuration to the backend to ensure reliable connection between physical iOS devices and Windows/Mac host servers
 
 ---
 
