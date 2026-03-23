@@ -1,8 +1,54 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
+const ClothingItem = require('../models/ClothingItem');
 const { extractFeatures } = require('../services/mlFeatureExtractor');
 const axios = require('axios');
+
+// @route   GET /api/products/latest
+// @desc    Get most recent clothing items
+router.get('/latest', async (req, res) => {
+    try {
+        const items = await ClothingItem.find()
+            .sort({ created_at: -1 })
+            .limit(12);
+
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
+
+        const mapped = items.map(item => {
+            const fileName = item.image_file_name || (item.file_path ? item.file_path.split('/').pop() : '');
+            const imageUrl = `${hostUrl}/uploads/products/${fileName}`;
+
+            return {
+                id:           item._id.toString(),
+                title:        item.image_title || item.image_file_name || `${item.category} Item`,
+                name:         item.image_title || item.image_file_name || `${item.category} Item`,
+                price:        item.price || 0,
+                description:  item.description || '',
+                images:       [imageUrl],
+                categoryId:   item.category,
+                category:     item.category,
+                subCategory:  item.sub_category,
+                type:         item.type,
+                gender:       item.gender,
+                occasion:     item.occasion,
+                tags:         [item.category, item.type, item.occasion].filter(Boolean).map(t => t.toLowerCase()),
+                colors:       item.color ? [item.color] : ['#000000'],
+                sizes:        item.size  ? item.size.split(',').map(s => s.trim()) : ['S', 'M', 'L', 'XL'],
+                rating:       item.rating || 4.5,
+                reviews:      Math.floor(Math.random() * 80) + 20,
+                isNewArrival: true,
+                isSale:       item.is_sale || false,
+                qty:          item.qty || 0,
+            };
+        });
+
+        res.json({ products: mapped });
+    } catch (error) {
+        console.error('[ProductsLatest] Error:', error.message);
+        res.status(500).json({ message: error.message });
+    }
+});
 
 // @route   GET /api/products
 // @desc    Get all products with filtering, search, and sorting

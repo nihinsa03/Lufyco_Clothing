@@ -28,32 +28,39 @@ router.get('/', async (req, res) => {
 
         const hostUrl = `${req.protocol}://${req.get('host')}`;
 
-        const mapped = items.map(item => ({
-            id:           item._id.toString(),
-            title:        item.image_name || `${item.category} Item`,
-            name:         item.image_name || `${item.category} Item`,
-            price:        item.price || 0,
-            description:  item.description || '',
-            images:       [`${hostUrl}/images/clothing/${item.image_name}`],
-            categoryId:   item.category,
-            category:     item.category,
-            subCategory:  item.sub_category,
-            type:         item.type,
-            gender:       item.gender,
-            occasion:     item.occasion,
-            tags:         [
-                item.category  ? item.category.toLowerCase()  : '',
-                item.type      ? item.type.toLowerCase()      : '',
-                item.occasion  ? item.occasion.toLowerCase()  : '',
-            ].filter(Boolean),
-            colors:       item.color ? [item.color] : ['#000000'],
-            sizes:        item.size  ? item.size.split(',').map(s => s.trim()) : ['S', 'M', 'L', 'XL'],
-            rating:       item.rating || 4.5,
-            reviews:      Math.floor(Math.random() * 50) + 10,
-            isNewArrival: item.isNewArrival || false,
-            isSale:       item.isSale       || false,
-            qty:          item.qty          || 0,
-        }));
+        const mapped = items.map(item => {
+            // Logic to handle image path mismatches
+            const fileName = item.image_file_name || (item.file_path ? item.file_path.split('/').pop() : '');
+            // Some files might be .png on disk but .jpg in DB
+            const imageUrl = `${hostUrl}/uploads/products/${fileName}`;
+
+            return {
+                id:           item._id.toString(),
+                title:        item.image_title || item.image_file_name || `${item.category} Item`,
+                name:         item.image_title || item.image_file_name || `${item.category} Item`,
+                price:        item.price || 0,
+                description:  item.description || '',
+                images:       [imageUrl],
+                categoryId:   item.category,
+                category:     item.category,
+                subCategory:  item.sub_category,
+                type:         item.type,
+                gender:       item.gender,
+                occasion:     item.occasion,
+                tags:         [
+                    item.category,
+                    item.type,
+                    item.occasion,
+                ].filter(Boolean).map(t => t.toLowerCase()),
+                colors:       item.color ? [item.color] : ['#000000'],
+                sizes:        item.size  ? item.size.split(',').map(s => s.trim()) : ['S', 'M', 'L', 'XL'],
+                rating:       item.rating || 4.5,
+                reviews:      Math.floor(Math.random() * 80) + 20,
+                isNewArrival: item.is_new_arrival || false,
+                isSale:       item.is_sale       || false,
+                qty:          item.qty          || 0,
+            };
+        });
 
         res.json({ products: mapped, total: mapped.length });
     } catch (error) {
@@ -70,14 +77,16 @@ router.get('/:id', async (req, res) => {
         if (!item) return res.status(404).json({ message: 'Item not found' });
 
         const hostUrl = `${req.protocol}://${req.get('host')}`;
+        const fileName = item.image_file_name || (item.file_path ? item.file_path.split('/').pop() : '');
+        const imageUrl = `${hostUrl}/uploads/products/${fileName}`;
 
         res.json({
             id:           item._id.toString(),
-            title:        item.image_name || `${item.category} Item`,
-            name:         item.image_name || `${item.category} Item`,
+            title:        item.image_title || item.image_file_name || `${item.category} Item`,
+            name:         item.image_title || item.image_file_name || `${item.category} Item`,
             price:        item.price || 0,
             description:  item.description || '',
-            images:       [`${hostUrl}/images/clothing/${item.image_name}`],
+            images:       [imageUrl],
             categoryId:   item.category,
             category:     item.category,
             subCategory:  item.sub_category,
@@ -88,9 +97,9 @@ router.get('/:id', async (req, res) => {
             colors:       item.color ? [item.color] : ['#000000'],
             sizes:        item.size  ? item.size.split(',').map(s => s.trim()) : ['S', 'M', 'L', 'XL'],
             rating:       item.rating || 4.5,
-            reviews:      0,
-            isNewArrival: item.isNewArrival || false,
-            isSale:       item.isSale       || false,
+            reviews:      Math.floor(Math.random() * 80) + 20,
+            isNewArrival: item.is_new_arrival || false,
+            isSale:       item.is_sale       || false,
             qty:          item.qty          || 0,
         });
     } catch (error) {
