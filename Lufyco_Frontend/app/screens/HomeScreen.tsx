@@ -261,13 +261,18 @@ const HomeScreen = ({ navigation }: Props) => {
 
                 <View style={[styles.productInfo, { paddingBottom: 10 }]}>
                   <View style={styles.cardColorRow}>
-                    <View style={[styles.colorCircle, { backgroundColor: '#000', borderColor: colors.card }]} />
-                    <View style={[styles.colorCircle, { backgroundColor: '#2ba', borderColor: colors.card }]} />
-                    <View style={[styles.colorCircle, { backgroundColor: '#0f0', borderColor: colors.card }]} />
-                    <Text style={[styles.moreColors, { color: colors.textSecondary }]}>All 5 Colors</Text>
+                    {item.colors.slice(0, 3).map((color: string, idx: number) => (
+                      <View key={idx} style={[styles.colorCircle, { backgroundColor: color, borderColor: colors.card }]} />
+                    ))}
+                    {item.colors.length > 3 && (
+                      <Text style={[styles.moreColors, { color: colors.textSecondary }]}>+{item.colors.length - 3} more</Text>
+                    )}
+                    {item.colors.length <= 3 && item.colors.length > 0 && (
+                      <Text style={[styles.moreColors, { color: colors.textSecondary }]}>{item.colors.length} Color{item.colors.length > 1 ? 's' : ''}</Text>
+                    )}
                   </View>
                   <Text numberOfLines={1} style={[styles.productName, { color: colors.text }]}>{item.title}</Text>
-                  <Text style={[styles.productPrice, { color: colors.text }]}>LKR {item.price * 300}.00</Text>
+                  <Text style={[styles.productPrice, { color: colors.text }]}>LKR {item.price}.00</Text>
                 </View>
               </TouchableOpacity>
             )}
