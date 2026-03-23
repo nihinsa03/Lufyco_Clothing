@@ -42,8 +42,8 @@ const ColorDots = ({ colors, styles }: { colors: string[], styles: any }) => {
 };
 
 const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
-    const { colors, isDark: dark } = useTheme();
-    const styles = getStyles(colors, dark);
+    const { colors, isDark } = useTheme();
+    const styles = useMemo(() => getStyles(colors, isDark), [colors, isDark]);
     const { gender, category, subCategory, type, search, isSale, title } = route.params || {};
 
     const [products, setProducts] = useState<Product[]>([]);
@@ -219,7 +219,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                                 <Ionicons
                                     name={isInWishlist(item._id) ? "heart" : "heart-outline"}
                                     size={18}
-                                    color={isInWishlist(item._id) ? "red" : dark ? "#fff" : "#111"}
+                                    color={isInWishlist(item._id) ? "red" : isDark ? "#fff" : "#111"}
                                 />
                             </TouchableOpacity>
 
@@ -276,7 +276,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
     );
 };
 
-const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 50 },
     header: {
@@ -287,7 +287,8 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
         paddingBottom: 8,
         justifyContent: "space-between",
         borderBottomWidth: StyleSheet.hairlineWidth,
-        borderColor: dark ? "#333" : "#eee",
+        borderColor: isDark ? "#333" : "#eee",
+        backgroundColor: colors.background
     },
     hIcon: { padding: 6 },
     headerRight: { flexDirection: "row", alignItems: "center" },
@@ -299,13 +300,13 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
         letterSpacing: 0.3,
         color: colors.text,
     },
-    card: { width: "48%", marginTop: 14 },
-    image: { width: "100%", height: 180, borderRadius: 14, backgroundColor: '#f0f0f0' },
+    card: { width: "48%", marginTop: 14, backgroundColor: colors.background },
+    image: { width: "100%", height: 180, borderRadius: 14, backgroundColor: colors.iconBg },
     wishBtn: {
         position: "absolute",
         right: 10,
         top: 10,
-        backgroundColor: dark ? "#333" : "#fff",
+        backgroundColor: isDark ? "#333" : "#fff",
         width: 30,
         height: 30,
         borderRadius: 15,
@@ -321,15 +322,15 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
         borderRadius: 7,
         marginRight: 4,
         borderWidth: 1,
-        borderColor: dark ? "#333" : "#e5e5e5",
+        borderColor: isDark ? "#333" : "#e5e5e5",
     },
-    moreColors: { fontSize: 10, color: dark ? '#aaa' : '#666' },
+    moreColors: { fontSize: 10, color: isDark ? '#aaa' : '#666' },
     pTitle: { fontSize: 14, fontWeight: "600", marginTop: 6, color: colors.text },
     priceRow: { flexDirection: "row", alignItems: "center", marginTop: 2 },
     price: { fontSize: 14, fontWeight: "700", color: colors.text },
     compare: {
         fontSize: 12,
-        color: dark ? '#777' : "#888",
+        color: isDark ? '#777' : "#888",
         marginLeft: 8,
         textDecorationLine: "line-through",
     },

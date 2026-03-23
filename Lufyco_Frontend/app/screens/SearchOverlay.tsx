@@ -22,7 +22,7 @@ const RECENT = [
 
 const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSearch }) => {
   const [query, setQuery] = useState("");
-  const { colors, isDark: dark } = useTheme();
+  const { colors, isDark } = useTheme();
   const navigation = useNavigation<any>();
 
   return (
@@ -37,7 +37,7 @@ const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSear
         </View>
 
         {/* Search bar */}
-        <View style={[styles.searchWrap, { backgroundColor: dark ? "#1c1c1e" : "#F6F6F7" }]}>
+        <View style={[styles.searchWrap, { backgroundColor: isDark ? "#1c1c1e" : "#F6F6F7" }]}>
           <Feather name="search" size={20} color={colors.text} style={{ marginLeft: 10 }} />
           <TextInput
             value={query}
@@ -63,7 +63,7 @@ const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSear
         </View>
 
         {/* Recent */}
-        <Text style={[styles.sectionLabel, { color: dark ? "#a0a0a5" : "#707077" }]}>RECENT SEARCH</Text>
+        <Text style={[styles.sectionLabel, { color: isDark ? "#a0a0a5" : "#707077" }]}>RECENT SEARCH</Text>
         <FlatList
           data={RECENT.filter((t) =>
             query.trim().length
@@ -72,7 +72,7 @@ const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSear
           )}
           keyExtractor={(item) => item}
           ItemSeparatorComponent={() => (
-            <View style={{ height: 1, backgroundColor: dark ? "#333" : "#F0F0F0" }} />
+            <View style={{ height: 1, backgroundColor: isDark ? "#333" : "#F0F0F0" }} />
           )}
           renderItem={({ item }) => (
             <TouchableOpacity style={styles.row} onPress={() => {
@@ -80,7 +80,7 @@ const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSear
               if (onSearch) onSearch(item);
             }}>
               <Text style={[styles.rowText, { color: colors.text }]}>{item}</Text>
-              <Feather name="corner-right-up" size={22} color={dark ? "#666" : "#C4C4C6"} />
+              <Feather name="corner-right-up" size={22} color={isDark ? "#666" : "#C4C4C6"} />
             </TouchableOpacity>
           )}
           ListEmptyComponent={
@@ -95,7 +95,7 @@ const SearchOverlay: React.FC<Props> = ({ visible, onClose, onOpenFilter, onSear
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  safe: { flex: 1, backgroundColor: 'transparent' , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   header: {
     flexDirection: "row",
     alignItems: "center",

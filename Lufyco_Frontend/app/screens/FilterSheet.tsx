@@ -26,8 +26,8 @@ type Props = {
 };
 
 const FilterSheet: React.FC<Props> = ({ visible, selected, onClose, onApply }) => {
-  const { colors, isDark: dark } = useTheme();
-  const styles = getStyles(colors, dark);
+  const { colors, isDark } = useTheme();
+  const styles = getStyles(colors, isDark);
   const [current, setCurrent] = React.useState<FilterKey | null>(selected);
   const slide = useRef(new Animated.Value(0)).current; // 0 hidden, 1 shown
 
@@ -68,7 +68,7 @@ const FilterSheet: React.FC<Props> = ({ visible, selected, onClose, onApply }) =
   }) => (
     <TouchableOpacity style={styles.row} onPress={onPress} activeOpacity={0.8}>
       <View style={[styles.checkbox, active && styles.checkboxActive]}>
-        {active && <Feather name="check" size={16} color={dark ? "#000" : "#fff"} />}
+        {active && <Feather name="check" size={16} color={isDark ? "#000" : "#fff"} />}
       </View>
       <Text style={styles.rowText}>{label}</Text>
     </TouchableOpacity>
@@ -103,7 +103,7 @@ const FilterSheet: React.FC<Props> = ({ visible, selected, onClose, onApply }) =
   );
 };
 
-const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   overlay: {
     flex: 1,
     backgroundColor: "rgba(0,0,0,0.45)",
@@ -113,7 +113,7 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: colors.background || (dark ? '#121212' : '#ffffff'),
+    backgroundColor: colors.background || (isDark ? '#121212' : '#ffffff'),
     paddingHorizontal: 16,
     paddingTop: 16,
     paddingBottom: 24,
@@ -134,7 +134,7 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
     alignItems: "center",
     paddingVertical: 14,
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: dark ? "#333" : "#EAEAEA",
+    borderBottomColor: isDark ? "#333" : "#EAEAEA",
   },
   rowText: { fontSize: 16, marginLeft: 14, color: colors.text },
   checkbox: {
@@ -142,23 +142,23 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
     height: 28,
     borderRadius: 8,
     borderWidth: 2,
-    borderColor: dark ? "#444" : "#D7D7D7",
+    borderColor: isDark ? "#444" : "#D7D7D7",
     alignItems: "center",
     justifyContent: "center",
     backgroundColor: colors.card,
   },
   checkboxActive: {
-    backgroundColor: dark ? "#fff" : "#2D8CFF",
-    borderColor: dark ? "#fff" : "#2D8CFF",
+    backgroundColor: isDark ? "#fff" : "#2D8CFF",
+    borderColor: isDark ? "#fff" : "#2D8CFF",
   },
   apply: {
     marginTop: 16,
-    backgroundColor: colors.text || (dark ? '#ffffff' : '#111111'),
+    backgroundColor: colors.text || (isDark ? '#ffffff' : '#111111'),
     borderRadius: 12,
     alignItems: "center",
     paddingVertical: 14,
   },
-  applyText: { color: colors.background || (dark ? '#121212' : '#ffffff'), fontWeight: "700", fontSize: 16 },
+  applyText: { color: colors.background || (isDark ? '#121212' : '#ffffff'), fontWeight: "700", fontSize: 16 },
 });
 
 export default FilterSheet;

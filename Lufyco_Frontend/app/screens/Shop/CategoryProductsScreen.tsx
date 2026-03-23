@@ -5,12 +5,15 @@ import { useShopStore } from '../../store/useShopStore';
 import { useWishlistStore } from '../../store/useWishlistStore';
 import { useNavigation } from '@react-navigation/native';
 import { Product } from '../../data/mockData';
+import { useTheme } from '../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = (width - 45) / 2;
 
 const CategoryProductsScreen = () => {
     const navigation = useNavigation<any>();
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
     const { getFilteredProducts, activeFilters, categories } = useShopStore();
     const { toggleWishlist, isInWishlist } = useWishlistStore();
     const products = getFilteredProducts();
@@ -35,7 +38,7 @@ const CategoryProductsScreen = () => {
                     resizeMode="cover"
                 />
                 <TouchableOpacity
-                    style={styles.favIcon}
+                    style={[styles.favIcon, { backgroundColor: isDark ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.8)' }]}
                     onPress={() => toggleWishlist({
                         id: item.id,
                         productId: item.id,
@@ -47,7 +50,7 @@ const CategoryProductsScreen = () => {
                     <Feather
                         name={isInWishlist(item.id) ? 'heart' : 'heart'}
                         size={16}
-                        color={isInWishlist(item.id) ? '#EF4444' : '#000'}
+                        color={isInWishlist(item.id) ? '#EF4444' : colors.text}
                     />
                 </TouchableOpacity>
             </View>
@@ -58,16 +61,16 @@ const CategoryProductsScreen = () => {
                         <View key={i} style={[styles.dot, { backgroundColor: c }]} />
                     ))}
                     {item.colors.length > 3 && (
-                        <Text style={styles.plusText}>+{item.colors.length - 3} Colors</Text>
+                        <Text style={[styles.plusText, { color: colors.textSecondary }]}>+{item.colors.length - 3} Colors</Text>
                     )}
                 </View>
 
-                <Text numberOfLines={1} style={styles.title}>{item.title}</Text>
+                <Text numberOfLines={1} style={[styles.title, { color: colors.text }]}>{item.title}</Text>
 
                 <View style={styles.priceRow}>
-                    <Text style={styles.price}>LKR {item.price.toFixed(2)}</Text>
+                    <Text style={[styles.price, { color: colors.text }]}>LKR {item.price.toFixed(2)}</Text>
                     {item.oldPrice && (
-                        <Text style={styles.oldPrice}>LKR {item.oldPrice.toFixed(2)}</Text>
+                        <Text style={[styles.oldPrice, { color: colors.textSecondary }]}>LKR {item.oldPrice.toFixed(2)}</Text>
                     )}
                 </View>
             </View>
@@ -75,21 +78,22 @@ const CategoryProductsScreen = () => {
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
+            <View style={[styles.header, { borderBottomColor: colors.border }]}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 15 }}>
-                        <Feather name="arrow-left" size={24} color="#000" />
+                        <Feather name="arrow-left" size={24} color={colors.text} />
                     </TouchableOpacity>
-                    <Text style={styles.headerTitle}>{headerTitle}</Text>
+                    <Text style={[styles.headerTitle, { color: colors.text }]}>{headerTitle}</Text>
                 </View>
 
                 <View style={styles.headerIcons}>
                     <TouchableOpacity onPress={() => navigation.navigate('Filter')} style={{ marginRight: 15 }}>
-                        <Ionicons name="options-outline" size={24} color="#000" />
+                        <Ionicons name="options-outline" size={24} color={colors.text} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-                        <Ionicons name="search" size={24} color="#000" />
+                        <Ionicons name="search" size={24} color={colors.text} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -103,7 +107,7 @@ const CategoryProductsScreen = () => {
                 renderItem={renderItem}
                 ListEmptyComponent={
                     <View style={styles.center}>
-                        <Text>No products found.</Text>
+                        <Text style={{ color: colors.text }}>No products found.</Text>
                     </View>
                 }
             />
@@ -111,19 +115,20 @@ const CategoryProductsScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 15, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#f0f0f0'
+        paddingHorizontal: 15, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: colors.border,
+        backgroundColor: colors.background
     },
-    headerTitle: { fontSize: 18, fontWeight: 'bold' },
+    headerTitle: { fontSize: 18, fontWeight: 'bold' , color: colors.text },
     headerIcons: { flexDirection: 'row' },
     center: { alignItems: 'center', marginTop: 50 },
 
     card: { width: COLUMN_WIDTH, marginBottom: 25 },
     imageContainer: { position: 'relative', marginBottom: 10, borderRadius: 12, overflow: 'hidden' },
-    image: { width: '100%', height: 200, backgroundColor: '#f9f9f9' },
+    image: { width: '100%', height: 200, backgroundColor: colors.iconBg },
     favIcon: {
         position: 'absolute', top: 10, right: 10, backgroundColor: 'rgba(255,255,255,0.8)',
         width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center',
@@ -131,13 +136,13 @@ const styles = StyleSheet.create({
 
     productInfo: { paddingHorizontal: 4 },
     colorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
-    dot: { width: 10, height: 10, borderRadius: 5, marginRight: 4, borderWidth: 1, borderColor: '#fff' },
-    plusText: { fontSize: 10, color: '#666', marginLeft: 4 },
+    dot: { width: 10, height: 10, borderRadius: 5, marginRight: 4, borderWidth: 1, borderColor: colors.border },
+    plusText: { fontSize: 10, color: colors.textSecondary, marginLeft: 4 },
 
-    title: { fontSize: 13, fontWeight: '500', marginBottom: 4, color: '#333' },
+    title: { fontSize: 13, fontWeight: '500', marginBottom: 4, color: colors.text },
     priceRow: { flexDirection: 'row', alignItems: 'center' },
-    price: { fontSize: 13, fontWeight: 'bold', color: '#000' },
-    oldPrice: { fontSize: 11, color: '#999', textDecorationLine: 'line-through', marginLeft: 6 }
+    price: { fontSize: 13, fontWeight: 'bold', color: colors.text },
+    oldPrice: { fontSize: 11, color: colors.textSecondary, textDecorationLine: 'line-through', marginLeft: 6 }
 });
 
 export default CategoryProductsScreen;

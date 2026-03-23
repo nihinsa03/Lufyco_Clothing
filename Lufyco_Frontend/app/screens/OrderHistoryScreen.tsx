@@ -40,7 +40,7 @@ const OrderHistoryScreen = () => {
                     <View style={{ flex: 1, marginLeft: 12 }}>
                         <Text style={[styles.title, { color: colors.text }]} numberOfLines={1}>{firstItem?.title || "Product"}</Text>
                         {item.items.length > 1 && <Text style={[styles.subtext, { color: colors.textSecondary }]}>+ {item.items.length - 1} more items</Text>}
-                        <Text style={[styles.price, { color: colors.text }]}>${item.total.toFixed(2)}</Text>
+                        <Text style={[styles.price, { color: colors.text }]}>LKR {item.total.toFixed(2)}</Text>
                     </View>
                     <View style={[styles.statusBadge, { backgroundColor: item.status === 'Delivered' ? (isDark ? "#064E3B" : "#DCFCE7") : (isDark ? "#1E3A8A" : "#DBEAFE") }]}>
                         <Text style={[styles.statusText, { color: item.status === 'Delivered' ? (isDark ? "#6EE7B7" : "#16A34A") : (isDark ? "#93C5FD" : "#1E40AF") }]}>

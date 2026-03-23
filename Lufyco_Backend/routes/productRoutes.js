@@ -43,11 +43,11 @@ router.get('/', async (req, res) => {
         const products = await productsQuery;
 
         // Map to match Expo Frontend Product Interface
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
+        const baseUrl = req.app.locals.serverBaseUrl || `${req.protocol}://${req.get('host')}`;
         
         const mappedProducts = products.map(p => {
             const isLocal = p.image && p.image.startsWith('/uploads');
-            const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
+            const fullImageUrl = isLocal ? `${baseUrl}${p.image}` : p.image;
 
             return {
                 id: p._id.toString(),
@@ -80,7 +80,7 @@ router.get('/', async (req, res) => {
 // @desc    Get dynamically aggregated categories from products
 router.get('/categories', async (req, res) => {
     try {
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
+        const baseUrl = req.app.locals.serverBaseUrl || `${req.protocol}://${req.get('host')}`;
         
         const categories = await Product.aggregate([
             {
@@ -94,12 +94,12 @@ router.get('/categories', async (req, res) => {
 
         const mappedCategories = categories.map((cat, index) => {
             const isLocal = cat.image && cat.image.startsWith('/uploads');
-            const fullImageUrl = isLocal ? `${hostUrl}${cat.image}` : cat.image;
+            const fullImageUrl = isLocal ? `${baseUrl}${cat.image}` : cat.image;
 
             return {
                 id: `cat_dyn_${index}`, // Unique dynamic ID
                 name: cat._id || 'Uncategorized',
-                image: fullImageUrl,
+                image: cat.image && cat.image.startsWith('/uploads') ? `${baseUrl}${cat.image}` : cat.image,
                 gender: cat.gender ? cat.gender.toLowerCase() : 'unisex'
             };
         });
@@ -118,9 +118,9 @@ router.get('/:id', async (req, res) => {
         const p = await Product.findById(req.params.id);
         if (!p) return res.status(404).json({ message: 'Product not found' });
 
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
+        const baseUrl = req.app.locals.serverBaseUrl || `${req.protocol}://${req.get('host')}`;
         const isLocal = p.image && p.image.startsWith('/uploads');
-        const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
+        const fullImageUrl = isLocal ? `${baseUrl}${p.image}` : p.image;
 
         res.json({
             id: p._id.toString(),

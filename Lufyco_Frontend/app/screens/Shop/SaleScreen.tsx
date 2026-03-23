@@ -1,10 +1,11 @@
-import React from 'react';
-import { View, Text, StyleSheet, FlatList, TouchableOpacity, Image, SafeAreaView, Dimensions, Platform, StatusBar } from "react-native";
+import React, { useEffect, useState, useMemo } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity, Pressable, Image, SafeAreaView, Dimensions, Platform, StatusBar, ActivityIndicator } from "react-native";
 import { Feather, Ionicons } from '@expo/vector-icons';
 import { useShopStore } from '../../store/useShopStore';
 import { useNavigation } from '@react-navigation/native';
 import { Product } from '../../data/mockData';
 import { useTheme } from '../../context/ThemeContext';
+import api from '../../api/api';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = (width - 45) / 2;
@@ -13,38 +14,69 @@ const SaleScreen = () => {
     const navigation = useNavigation<any>();
     const { getSaleProducts, activeFilters } = useShopStore();
     const { colors, isDark } = useTheme();
-    const styles = getStyles(colors, isDark);
+    
+    const styles = useMemo(() => getStyles(colors, isDark), [colors, isDark]);
 
-    // In a real app we might combine getSaleProducts with getFilteredProducts logic
-    // For now, let's just get sale products.
-    const products = getSaleProducts();
+    const [products, setProducts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
-    const renderItem = ({ item }: { item: Product }) => (
+    useEffect(() => {
+        const fetchSaleProducts = async () => {
+            try {
+                const res = await api.get('/products?isSale=true');
+                if (res.data && res.data.products) {
+                    setProducts(res.data.products);
+                } else {
+                    // Fallback to mock data if backend returns empty or unexpected format
+                    setProducts(getSaleProducts());
+                }
+            } catch (err) {
+                console.warn('[SaleScreen] Failed to fetch sale products:', err);
+                setProducts(getSaleProducts());
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchSaleProducts();
+    }, []);
+
+    const renderItem = ({ item }: { item: any }) => (
         <TouchableOpacity
-            style={styles.card}
-            onPress={() => navigation.navigate('ProductDetails', { id: item.id })}
+            style={[styles.card, { backgroundColor: colors.card || colors.background }]}
+            activeOpacity={0.85}
+            onPress={() => navigation.navigate('ProductDetails', { id: item._id || item.id, product: item })}
         >
             <View style={styles.imageContainer}>
                 <Image
-                    source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}
+                    source={
+                        item.images && item.images[0]
+                            ? (typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0])
+                            : (item.image ? (typeof item.image === 'string' ? { uri: item.image } : item.image) : require("../../../assets/images/clothing.png"))
+                    }
                     style={styles.image}
                     resizeMode="cover"
                 />
-                <TouchableOpacity style={[styles.favIcon, { backgroundColor: isDark ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.9)' }]}>
+                <Pressable
+                    style={[styles.favIcon, { backgroundColor: isDark ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.9)' }]}
+                    onPress={(e) => { e.stopPropagation(); }}
+                    hitSlop={8}
+                >
                     <Feather name="heart" size={16} color={colors.text} />
-                </TouchableOpacity>
-                {item.discountPercent && (
+                </Pressable>
+                {(item.discountPercent || item.oldPrice) && (
                     <View style={styles.badge}>
-                        <Text style={styles.badgeText}>-{item.discountPercent}%</Text>
+                        <Text style={styles.badgeText}>
+                            {item.discountPercent ? `-${item.discountPercent}%` : 'SALE'}
+                        </Text>
                     </View>
                 )}
             </View>
 
             <View style={styles.colorRow}>
-                {item.colors.slice(0, 3).map((c, i) => (
+                {(item.colors || []).slice(0, 3).map((c: string, i: number) => (
                     <View key={i} style={[styles.dot, { backgroundColor: c }]} />
                 ))}
-                {item.colors.length > 3 && <Text style={styles.plusText}>+</Text>}
+                {item.colors && item.colors.length > 3 && <Text style={[styles.plusText, { color: colors.textSecondary }]}>+</Text>}
             </View>
 
             <Text numberOfLines={1} style={[styles.title, { color: colors.text }]}>{item.title}</Text>
@@ -56,8 +88,17 @@ const SaleScreen = () => {
         </TouchableOpacity>
     );
 
+    if (loading) {
+        return (
+            <SafeAreaView style={[styles.container, { backgroundColor: colors.background, justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color={colors.text} />
+            </SafeAreaView>
+        );
+    }
+
     return (
         <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <StatusBar barStyle={isDark ? 'light-content' : 'dark-content'} />
             <View style={[styles.header, { borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
                     <Feather name="arrow-left" size={24} color={colors.text} />
@@ -75,7 +116,7 @@ const SaleScreen = () => {
 
             <FlatList
                 data={products}
-                keyExtractor={(item) => item.id}
+                keyExtractor={(item) => item.id || (item as any)._id}
                 numColumns={2}
                 columnWrapperStyle={{ justifyContent: 'space-between', paddingHorizontal: 15 }}
                 contentContainerStyle={{ paddingBottom: 20 }}
@@ -91,16 +132,17 @@ const SaleScreen = () => {
 };
 
 const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
-    container: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+    container: { flex: 1, backgroundColor: colors.background, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 15, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: colors.border
+        paddingHorizontal: 15, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: colors.border,
+        backgroundColor: colors.background
     },
     headerTitle: { fontSize: 18, fontWeight: 'bold', color: colors.text },
     headerIcons: { flexDirection: 'row' },
     center: { alignItems: 'center', marginTop: 50 },
 
-    card: { width: COLUMN_WIDTH, marginBottom: 20 },
+    card: { width: COLUMN_WIDTH, marginBottom: 20, backgroundColor: colors.card || colors.background, borderRadius: 10, overflow: 'hidden' },
     imageContainer: { position: 'relative', marginBottom: 10 },
     image: { width: '100%', height: 200, borderRadius: 10, backgroundColor: colors.iconBg },
     favIcon: {

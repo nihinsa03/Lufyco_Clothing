@@ -32,6 +32,7 @@ const isLightColor = (hex: string): boolean => {
 const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     // Params
     const { id, product: paramProduct } = route.params;
+    console.log('[ProductDetails] id:', id, '| paramProduct:', JSON.stringify(paramProduct)?.slice(0, 200));
 
     // Store Hooks
     const getProductById = useProductsStore((state) => state.getProductById);
@@ -40,11 +41,12 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     const { colors, isDark } = useTheme();
     const styles = getStyles(colors, isDark);
 
-    // Local State
-    const storeProduct = getProductById(id) || paramProduct;
+    // Local State — paramProduct is the immediate fallback while we fetch live data
+    const storeProduct = getProductById(id) || paramProduct || null;
     const [liveProduct, setLiveProduct] = useState<any>(null);
-    const [loading, setLoading] = useState(true);
-    const fullProduct = liveProduct || storeProduct;
+    const [fetchLoading, setFetchLoading] = useState(true);
+    // Use liveProduct if fetched, otherwise fall back to paramProduct/storeProduct
+    const fullProduct = liveProduct || storeProduct || null;
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [qty, setQty] = useState(1);
@@ -58,23 +60,42 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     const buttonScale = useRef(new Animated.Value(1)).current;
     const successOpacity = useRef(new Animated.Value(0)).current;
 
-    // Fetch live product details from MongoDB
+    // Fetch live product details from MongoDB (background, non-blocking if paramProduct exists)
     useEffect(() => {
         const fetchDetail = async () => {
             try {
-                const res = await api.get(`/products/${id}`);
-                if (res.data) setLiveProduct(res.data);
+                const productId = id || (paramProduct && (paramProduct._id || paramProduct.id));
+                if (!productId) {
+                    console.warn('[ProductDetails] No product ID to fetch.');
+                    return;
+                }
+                const res = await api.get(`/products/${productId}`);
+                if (res.data && (res.data._id || res.data.id)) {
+                    setLiveProduct(res.data);
+                }
             } catch (err) {
-                // Falls back to paramProduct already set above
                 console.warn('[ProductDetails] Could not fetch live product, using passed data.', err);
             } finally {
-                setLoading(false);
+                setFetchLoading(false);
             }
         };
         fetchDetail();
     }, [id]);
 
-    if (loading) {
+    // Auto-select first size and color
+    useEffect(() => {
+        if (fullProduct) {
+            if (fullProduct.sizes && fullProduct.sizes.length > 0 && !selectedSize) {
+                setSelectedSize(fullProduct.sizes[0]);
+            }
+            if (fullProduct.colors && fullProduct.colors.length > 0 && !selectedColor) {
+                setSelectedColor(fullProduct.colors[0]);
+            }
+        }
+    }, [fullProduct]);
+
+    // Only show full-screen spinner if we have NO product data at all and are still fetching
+    if (fetchLoading && !fullProduct) {
         return (
             <SafeAreaView style={[styles.safe, { justifyContent: 'center', alignItems: 'center' }]}>
                 <ActivityIndicator size="large" color={colors.text} />
@@ -227,7 +248,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                             <Text style={[styles.categoryText, { color: colors.textSecondary }]}>Men's Fashion</Text>
                         </View>
                         <View>
-                            <Text style={[styles.price, { color: colors.text }]}>LKR {fullProduct.price?.toFixed(2)}</Text>
+                            <Text style={[styles.price, { color: colors.text }]}>LKR {(fullProduct.price || 0).toFixed(2)}</Text>
                         </View>
                     </View>
 
