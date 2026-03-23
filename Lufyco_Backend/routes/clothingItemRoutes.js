@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const ClothingItem = require('../models/clothingItem');
+const ClothingItem = require('../models/ClothingItem');
 
 // @route   GET /api/clothing-items
 // @desc    Get all clothing items from clothing_items collection
