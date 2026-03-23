@@ -73,7 +73,6 @@ const HomeScreen = ({ navigation }: Props) => {
     setActiveBanner(index);
   };
 
-
   const handleCategoryPress = (catId: string) => {
     const cat = categories.find(c => c.id === catId);
     if (!cat) return;
@@ -85,7 +84,7 @@ const HomeScreen = ({ navigation }: Props) => {
   };
 
   const handleProductPress = (item: any) => {
-    navigation.navigate("ProductDetails", { id: item.id, product: item });
+    navigation.navigate("ProductDetails", { id: item.id || item._id, product: item });
   };
 
   return (
@@ -248,20 +247,18 @@ const HomeScreen = ({ navigation }: Props) => {
             columnWrapperStyle={{ justifyContent: 'space-between' }}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingHorizontal: 4 }}
-            keyExtractor={(item) => item.id || item._id}
+            keyExtractor={(item) => (item.id || item._id).toString()}
             renderItem={({ item }) => (
               <TouchableOpacity
                 style={[styles.productCard, { backgroundColor: colors.card }]}
-                onPress={() => navigation.navigate('ProductDetails', { id: item.id || item._id, product: item })}
+                onPress={() => handleProductPress(item)}
               >
                 <View style={styles.imageWrapper}>
                   <Image
                     source={
                       item.images && item.images[0]
                         ? { uri: item.images[0] }
-                        : typeof item.images?.[0] !== 'string' && item.images?.[0]
-                          ? item.images[0]
-                          : require('../../assets/images/clothing.png')
+                        : require('../../assets/images/clothing.png')
                     }
                     style={styles.productImage}
                   />
@@ -299,7 +296,10 @@ const HomeScreen = ({ navigation }: Props) => {
                       <View key={i} style={[styles.colorCircle, { backgroundColor: c, borderColor: colors.card }]} />
                     ))}
                     {(item.colors?.length || 0) > 3 && (
-                      <Text style={[styles.moreColors, { color: colors.textSecondary }]}>+{item.colors.length - 3}</Text>
+                      <Text style={[styles.moreColors, { color: colors.textSecondary }]}>+{item.colors.length - 3} more</Text>
+                    )}
+                    {(!item.colors || item.colors.length === 0) && (
+                      <Text style={[styles.moreColors, { color: colors.textSecondary }]}>Standard Color</Text>
                     )}
                   </View>
                   <Text numberOfLines={1} style={[styles.productName, { color: colors.text }]}>{item.title || item.name}</Text>
