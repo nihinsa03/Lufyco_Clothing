@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
-const ClothingItem = require('../models/ClothingItem');
+const ClothingItem = require('../models/clothingItem');
 const { extractFeatures } = require('../services/mlFeatureExtractor');
 const axios = require('axios');
 

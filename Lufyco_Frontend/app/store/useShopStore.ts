@@ -40,7 +40,8 @@ interface ShopState {
     clearRecentSearches: () => void;
     fetchProducts: () => Promise<void>;
 
-    getFilteredProducts: () => Product[];
+    getProductsBySubCategory: (subCat: string) => Product[];
+    getProductsByType: (type: string) => Product[];
     getSaleProducts: () => Product[];
 }
 
@@ -179,9 +180,19 @@ export const useShopStore = create<ShopState>()(
                 return filtered;
             },
 
+            getProductsBySubCategory: (subCat) => {
+                const { products } = get();
+                return products.filter(p => p.subCategory && p.subCategory.toLowerCase() === subCat.toLowerCase());
+            },
+
+            getProductsByType: (type) => {
+                const { products } = get();
+                return products.filter(p => p.type && p.type.toLowerCase() === type.toLowerCase());
+            },
+
             getSaleProducts: () => {
                 const { products } = get();
-                return products.filter(p => p.oldPrice && p.oldPrice > p.price);
+                return products.filter(p => p.isSale || (p.oldPrice && p.oldPrice > p.price));
             }
         }),
         {

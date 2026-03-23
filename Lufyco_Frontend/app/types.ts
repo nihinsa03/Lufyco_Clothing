@@ -24,4 +24,7 @@ export interface Product {
     isPopular?: boolean;
     isPriceDropping?: boolean;
     discountPercent?: number;
+    subCategory?: string;
+    type?: string;
+    isSale?: boolean;
 }
