@@ -48,8 +48,8 @@ const HomeScreen = ({ navigation }: Props) => {
     setActiveBanner(index);
   };
 
-  // Filter for Latest Products (New Arrivals)
-  const latestProducts = products.filter(p => p.isNewArrival);
+  // Show all products from MongoDB in Latest Products
+  const latestProducts = products;
 
   const handleCategoryPress = (catId: string) => {
     const cat = categories.find(c => c.id === catId);

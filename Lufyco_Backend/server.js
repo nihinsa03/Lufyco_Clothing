@@ -28,6 +28,7 @@ const orderRoutes = require('./routes/orderRoutes');
 const closetRoutes = require('./routes/closetRoutes');
 const wishlistRoutes = require('./routes/wishlistRoutes');
 const aiRoutes = require('./routes/aiRoutes');
+const clothingItemRoutes = require('./routes/clothingItemRoutes');
 
 app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
@@ -35,6 +36,7 @@ app.use('/api/closet', closetRoutes);
 app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/clothing-items', clothingItemRoutes);
 
 app.get('/', (req, res) => {
     res.send('Lufyco Clothing Backend is running!');

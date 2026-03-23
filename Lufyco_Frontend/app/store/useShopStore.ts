@@ -71,7 +71,7 @@ export const useShopStore = create<ShopState>()(
             fetchProducts: async () => {
                 try {
                     const [productsRes, categoriesRes] = await Promise.all([
-                        api.get('/products'),
+                        api.get('/clothing-items'),
                         api.get('/products/categories'),
                     ]);
                     const fetchedProducts: Product[] = productsRes.data?.products || productsRes.data || [];
