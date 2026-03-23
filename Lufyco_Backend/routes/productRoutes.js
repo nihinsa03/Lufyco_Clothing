@@ -61,7 +61,7 @@ router.get('/', async (req, res) => {
                 tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
                 colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
                 sizes: ['S', 'M', 'L', 'XL'],
-                isNewArrival: true, // Defaulting flags to true to populate "Latest Products"
+                isNewArrival: p.isNewArrival || false,
                 isPopular: p.reviewsCount > 5 || p.price > 2000, 
                 rating: p.rating || 4.5,
                 reviews: p.reviewsCount || Math.floor(Math.random() * 50) + 10,
@@ -106,6 +106,45 @@ router.get('/categories', async (req, res) => {
 
         // Filter out null names if any
         res.json({ categories: mappedCategories.filter(c => c.name !== 'Uncategorized') });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   GET /api/products/:id
+// @desc    Get a single product by ID
+router.get('/:id', async (req, res) => {
+    try {
+        const p = await Product.findById(req.params.id);
+        if (!p) return res.status(404).json({ message: 'Product not found' });
+
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
+        const isLocal = p.image && p.image.startsWith('/uploads');
+        const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
+
+        res.json({
+            id: p._id.toString(),
+            title: p.name,
+            name: p.name,
+            price: p.price,
+            description: p.description,
+            images: [fullImageUrl],
+            categoryId: p.category,
+            category: p.category,
+            subCategory: p.subCategory,
+            type: p.type,
+            gender: p.gender,
+            tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
+            colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
+            sizes: p.sizes && p.sizes.length > 0 ? p.sizes : ['S', 'M', 'L', 'XL'],
+            isNewArrival: p.isNewArrival || false,
+            isPopular: p.reviewsCount > 5 || p.price > 2000,
+            rating: p.rating || 4.5,
+            reviews: p.reviewsCount || 0,
+            reviewsCount: p.reviewsCount || 0,
+            oldPrice: p.compareAtPrice,
+            featureVector: p.featureVector
+        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

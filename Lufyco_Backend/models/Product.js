@@ -54,6 +54,10 @@ const productSchema = new mongoose.Schema(
             type: [Number],
             required: false,
             default: []
+        },
+        isNewArrival: {
+            type: Boolean,
+            default: false
         }
     },
     {

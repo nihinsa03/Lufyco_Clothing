@@ -1,5 +1,5 @@
-import React, { useState, useRef } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert, Dimensions, Platform, Animated, Modal, StatusBar } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert, Dimensions, Platform, Animated, Modal, StatusBar, ActivityIndicator } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useCartStore } from "../store/useCartStore";
 import { useWishlistStore } from "../store/useWishlistStore";
@@ -7,6 +7,7 @@ import { useProductsStore } from "../store/useProductsStore";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useTheme } from "../context/ThemeContext";
+import api from "../api/api";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductDetails">;
 
@@ -40,7 +41,10 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     const styles = getStyles(colors, isDark);
 
     // Local State
-    const fullProduct = getProductById(id) || paramProduct;
+    const storeProduct = getProductById(id) || paramProduct;
+    const [liveProduct, setLiveProduct] = useState<any>(null);
+    const [loading, setLoading] = useState(true);
+    const fullProduct = liveProduct || storeProduct;
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [qty, setQty] = useState(1);
@@ -53,6 +57,30 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     // Animation Values
     const buttonScale = useRef(new Animated.Value(1)).current;
     const successOpacity = useRef(new Animated.Value(0)).current;
+
+    // Fetch live product details from MongoDB
+    useEffect(() => {
+        const fetchDetail = async () => {
+            try {
+                const res = await api.get(`/products/${id}`);
+                if (res.data) setLiveProduct(res.data);
+            } catch (err) {
+                // Falls back to paramProduct already set above
+                console.warn('[ProductDetails] Could not fetch live product, using passed data.', err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchDetail();
+    }, [id]);
+
+    if (loading) {
+        return (
+            <SafeAreaView style={[styles.safe, { justifyContent: 'center', alignItems: 'center' }]}>
+                <ActivityIndicator size="large" color={colors.text} />
+            </SafeAreaView>
+        );
+    }
 
     if (!fullProduct) {
         return (

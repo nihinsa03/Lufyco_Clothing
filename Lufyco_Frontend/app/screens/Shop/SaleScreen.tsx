@@ -4,6 +4,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { useShopStore } from '../../store/useShopStore';
 import { useNavigation } from '@react-navigation/native';
 import { Product } from '../../data/mockData';
+import { useTheme } from '../../context/ThemeContext';
 
 const { width } = Dimensions.get('window');
 const COLUMN_WIDTH = (width - 45) / 2;
@@ -11,6 +12,8 @@ const COLUMN_WIDTH = (width - 45) / 2;
 const SaleScreen = () => {
     const navigation = useNavigation<any>();
     const { getSaleProducts, activeFilters } = useShopStore();
+    const { colors, isDark } = useTheme();
+    const styles = getStyles(colors, isDark);
 
     // In a real app we might combine getSaleProducts with getFilteredProducts logic
     // For now, let's just get sale products.
@@ -27,8 +30,8 @@ const SaleScreen = () => {
                     style={styles.image}
                     resizeMode="cover"
                 />
-                <TouchableOpacity style={styles.favIcon}>
-                    <Feather name="heart" size={16} color="#000" />
+                <TouchableOpacity style={[styles.favIcon, { backgroundColor: isDark ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.9)' }]}>
+                    <Feather name="heart" size={16} color={colors.text} />
                 </TouchableOpacity>
                 {item.discountPercent && (
                     <View style={styles.badge}>
@@ -44,28 +47,28 @@ const SaleScreen = () => {
                 {item.colors.length > 3 && <Text style={styles.plusText}>+</Text>}
             </View>
 
-            <Text numberOfLines={1} style={styles.title}>{item.title}</Text>
+            <Text numberOfLines={1} style={[styles.title, { color: colors.text }]}>{item.title}</Text>
 
             <View style={styles.priceRow}>
-                <Text style={styles.price}>${item.price.toFixed(2)}</Text>
-                {item.oldPrice && <Text style={styles.oldPrice}>${item.oldPrice.toFixed(2)}</Text>}
+                <Text style={[styles.price, { color: colors.text }]}>${item.price.toFixed(2)}</Text>
+                {item.oldPrice && <Text style={[styles.oldPrice, { color: colors.textSecondary }]}>${item.oldPrice.toFixed(2)}</Text>}
             </View>
         </TouchableOpacity>
     );
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.header}>
+        <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+            <View style={[styles.header, { borderBottomColor: colors.border }]}>
                 <TouchableOpacity onPress={() => navigation.goBack()}>
-                    <Feather name="arrow-left" size={24} color="#000" />
+                    <Feather name="arrow-left" size={24} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.headerTitle}>Products/Sale</Text>
+                <Text style={[styles.headerTitle, { color: colors.text }]}>Products/Sale</Text>
                 <View style={styles.headerIcons}>
                     <TouchableOpacity onPress={() => navigation.navigate('Filter')} style={{ marginRight: 15 }}>
-                        <Feather name="filter" size={22} color="#000" />
+                        <Feather name="filter" size={22} color={colors.text} />
                     </TouchableOpacity>
                     <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-                        <Ionicons name="search" size={22} color="#000" />
+                        <Ionicons name="search" size={22} color={colors.text} />
                     </TouchableOpacity>
                 </View>
             </View>
@@ -79,7 +82,7 @@ const SaleScreen = () => {
                 renderItem={renderItem}
                 ListEmptyComponent={
                     <View style={styles.center}>
-                        <Text>No sale items found.</Text>
+                        <Text style={{ color: colors.text }}>No sale items found.</Text>
                     </View>
                 }
             />
@@ -87,21 +90,21 @@ const SaleScreen = () => {
     );
 };
 
-const styles = StyleSheet.create({
-    container: { flex: 1, backgroundColor: '#fff' , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 15, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: '#f0f0f0'
+        paddingHorizontal: 15, paddingVertical: 15, borderBottomWidth: 1, borderBottomColor: colors.border
     },
-    headerTitle: { fontSize: 18, fontWeight: 'bold' },
+    headerTitle: { fontSize: 18, fontWeight: 'bold', color: colors.text },
     headerIcons: { flexDirection: 'row' },
     center: { alignItems: 'center', marginTop: 50 },
 
     card: { width: COLUMN_WIDTH, marginBottom: 20 },
     imageContainer: { position: 'relative', marginBottom: 10 },
-    image: { width: '100%', height: 200, borderRadius: 10, backgroundColor: '#f9f9f9' },
+    image: { width: '100%', height: 200, borderRadius: 10, backgroundColor: colors.iconBg },
     favIcon: {
-        position: 'absolute', top: 10, right: 10, backgroundColor: '#fff',
+        position: 'absolute', top: 10, right: 10,
         width: 28, height: 28, borderRadius: 14, justifyContent: 'center', alignItems: 'center',
         shadowColor: '#000', shadowOpacity: 0.1, shadowRadius: 3, elevation: 2
     },
@@ -112,13 +115,13 @@ const styles = StyleSheet.create({
     badgeText: { color: '#fff', fontSize: 10, fontWeight: 'bold' },
 
     colorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 5 },
-    dot: { width: 10, height: 10, borderRadius: 5, marginRight: 5, borderWidth: 1, borderColor: '#eee' },
-    plusText: { fontSize: 10, color: '#888' },
+    dot: { width: 10, height: 10, borderRadius: 5, marginRight: 5, borderWidth: 1, borderColor: colors.border },
+    plusText: { fontSize: 10, color: colors.textSecondary },
 
-    title: { fontSize: 14, fontWeight: '600', marginBottom: 4, color: '#000' },
+    title: { fontSize: 14, fontWeight: '600', marginBottom: 4, color: colors.text },
     priceRow: { flexDirection: 'row', alignItems: 'center' },
-    price: { fontSize: 14, fontWeight: 'bold', color: '#000', marginRight: 8 },
-    oldPrice: { fontSize: 12, color: '#999', textDecorationLine: 'line-through' }
+    price: { fontSize: 14, fontWeight: 'bold', color: colors.text, marginRight: 8 },
+    oldPrice: { fontSize: 12, color: colors.textSecondary, textDecorationLine: 'line-through' }
 });
 
 export default SaleScreen;

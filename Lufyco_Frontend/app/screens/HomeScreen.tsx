@@ -14,9 +14,14 @@ const screenWidth = Dimensions.get("window").width;
 type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 
 const HomeScreen = ({ navigation }: Props) => {
-  const { products, categories, setFilter } = useShopStore();
+  const { products, categories, setFilter, fetchProducts } = useShopStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
   const { colors } = useTheme();
+
+  // Fetch live products from MongoDB when HomeScreen loads
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   // Banner carousel data
   const banners = [
