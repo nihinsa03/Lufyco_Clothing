@@ -272,6 +272,7 @@ const CategoriesScreen = () => {
             renderItem={renderSidebarItem}
             showsVerticalScrollIndicator={false}
             contentContainerStyle={{ paddingVertical: 10 }}
+            extraData={selectedCategory}
           />
         </View>
 
