@@ -31,9 +31,9 @@ export const AuthInput = ({
             {label && <Text style={styles.label}>{label}</Text>}
             <View style={[
                 styles.inputBox,
-                isFocused && { borderColor: '#4A90E2', backgroundColor: colors.background } // Blue highlight color
+                isFocused && { borderColor: '#4f8ef7', backgroundColor: colors.background } // Blue highlight color
             ]}>
-                {icon && <Feather name={icon} size={20} color={isFocused ? "#4A90E2" : colors.textSecondary} style={{ marginRight: 10 }} />}
+                {icon && <Feather name={icon} size={20} color={isFocused ? "#4f8ef7" : colors.textSecondary} style={{ marginRight: 10 }} />}
                 <TextInput
                     style={[styles.input, { outlineStyle: 'none' } as any]} // Remove web outline
                     value={value}
@@ -144,10 +144,10 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     input: { flex: 1, fontSize: 16, color: colors.text },
 
     primaryBtn: {
-        backgroundColor: isDark ? '#fff' : '#000', height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', marginVertical: 10
+        backgroundColor: '#4f8ef7', height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', marginVertical: 10
     },
-    disabledBtn: { backgroundColor: isDark ? '#444' : '#888' },
-    primaryBtnText: { color: isDark ? '#111' : '#fff', fontSize: 16, fontWeight: 'bold' },
+    disabledBtn: { backgroundColor: isDark ? '#222' : '#888' },
+    primaryBtnText: { color: "#fff", fontSize: 16, fontWeight: 'bold' },
 
     secondaryBtn: {
         height: 52, borderRadius: 26, justifyContent: 'center', alignItems: 'center', marginVertical: 10, borderWidth: 1, borderColor: colors.border

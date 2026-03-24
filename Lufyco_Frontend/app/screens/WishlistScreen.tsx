@@ -43,7 +43,7 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
                     <Text style={[styles.emptyTitle, { color: colors.text }]}>Your wishlist is empty</Text>
                     <Text style={[styles.emptySub, { color: colors.textMuted }]}>Tap the heart icon to start saving your favorites</Text>
 
-                    <TouchableOpacity style={[styles.exploreBtn, { backgroundColor: isDark ? '#3B5BFF' : '#111' }]} onPress={() => navigation.navigate("Home")}>
+                    <TouchableOpacity style={[styles.exploreBtn, { backgroundColor: '#4f8ef7' }]} onPress={() => navigation.navigate("Home")}>
                         <Text style={styles.exploreText}>Explore Categories</Text>
                     </TouchableOpacity>
                 </View>
@@ -115,7 +115,7 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
                         <Text style={[styles.modalTitle, { color: colors.text }]}>Delete product from wishlist?</Text>
                         <Text style={[styles.modalSub, { color: colors.textMuted }]}>Are you sure you want to remove this item?</Text>
 
-                        <TouchableOpacity style={[styles.modalDeleteBtn, { backgroundColor: isDark ? '#EF4444' : '#111' }]} onPress={confirmDelete}>
+                        <TouchableOpacity style={[styles.modalDeleteBtn, { backgroundColor: '#EF4444' }]} onPress={confirmDelete}>
                             <Text style={styles.modalDeleteText}>Delete Product</Text>
                         </TouchableOpacity>
 
@@ -131,19 +131,19 @@ const WishlistScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
-    safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+    safe: { flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
-        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderColor: '#F3F4F6'
+        paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1
     },
-    headerTitle: { fontSize: 18, fontWeight: '700', color: '#111' },
+    headerTitle: { fontSize: 18, fontWeight: '700' },
 
     // Empty
     emptyContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: 40 },
     emptyImg: { width: 140, height: 140, marginBottom: 20 },
-    emptyTitle: { fontSize: 20, fontWeight: '800', color: '#111', marginBottom: 8 },
-    emptySub: { textAlign: 'center', color: '#666', lineHeight: 22, fontSize: 14 },
-    exploreBtn: { marginTop: 30, backgroundColor: '#111', paddingHorizontal: 30, paddingVertical: 14, borderRadius: 12 },
+    emptyTitle: { fontSize: 20, fontWeight: '800', marginBottom: 8 },
+    emptySub: { textAlign: 'center', lineHeight: 22, fontSize: 14 },
+    exploreBtn: { marginTop: 30, backgroundColor: '#4f8ef7', paddingHorizontal: 30, paddingVertical: 14, borderRadius: 12 },
     exploreText: { color: '#fff', fontWeight: '700' },
 
     // List
@@ -160,12 +160,12 @@ const styles = StyleSheet.create({
     // Modal
     modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'flex-end' },
     modalContent: { backgroundColor: '#fff', borderTopLeftRadius: 24, borderTopRightRadius: 24, padding: 24, alignItems: 'center' },
-    modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 8, color: '#111' },
-    modalSub: { color: '#666', marginBottom: 24 },
-    modalDeleteBtn: { backgroundColor: '#111', paddingVertical: 14, paddingHorizontal: 40, borderRadius: 12, marginBottom: 12, width: '100%', alignItems: 'center' },
+    modalTitle: { fontSize: 18, fontWeight: '700', marginBottom: 8 },
+    modalSub: { marginBottom: 24 },
+    modalDeleteBtn: { backgroundColor: '#EF4444', paddingVertical: 14, paddingHorizontal: 40, borderRadius: 12, marginBottom: 12, width: '100%', alignItems: 'center' },
     modalDeleteText: { color: '#fff', fontWeight: '700' },
     modalCancelBtn: { paddingVertical: 12 },
-    modalCancelText: { color: '#666', fontWeight: '600' }
+    modalCancelText: { fontWeight: '600' }
 });
 
 export default WishlistScreen;

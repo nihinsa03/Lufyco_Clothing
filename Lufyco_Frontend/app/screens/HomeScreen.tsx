@@ -16,7 +16,7 @@ type Props = NativeStackScreenProps<RootStackParamList, "Home">;
 const HomeScreen = ({ navigation }: Props) => {
   const { products, categories, setFilter } = useShopStore();
   const { toggleWishlist, isInWishlist } = useWishlistStore();
-  const { colors } = useTheme();
+  const { colors, isDark } = useTheme();
 
   // Banner carousel data
   const banners = [
@@ -85,7 +85,7 @@ const HomeScreen = ({ navigation }: Props) => {
               onPress={() => navigation.navigate("AIStylist" as any)}
               hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
             >
-              <Ionicons name="sparkles-outline" size={24} color="#667eea" />
+              <Ionicons name="sparkles-outline" size={24} color="#4f8ef7" />
             </TouchableOpacity>
             <TouchableOpacity 
               style={styles.iconBtn} 
@@ -112,14 +112,15 @@ const HomeScreen = ({ navigation }: Props) => {
         </View>
 
         {/* Search */}
-        <TouchableOpacity style={[styles.searchBox, { backgroundColor: colors.searchBg }]} onPress={() => navigation.navigate("Search")}>
+        <TouchableOpacity style={[styles.searchBox, { backgroundColor: isDark ? '#222' : colors.searchBg }]} onPress={() => navigation.navigate("Search")}>
           <Ionicons name="search-outline" size={20} color={colors.textSecondary} />
           <Text style={[styles.searchInput, { color: colors.textSecondary }]}>Search for brands and products</Text>
           <TouchableOpacity 
             onPress={() => navigation.navigate("ImageSearch")}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            style={{ paddingLeft: 10 }}
           >
-            <Feather name="camera" size={20} color="#667eea" />
+            <Feather name="camera" size={20} color="#4f8ef7" />
           </TouchableOpacity>
         </TouchableOpacity>
 
@@ -131,10 +132,10 @@ const HomeScreen = ({ navigation }: Props) => {
             <View style={styles.tabsWrapper}>
               {/* Only Fashion, always active style (Black pill) */}
               <TouchableOpacity
-                style={[styles.tab, styles.activeTab]} // Use activeTab style directly
+                style={[styles.tab, { backgroundColor: isDark ? '#FFF' : '#000', borderColor: isDark ? '#FFF' : '#000' }]}
                 activeOpacity={1}
               >
-                <Text style={[styles.tabText, styles.activeTabText]}>Fashion</Text>
+                <Text style={[styles.tabText, { color: isDark ? '#000' : '#FFF' }]}>Fashion</Text>
               </TouchableOpacity>
             </View>
             <TouchableOpacity style={styles.gridIcon} onPress={() => navigation.navigate("Categories")}>
@@ -149,26 +150,44 @@ const HomeScreen = ({ navigation }: Props) => {
               showsHorizontalScrollIndicator={false}
               contentContainerStyle={{ paddingHorizontal: 0 }}
             >
-              {[0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11].map((colIndex) => {
-                const topItem = mockCategories[colIndex];
-                const bottomItem = mockCategories[colIndex + 12];
-                const colWidth = (screenWidth - 32) / 5.5; // fits ~5.5 items in view to exactly show 6 columns gracefully
+              {[
+                { name: 'Shirts', id: 'shirts', image: require("../../assets/images/categories/men/shirts.jpg") },
+                { name: 'Jeans', id: 'jeans', image: require("../../assets/images/categories/men/jeans.jpg") },
+                { name: 'T-Shirts', id: 'tshirts', image: require("../../assets/images/categories/men/tshirts.jpg") },
+                { name: 'Casual Shoes', id: 'casual_shoes', image: require("../../assets/images/categories/men/casual-shoes.jpg") },
+                { name: 'Sweater', id: 'sweater', image: require("../../assets/images/categories/men/sweater.jpg") },
+                { name: 'Sports', id: 'sports', image: require("../../assets/images/categories/men/sports-shoes.jpg") },
+                { name: 'Dresses', id: 'dresses', image: require("../../assets/images/categories/women/dresses.jpg") },
+                { name: 'Tops', id: 'tops', image: require("../../assets/images/categories/women/tops.jpg") },
+                { name: 'Trousers', id: 'trousers', image: require("../../assets/images/categories/women/trousers.jpg") },
+                { name: 'Heels', id: 'heels', image: require("../../assets/images/categories/women/heels.jpg") },
+                { name: 'Jackets', id: 'jackets', image: require("../../assets/images/categories/men/jackets.jpg") },
+                { name: 'Kurtis', id: 'kurtis', image: require("../../assets/images/categories/women/kurtis.jpg") },
+              ].reduce((acc: any[], curr, idx, arr) => {
+                if (idx < 6) {
+                  acc.push([curr, arr[idx + 6]]);
+                }
+                return acc;
+              }, []).map((col: any[], colIndex) => {
+                const topItem = col[0];
+                const bottomItem = col[1];
+                const colWidth = (screenWidth - 32) / 5.5; 
                 return (
                   <View key={colIndex} style={{ width: colWidth, paddingRight: 8, rowGap: 16 }}>
                     {topItem && (
                       <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => handleCategoryPress(topItem.id)}>
-                        <View style={[styles.categoryImageContainer, { width: colWidth - 12, height: colWidth - 12 }]}>
-                          <Image source={typeof topItem.image === 'string' ? { uri: topItem.image } : topItem.image} style={styles.categoryImage} resizeMode="cover" />
+                        <View style={[styles.categoryImageContainer, { width: colWidth - 12, height: colWidth - 12, backgroundColor: isDark ? '#222' : '#f9f9f9' }]}>
+                          <Image source={topItem.image} style={styles.categoryImage} resizeMode="cover" />
                         </View>
-                        <Text style={[styles.categoryName, { color: colors.text, fontSize: 9 }]} numberOfLines={1}>{topItem.name.toUpperCase()}</Text>
+                        <Text style={[styles.categoryName, { color: colors.textSecondary, fontSize: 8, fontWeight: '700' }]} numberOfLines={1}>{topItem.name.toUpperCase()}</Text>
                       </TouchableOpacity>
                     )}
                     {bottomItem && (
                       <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => handleCategoryPress(bottomItem.id)}>
-                        <View style={[styles.categoryImageContainer, { width: colWidth - 12, height: colWidth - 12 }]}>
-                          <Image source={typeof bottomItem.image === 'string' ? { uri: bottomItem.image } : bottomItem.image} style={styles.categoryImage} resizeMode="cover" />
+                        <View style={[styles.categoryImageContainer, { width: colWidth - 12, height: colWidth - 12, backgroundColor: isDark ? '#222' : '#f9f9f9' }]}>
+                          <Image source={bottomItem.image} style={styles.categoryImage} resizeMode="cover" />
                         </View>
-                        <Text style={[styles.categoryName, { color: colors.text, fontSize: 9 }]} numberOfLines={1}>{bottomItem.name.toUpperCase()}</Text>
+                        <Text style={[styles.categoryName, { color: colors.textSecondary, fontSize: 8, fontWeight: '700' }]} numberOfLines={1}>{bottomItem.name.toUpperCase()}</Text>
                       </TouchableOpacity>
                     )}
                   </View>
@@ -178,7 +197,7 @@ const HomeScreen = ({ navigation }: Props) => {
           </View>
 
           {/* Banner Carousel */}
-          <View style={styles.bannerContainer}>
+          <View style={[styles.bannerContainer, { backgroundColor: isDark ? '#222' : '#eee' }]}>
             <ScrollView
               ref={bannerScrollRef}
               horizontal
@@ -196,13 +215,17 @@ const HomeScreen = ({ navigation }: Props) => {
                   activeOpacity={0.9}
                   onPress={() => navigation.navigate("Sale")}
                 >
-                  <Image source={banner.image} style={styles.banner} resizeMode="cover" />
-                  <View style={styles.bannerOverlay}>
-                    <View style={styles.discountTag}>
-                      <Text style={styles.discountText}>{banner.discount}</Text>
+                  <View style={{ flex: 1, backgroundColor: isDark ? '#222' : '#eee', flexDirection: 'row' }}>
+                    <View style={{ flex: 1.2, padding: 20, justifyContent: 'center' }}>
+                       <View style={styles.discountTag}>
+                          <Text style={styles.discountText}>{banner.discount}</Text>
+                        </View>
+                        <Text style={[styles.bannerTitle, { color: colors.text, fontSize: 18, fontWeight: '700', marginTop: 10 }]}>{banner.title.split(' ')[1] || banner.title}</Text>
+                        <Text style={[styles.bannerSubtitle, { color: colors.textSecondary, fontSize: 12, fontWeight: '500' }]}>{banner.subtitle}</Text>
                     </View>
-                    <Text style={styles.bannerTitle}>{banner.title}</Text>
-                    <Text style={styles.bannerSubtitle}>{banner.subtitle}</Text>
+                    <View style={{ flex: 1 }}>
+                      <Image source={banner.image} style={[styles.banner, { width: '100%', height: '100%' }]} resizeMode="cover" />
+                    </View>
                   </View>
                 </TouchableOpacity>
               ))}
@@ -210,7 +233,7 @@ const HomeScreen = ({ navigation }: Props) => {
             {/* Pagination Dots */}
             <View style={styles.paginationDots}>
               {banners.map((_, index) => (
-                <View key={index} style={[styles.dot, index === activeBanner && styles.activeDot]} />
+                <View key={index} style={[styles.dot, index === activeBanner ? [styles.activeDot, { backgroundColor: '#4f8ef7' }] : { backgroundColor: 'rgba(255,255,255,0.3)' }]} />
               ))}
             </View>
           </View>
@@ -232,14 +255,14 @@ const HomeScreen = ({ navigation }: Props) => {
             contentContainerStyle={{ paddingHorizontal: 4 }}
             keyExtractor={(item) => item.id}
             renderItem={({ item }) => (
-              <TouchableOpacity style={[styles.productCard, { backgroundColor: colors.card }]} onPress={() => navigation.navigate('ProductDetails', { id: item.id, product: item })}>
-                <View style={styles.imageWrapper}>
+              <TouchableOpacity activeOpacity={0.9} style={[styles.productCard, { backgroundColor: colors.background }]} onPress={() => navigation.navigate('ProductDetails', { id: item.id, product: item })}>
+                <View style={[styles.imageWrapper, { backgroundColor: isDark ? '#1A1A1A' : '#F3F4F6' }]}>
                   <Image
                     source={typeof item.images[0] === 'string' ? { uri: item.images[0] } : item.images[0]}
                     style={styles.productImage}
                   />
                   <TouchableOpacity
-                    style={[styles.wishlistBtn, { backgroundColor: colors.card === '#1E1E1E' ? 'rgba(30, 30, 30, 0.8)' : 'rgba(255, 255, 255, 0.9)' }]}
+                    style={[styles.wishlistBtn, { backgroundColor: isDark ? 'rgba(0, 0, 0, 0.5)' : 'rgba(255, 255, 255, 0.8)' }]}
                     onPress={(e) => {
                       e.stopPropagation();
                       toggleWishlist({
@@ -254,25 +277,15 @@ const HomeScreen = ({ navigation }: Props) => {
                     <Feather
                       name="heart"
                       size={16}
-                      color={isInWishlist(item.id) ? "#ef4444" : "#000"}
+                      color={isInWishlist(item.id) ? "#ef4444" : (isDark ? "#fff" : "#000")}
                     />
                   </TouchableOpacity>
                 </View>
 
                 <View style={[styles.productInfo, { paddingBottom: 10 }]}>
-                  <View style={styles.cardColorRow}>
-                    {item.colors.slice(0, 3).map((color: string, idx: number) => (
-                      <View key={idx} style={[styles.colorCircle, { backgroundColor: color, borderColor: colors.card }]} />
-                    ))}
-                    {item.colors.length > 3 && (
-                      <Text style={[styles.moreColors, { color: colors.textSecondary }]}>+{item.colors.length - 3} more</Text>
-                    )}
-                    {item.colors.length <= 3 && item.colors.length > 0 && (
-                      <Text style={[styles.moreColors, { color: colors.textSecondary }]}>{item.colors.length} Color{item.colors.length > 1 ? 's' : ''}</Text>
-                    )}
-                  </View>
-                  <Text numberOfLines={1} style={[styles.productName, { color: colors.text }]}>{item.title}</Text>
-                  <Text style={[styles.productPrice, { color: colors.text }]}>LKR {item.price}.00</Text>
+                  <Text style={[styles.brandName, { color: colors.textSecondary }]}>{item.brand || "ZARA"}</Text>
+                  <Text numberOfLines={1} style={[styles.productName, { color: colors.text, fontWeight: '600' }]}>{item.title}</Text>
+                  <Text style={[styles.productPrice, { color: colors.text, fontWeight: '700' }]}>LKR {item.price}.00</Text>
                 </View>
               </TouchableOpacity>
             )}
@@ -285,15 +298,15 @@ const HomeScreen = ({ navigation }: Props) => {
 };
 
 const styles = StyleSheet.create({
-  safeArea: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  safeArea: { flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   container: { flex: 1, paddingHorizontal: 16 , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginTop: 10, marginBottom: 15 },
-  logo: { fontSize: 26, fontWeight: "800", color: '#000' },
+  logo: { fontSize: 26, fontWeight: "800" },
   headerIcons: { flexDirection: "row", alignItems: 'center' },
   iconBtn: { marginLeft: 15 },
 
   searchBox: {
-    flexDirection: "row", alignItems: "center", backgroundColor: "#F5F5F5",
+    flexDirection: "row", alignItems: "center",
     borderRadius: 12, paddingHorizontal: 12, paddingVertical: 12, marginBottom: 20,
   },
   searchInput: { flex: 1, marginLeft: 10, fontSize: 14, color: "#666" },
@@ -303,17 +316,17 @@ const styles = StyleSheet.create({
   tabsWrapper: { flexDirection: 'row' },
   tab: {
     paddingVertical: 8, paddingHorizontal: 24, borderRadius: 25,
-    borderWidth: 1, borderColor: '#eee', marginRight: 10, backgroundColor: '#fff'
+    borderWidth: 1, marginRight: 10
   },
   activeTab: { backgroundColor: '#000', borderColor: '#000' },
-  tabText: { fontSize: 14, fontWeight: '600', color: '#555' },
+  tabText: { fontSize: 14, fontWeight: '600' },
   activeTabText: { color: '#fff' },
   gridIcon: { padding: 8 },
 
   categoriesGrid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 25 },
   categoryItem: { width: '15%', alignItems: 'center', marginBottom: 15 },
   categoryImageContainer: {
-    width: 50, height: 50, borderRadius: 12, overflow: 'hidden', marginBottom: 5, backgroundColor: '#f9f9f9',
+    width: 50, height: 50, borderRadius: 12, overflow: 'hidden', marginBottom: 5,
     justifyContent: 'center', alignItems: 'center'
   },
   categoryImage: { width: '100%', height: '100%' },
@@ -336,16 +349,16 @@ const styles = StyleSheet.create({
   bannerTitle: { color: '#fff', fontSize: 14, fontWeight: '500', opacity: 0.9 },
   bannerSubtitle: { color: '#fff', fontSize: 24, fontWeight: 'bold' },
   paginationDots: { position: 'absolute', bottom: 15, right: 20, flexDirection: 'row' },
-  dot: { width: 6, height: 6, borderRadius: 3, backgroundColor: 'rgba(255,255,255,0.5)', marginHorizontal: 3 },
-  activeDot: { backgroundColor: '#3b82f6' }, // Blue active dot to match image
+  dot: { width: 6, height: 6, borderRadius: 3, marginHorizontal: 3 },
+  activeDot: {  }, // Styles applied inline now
 
   sectionHeader: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 20 },
-  sectionTitle: { fontSize: 18, fontWeight: "bold", color: '#000' }, // overridden inline with colors.text
+  sectionTitle: { fontSize: 18, fontWeight: "bold" }, // overridden inline with colors.text
   seeAll: { color: "#2DD4BF", fontSize: 12, fontWeight: '600' }, // Teal color matching image
 
   productCard: { width: (screenWidth - 48) / 2, marginBottom: 20, borderRadius: 16, overflow: 'hidden' },
   imageWrapper: {
-    width: '100%', aspectRatio: 1, backgroundColor: "#E5E7EB", borderRadius: 16, marginBottom: 10,
+    width: '100%', aspectRatio: 1, borderRadius: 16, marginBottom: 10,
     overflow: 'hidden', position: 'relative'
   },
   productImage: { width: "100%", height: "100%" },
@@ -353,7 +366,6 @@ const styles = StyleSheet.create({
     position: "absolute",
     top: 10,
     right: 10,
-    backgroundColor: 'rgba(255, 255, 255, 0.9)',
     padding: 8,
     borderRadius: 20,
     shadowColor: '#000',
@@ -363,6 +375,7 @@ const styles = StyleSheet.create({
     elevation: 2
   },
   productInfo: { paddingHorizontal: 8, paddingTop: 4 },
+  brandName: { fontSize: 10, fontWeight: "600", marginBottom: 2, textTransform: 'uppercase' },
   cardColorRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 6 },
   colorCircle: { width: 10, height: 10, borderRadius: 5, marginRight: -3, borderWidth: 1 },
   moreColors: { fontSize: 9, color: '#666', marginLeft: 8, textDecorationLine: 'underline' },

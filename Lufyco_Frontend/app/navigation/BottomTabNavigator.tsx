@@ -45,11 +45,18 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
                 let iconName: any = "home-outline";
                 let IconComp: any = Ionicons;
 
-                if (route.name === 'Home') iconName = isFocused ? 'home' : 'home-outline';
-                else if (route.name === 'AIStylist') iconName = isFocused ? 'grid' : 'grid-outline';
-                else if (route.name === 'MyCart') iconName = isFocused ? 'cart' : 'cart-outline';
-                else if (route.name === 'Wishlist') iconName = isFocused ? 'heart' : 'heart-outline';
-                else if (route.name === 'Profile') iconName = isFocused ? 'person' : 'person-outline';
+                if (route.name === 'Home') iconName = 'home-outline';
+                else if (route.name === 'AIStylist') {
+                    iconName = 'sparkles-outline'; // Match image
+                    IconComp = Ionicons;
+                }
+                else if (route.name === 'MyCart') iconName = 'shopping-cart';
+                else if (route.name === 'Wishlist') iconName = 'heart';
+                else if (route.name === 'Profile') iconName = 'user';
+
+                if (route.name === 'MyCart' || route.name === 'Wishlist' || route.name === 'Profile') {
+                    IconComp = Feather;
+                }
 
                 const label = options.tabBarLabel !== undefined
                     ? options.tabBarLabel
@@ -69,12 +76,12 @@ const CustomTabBar = ({ state, descriptors, navigation }: any) => {
                         style={styles.tabItem}
                     >
                         <View>
-                            <IconComp name={iconName} size={24} color={isFocused ? (colors.tabActive || '#0066FF') : (colors.tabInactive || '#8E8E93')} />
+                            <IconComp name={iconName} size={24} color={isFocused ? (colors.tabActive || '#4f8ef7') : (colors.tabInactive || '#8E8E93')} />
                             {route.name === 'MyCart' && count > 0 && (
                                 <View style={styles.redDot} />
                             )}
                         </View>
-                        <Text style={{ fontSize: 11, color: isFocused ? (colors.tabActive || '#0066FF') : (colors.tabInactive || '#8E8E93'), marginTop: 4, fontWeight: isFocused ? '600' : '400' }}>
+                        <Text style={{ fontSize: 11, color: isFocused ? (colors.tabActive || '#4f8ef7') : (colors.tabInactive || '#8E8E93'), marginTop: 4, fontWeight: isFocused ? '600' : '400' }}>
                             {label}
                         </Text>
                     </TouchableOpacity>
@@ -103,12 +110,10 @@ const BottomTabNavigator = () => {
 const styles = StyleSheet.create({
     tabBar: {
         flexDirection: 'row',
-        backgroundColor: '#fff',
         height: Platform.OS === 'ios' ? 85 : 60,
         paddingBottom: Platform.OS === 'ios' ? 25 : 0,
         paddingTop: Platform.OS === 'ios' ? 10 : 0,
         borderTopWidth: 1,
-        borderColor: '#E5E7EB',
         elevation: 10,
         shadowColor: '#000',
         shadowOpacity: 0.1,

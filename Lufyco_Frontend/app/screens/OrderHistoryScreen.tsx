@@ -108,9 +108,9 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
 
     tabs: { flexDirection: "row", padding: 16 },
     tab: { flex: 1, alignItems: "center", paddingVertical: 10, borderBottomWidth: 2, borderColor: colors.border },
-    tabActive: { borderColor: colors.text },
+    tabActive: { borderColor: '#4f8ef7' },
     tabText: { fontWeight: "600", color: colors.textSecondary },
-    tabTextActive: { color: colors.text },
+    tabTextActive: { color: '#4f8ef7' },
 
     card: { backgroundColor: colors.card, borderRadius: 12, padding: 16, marginVertical: 8, borderWidth: 1, borderColor: colors.border, elevation: 1 },
     cardHeader: { flexDirection: "row", justifyContent: "space-between", marginBottom: 12 },
@@ -128,8 +128,8 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
 
     emptyContainer: { alignItems: 'center', marginTop: 80 },
     emptyTitle: { fontSize: 18, fontWeight: '700', color: colors.textSecondary, marginBottom: 20 },
-    exploreBtn: { backgroundColor: colors.text, paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
-    exploreText: { color: colors.background, fontWeight: '700' },
+    exploreBtn: { backgroundColor: '#4f8ef7', paddingHorizontal: 24, paddingVertical: 12, borderRadius: 10 },
+    exploreText: { color: '#fff', fontWeight: '700' },
 });
 
 export default OrderHistoryScreen;

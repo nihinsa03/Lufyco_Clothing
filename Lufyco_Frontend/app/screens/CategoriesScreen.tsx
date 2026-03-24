@@ -212,7 +212,7 @@ const CategoriesScreen = () => {
     const isActive = selectedCategory === item.id;
     return (
       <TouchableOpacity
-        style={[styles.sidebarItem, isActive && { backgroundColor: isDark ? '#1E293B' : '#F0F7FF' }]}
+        style={[styles.sidebarItem, isActive && { backgroundColor: isDark ? '#222' : '#F0F7FF', borderLeftWidth: 3, borderLeftColor: '#4f8ef7' }]}
         onPress={() => setSelectedCategory(item.id)}
       >
         <View style={[styles.imageBox, { backgroundColor: colors.iconBg }]}>
@@ -265,7 +265,7 @@ const CategoriesScreen = () => {
 
       <View style={styles.contentContainer}>
         {/* Left Sidebar */}
-        <View style={[styles.sidebar, { backgroundColor: colors.card, borderColor: isDark ? '#1E3A8A' : '#3B82F6' }]}>
+        <View style={[styles.sidebar, { backgroundColor: colors.card, borderColor: isDark ? colors.border : '#4f8ef7' }]}>
           <FlatList
             data={SIDEBAR_ITEMS}
             keyExtractor={item => item.id}
@@ -377,12 +377,12 @@ const CategoriesScreen = () => {
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  safe: { flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
   header: {
     flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, alignItems: 'center',
-    borderBottomWidth: 1, borderBottomColor: '#F3F4F6', backgroundColor: '#fff'
+    borderBottomWidth: 1, borderBottomColor: '#F3F4F6'
   },
-  title: { fontSize: 20, fontWeight: '600', color: '#111' },
+  title: { fontSize: 20, fontWeight: '600' },
   headerRight: { flexDirection: 'row' },
 
   contentContainer: { flex: 1, flexDirection: 'row' },
@@ -390,9 +390,7 @@ const styles = StyleSheet.create({
   // Sidebar
   sidebar: {
     width: 90,
-    backgroundColor: '#fff',
-    borderWidth: 2,
-    borderColor: '#3B82F6', // Blue border like Figma
+    borderWidth: 1,
     borderRadius: 20,
     margin: 10
   },
@@ -412,7 +410,7 @@ const styles = StyleSheet.create({
   sidebarText: { fontSize: 10, textAlign: 'center', color: '#4B5563', fontWeight: '500', paddingHorizontal: 4 },
 
   // Main Content
-  mainContent: { flex: 1, backgroundColor: '#fff' },
+  mainContent: { flex: 1 },
 
   // Grid (first 2 rows)
   gridContainer: {
@@ -421,13 +419,13 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   subCategoryItem: { width: '47%', marginBottom: 15, alignItems: 'center' },
-  subCategoryImageContainer: { width: '100%', aspectRatio: 1, borderRadius: 12, overflow: 'hidden', marginBottom: 8, backgroundColor: '#F9FAFB' },
+  subCategoryImageContainer: { width: '100%', aspectRatio: 1, borderRadius: 12, overflow: 'hidden', marginBottom: 8 },
   subCategoryImage: { width: '100%', height: '100%' },
-  subCategoryName: { fontSize: 13, fontWeight: '500', color: '#111', textAlign: 'center' },
+  subCategoryName: { fontSize: 13, fontWeight: '500', textAlign: 'center' },
 
   // Sections (like Men's Wear Casual/Work layout)
   section: { marginBottom: 22 },
-  sectionTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 12, color: '#111' },
+  sectionTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 12 },
   sectionGrid: {
     flexDirection: "row",
     flexWrap: "wrap",

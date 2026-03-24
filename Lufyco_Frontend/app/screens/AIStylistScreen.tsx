@@ -1,293 +1,192 @@
-import React from "react";
-import { useAuth } from "../context/AuthContext";
-import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, ScrollView, Platform, StatusBar } from "react-native";
+import React, { useState, useRef, useEffect } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity, SafeAreaView, ScrollView, TextInput, Platform, StatusBar, KeyboardAvoidingView } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
-import { useWeather } from "../hooks/useWeather";
 import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../navigation/AppNavigator";
-import { useEventsStore } from "../store/useEventsStore";
+import { useAuth } from "../context/AuthContext";
 
 type Props = NativeStackScreenProps<RootStackParamList, "AIStylist">;
 
+type Message = {
+    id: string;
+    text: string;
+    sender: 'user' | 'ai';
+    timestamp: Date;
+};
+
 const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
-  const { user } = useAuth(); // <--- Get real user
-  const { weather, loading, error } = useWeather();
-  const { colors, isDark } = useTheme();
+    const { colors, isDark } = useTheme();
+    const { user } = useAuth();
+    const [messages, setMessages] = useState<Message[]>([
+        {
+            id: '1',
+            text: `Hi ${user?.name?.split(" ")[0] || "there"}! I'm your AI Stylist. Describe an outfit or occasion, and I'll help you find the perfect look.`,
+            sender: 'ai',
+            timestamp: new Date(),
+        }
+    ]);
+    const [inputText, setInputText] = useState("");
+    const scrollViewRef = useRef<ScrollView>(null);
 
-  const { events: upcomingLooks } = useEventsStore();
+    const handleSend = () => {
+        if (inputText.trim() === "") return;
 
-  const [currentLookIndex, setCurrentLookIndex] = React.useState(0);
-  const handlePrev = () => setCurrentLookIndex(prev => (prev > 0 ? prev - 1 : Math.max(0, upcomingLooks.length - 1)));
-  const handleNext = () => setCurrentLookIndex(prev => (prev < upcomingLooks.length - 1 ? prev + 1 : 0));
-  const currentLook = upcomingLooks.length > 0 ? upcomingLooks[currentLookIndex] : null;
+        const newUserMsg: Message = {
+            id: Date.now().toString(),
+            text: inputText,
+            sender: 'user',
+            timestamp: new Date(),
+        };
 
-  return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={styles.header}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
-          <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 10 }} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Ionicons name="arrow-back" size={24} color={colors.text} />
-          </TouchableOpacity>
-          <Text style={[styles.greet, { color: colors.text }]}>Hello, {user?.name?.split(" ")[0] || "User"}</Text>
-        </View>
-        <View style={styles.headerIcons}>
-          <TouchableOpacity onPress={() => navigation.navigate("Notifications")} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Feather name="bell" size={22} style={[styles.hIcon, { color: colors.text }]} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("Wishlist")} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Feather name="heart" size={22} style={[styles.hIcon, { color: colors.text }]} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate("Profile")} hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}>
-            <Feather name="user" size={22} style={[styles.hIcon, { color: colors.text }]} />
-          </TouchableOpacity>
-        </View>
-      </View>
+        setMessages(prev => [...prev, newUserMsg]);
+        setInputText("");
 
-      <ScrollView contentContainerStyle={{ paddingBottom: 120 }}>
-        {/* Quick tiles */}
-        <View style={styles.tileRow}>
-          <Tile
-            label="My Closet"
-            icon={<Feather name="shopping-bag" size={22} color="#3B5BFF" />}
-            onPress={() => navigation.navigate("MyCloset")}
-          />
-          <Tile
-            label="Plan My Look"
-            icon={<Ionicons name="sunny-outline" size={22} color="#FF4D4D" />}
-            dim
-            onPress={() => navigation.navigate("PlanMyLook")}
-          />
-        </View>
+        // Mock AI response
+        setTimeout(() => {
+            const aiMsg: Message = {
+                id: (Date.now() + 1).toString(),
+                text: "That sounds like a great style! Based on our latest collection, I'd recommend checking out our Casual Linens or Slim-fit Blazers. Would you like to see some options?",
+                sender: 'ai',
+                timestamp: new Date(),
+            };
+            setMessages(prev => [...prev, aiMsg]);
+        }, 1000);
+    };
 
-        <View style={styles.tileRow}>
-          <Tile
-            label="Shop New Styles"
-            icon={<Feather name="briefcase" size={22} color={isDark ? "#2ED194" : "#1EA672"} />}
-            onPress={() => navigation.navigate("ShopNewStyles")}
-          />
+    useEffect(() => {
+        scrollViewRef.current?.scrollToEnd({ animated: true });
+    }, [messages]);
 
-          <Tile
-            label="Upcoming Events"
-            icon={<Feather name="calendar" size={22} color={isDark ? "#A38CFF" : "#7B61FF"} />}
-            onPress={() => navigation.navigate("UpcomingEvents")}
-          />
-        </View>
-
-        <View style={styles.tileRow}>
-          <Tile
-            label="Saved Looks"
-            icon={<Feather name="bookmark" size={22} color={isDark ? "#FFA726" : "#F57C00"} />}
-            onPress={() => navigation.navigate("SavedLooks")}
-          />
-          <View style={{ flex: 1, marginRight: 10, padding: 14 }} />
-        </View>
-
-        {/* Upcoming looks */}
-        <Text style={[styles.sectionTitle, { color: isDark ? '#60A5FA' : '#2C63FF' }]}>Your Upcoming Looks</Text>
-        {currentLook ? (
-          <View style={[styles.lookCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <TouchableOpacity style={styles.lookHeader} onPress={() => navigation.navigate("UpcomingEvents")}>
-              <View>
-                <Text style={[styles.lookTitle, { color: colors.text }]}>{currentLook.title}</Text>
-                <Text style={[styles.lookSub, { color: colors.textMuted }]}>{currentLook.dateLine}</Text>
-              </View>
-              <Feather name="more-horizontal" size={20} color={colors.textMuted} />
-            </TouchableOpacity>
-
-            <View style={[styles.separator, { backgroundColor: colors.border }]} />
-
-            <TouchableOpacity style={styles.lookItems} onPress={() => navigation.navigate("UpcomingEvents")}>
-              {currentLook.outfit.length > 0 ? (
-                currentLook.outfit.map((item, idx) => (
-                  <LookItem key={idx} image={item.image} label={item.label} />
-                ))
-              ) : (
-                <Text style={{ color: colors.textMuted, fontStyle: 'italic', paddingVertical: 10 }}>No outfit planned for this event</Text>
-              )}
-            </TouchableOpacity>
-
-            <View style={[styles.separator, { backgroundColor: colors.border }]} />
-
-            <View style={styles.lookFooter}>
-              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handlePrev} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
-                <Feather name="chevron-left" size={20} color={colors.text} />
-              </TouchableOpacity>
-
-              <Text style={[styles.pageText, { color: colors.text }]}>{currentLookIndex + 1} of {upcomingLooks.length}</Text>
-
-              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handleNext} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
-                <Feather name="chevron-right" size={20} color={colors.text} />
-              </TouchableOpacity>
+    return (
+        <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
+            <StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+            {/* Header */}
+            <View style={[styles.header, { borderColor: colors.border }]}>
+                <TouchableOpacity onPress={() => navigation.goBack()} style={styles.backBtn}>
+                    <Ionicons name="arrow-back" size={24} color={colors.text} />
+                </TouchableOpacity>
+                <View style={styles.headerTitleContainer}>
+                    <Ionicons name="sparkles" size={20} color="#4f8ef7" />
+                    <Text style={[styles.headerTitle, { color: colors.text }]}>AI Stylist</Text>
+                </View>
+                <View style={{ width: 40 }} />
             </View>
-          </View>
-        ) : (
-          <TouchableOpacity 
-            style={[styles.lookCard, { backgroundColor: colors.card, borderColor: colors.border, alignItems: 'center', paddingVertical: 30 }]}
-            onPress={() => navigation.navigate("UpcomingEvents")}
-          >
-            <Feather name="calendar" size={32} color={colors.textMuted} />
-            <Text style={{ color: colors.textMuted, marginTop: 10 }}>No upcoming events planned</Text>
-          </TouchableOpacity>
-        )}
 
-        {/* Weather */}
-        <Text style={[styles.sectionTitle, { marginTop: 16, color: isDark ? '#60A5FA' : '#2C63FF' }]}>Today’s Weather</Text>
-        <View style={[styles.weatherCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-          <Ionicons
-            name={weather?.condition === "Sunny" ? "sunny-outline" : "cloud-outline"}
-            size={28}
-            color={weather?.condition === "Sunny" ? "#FF4D4D" : "#555"}
-          />
-          <View style={{ marginLeft: 12 }}>
-            <Text style={[styles.weatherMain, { color: colors.text }]}>
-              {loading ? "Loading..." : (weather ? `${weather.temp}°F` : "N/A")}
-            </Text>
-            <Text style={[styles.weatherSub, { color: colors.textMuted }]}>
-              {error || (loading ? "Fetching weather..." : (weather ? weather.condition : "Unknown"))}
-            </Text>
-          </View>
-        </View>
-      </ScrollView>
+            <KeyboardAvoidingView 
+                behavior={Platform.OS === "ios" ? "padding" : "height"}
+                style={{ flex: 1 }}
+                keyboardVerticalOffset={Platform.OS === "ios" ? 0 : 20}
+            >
+                <ScrollView 
+                    ref={scrollViewRef}
+                    contentContainerStyle={styles.scrollContent}
+                    showsVerticalScrollIndicator={false}
+                >
+                    {messages.map((msg) => (
+                        <View 
+                            key={msg.id} 
+                            style={[
+                                styles.messageBubble, 
+                                msg.sender === 'user' ? styles.userBubble : [styles.aiBubble, { backgroundColor: isDark ? '#222' : '#F3F4F6' }]
+                            ]}
+                        >
+                            <Text style={[
+                                styles.messageText, 
+                                { color: msg.sender === 'user' ? '#fff' : colors.text }
+                            ]}>
+                                {msg.text}
+                            </Text>
+                            <Text style={[
+                                styles.timestamp, 
+                                { color: msg.sender === 'user' ? 'rgba(255,255,255,0.7)' : colors.textSecondary }
+                            ]}>
+                                {msg.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </Text>
+                        </View>
+                    ))}
+                </ScrollView>
 
-
-    </SafeAreaView>
-  );
+                {/* Input Area */}
+                <View style={[styles.inputContainer, { backgroundColor: colors.background, borderTopColor: colors.border }]}>
+                    <View style={[styles.inputWrapper, { backgroundColor: isDark ? '#222' : '#F3F4F6' }]}>
+                        <TextInput
+                            style={[styles.input, { color: colors.text }]}
+                            placeholder="Describe your outfit style..."
+                            placeholderTextColor={colors.textSecondary}
+                            value={inputText}
+                            onChangeText={setInputText}
+                            multiline
+                        />
+                        <TouchableOpacity style={styles.sendBtn} onPress={handleSend}>
+                            <Ionicons name="send" size={20} color="#fff" />
+                        </TouchableOpacity>
+                    </View>
+                </View>
+            </KeyboardAvoidingView>
+        </SafeAreaView>
+    );
 };
-
-/* ---------- small components ---------- */
-
-const Tile = ({
-  label,
-  icon,
-  dim = false,
-  onPress,
-}: {
-  label: string;
-  icon: React.ReactNode;
-  dim?: boolean;
-  onPress?: () => void;
-}) => {
-  const { colors, isDark } = useTheme();
-  return (
-    <TouchableOpacity style={[styles.tile, { backgroundColor: colors.card, borderColor: colors.border, borderWidth: 1 }, dim && styles.tileDim]} onPress={onPress}>
-      <View style={[styles.tileIconWrap, { backgroundColor: isDark ? colors.iconBg : '#fff' }]}>{icon}</View>
-      <Text style={[styles.tileText, { color: colors.text }]}>{label}</Text>
-    </TouchableOpacity>
-  );
-};
-
-const LookItem = ({ image, label }: { image: any; label: string }) => {
-  const { colors } = useTheme();
-  return (
-    <View style={styles.lookItem}>
-      <Image source={image} style={styles.lookImg} />
-      <Text style={[styles.lookItemText, { color: colors.text }]}>{label}</Text>
-    </View>
-  );
-};
-
-/* ---------- styles ---------- */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
-
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 6,
-    paddingBottom: 8,
-    justifyContent: "space-between",
-  },
-  greet: { fontSize: 26, fontWeight: "700" },
-  headerIcons: { flexDirection: "row", alignItems: "center" },
-  hIcon: { marginLeft: 14 },
-
-  tileRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    marginTop: 10,
-  },
-  tile: {
-    flex: 1,
-    backgroundColor: "#D9D9D9",
-    marginRight: 10,
-    borderRadius: 14,
-    padding: 14,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  tileDim: { opacity: 0.9 },
-  tileIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
-  tileText: { fontSize: 16, fontWeight: "600", flexShrink: 1 },
-
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#2C63FF",
-    marginTop: 18,
-    marginBottom: 8,
-    paddingHorizontal: 16,
-  },
-
-  lookCard: {
-    marginHorizontal: 16,
-    backgroundColor: "#E2E2E2",
-    borderRadius: 14,
-    padding: 12,
-  },
-  lookHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  lookTitle: { fontSize: 18, fontWeight: "700" },
-  lookSub: { marginTop: 2, color: "#444" },
-  separator: { height: 1, backgroundColor: "rgba(0,0,0,0.08)", marginVertical: 10 },
-  lookItems: { flexDirection: "row" },
-  lookItem: { marginRight: 18, alignItems: "center" },
-  lookImg: { width: 110, height: 100, borderRadius: 10, resizeMode: "cover" },
-  lookItemText: { marginTop: 8, fontWeight: "600" },
-
-  lookFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
-  pageText: { fontWeight: "600" },
-  navBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  weatherCard: {
-    marginHorizontal: 16,
-    marginTop: 8,
-    backgroundColor: "#E2E2E2",
-    borderRadius: 14,
-    padding: 14,
-    flexDirection: "row",
-    alignItems: "center",
-  },
-  weatherMain: { fontSize: 16, fontWeight: "700" },
-  weatherSub: { color: "#333" },
-
-
+    safe: { flex: 1, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+    header: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 16,
+        paddingVertical: 12,
+        borderBottomWidth: 1,
+    },
+    backBtn: { padding: 4 },
+    headerTitleContainer: { flexDirection: 'row', alignItems: 'center' },
+    headerTitle: { fontSize: 18, fontWeight: '700', marginLeft: 8 },
+    scrollContent: { padding: 16, paddingBottom: 20 },
+    messageBubble: {
+        maxWidth: '80%',
+        padding: 12,
+        borderRadius: 16,
+        marginBottom: 16,
+    },
+    userBubble: {
+        alignSelf: 'flex-end',
+        backgroundColor: '#4f8ef7',
+        borderBottomRightRadius: 4,
+    },
+    aiBubble: {
+        alignSelf: 'flex-start',
+        borderBottomLeftRadius: 4,
+    },
+    messageText: { fontSize: 15, lineHeight: 20 },
+    timestamp: { fontSize: 10, marginTop: 4, alignSelf: 'flex-end' },
+    inputContainer: {
+        padding: 16,
+        paddingBottom: Platform.OS === 'ios' ? 30 : 16,
+        borderTopWidth: 1,
+    },
+    inputWrapper: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        borderRadius: 25,
+        paddingHorizontal: 16,
+        paddingVertical: 8,
+    },
+    input: {
+        flex: 1,
+        fontSize: 15,
+        maxHeight: 100,
+        paddingTop: 8,
+        paddingBottom: 8,
+    },
+    sendBtn: {
+        width: 36,
+        height: 36,
+        borderRadius: 18,
+        backgroundColor: '#4f8ef7',
+        alignItems: 'center',
+        justifyContent: 'center',
+        marginLeft: 10,
+    },
 });
 
 export default AIStylistScreen;

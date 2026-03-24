@@ -55,7 +55,7 @@ const MyCartScreen: React.FC<Props> = ({ navigation }) => {
           <Text style={[styles.emptyTitle, { color: colors.text }]}>Your cart is empty</Text>
           <Text style={[styles.emptySub, { color: colors.textMuted }]}>Looks like you haven't added anything to your cart yet.</Text>
 
-          <TouchableOpacity style={[styles.exploreBtn, { backgroundColor: isDark ? '#3B5BFF' : '#111' }]} onPress={() => navigation.navigate("Home")}>
+          <TouchableOpacity style={[styles.exploreBtn, { backgroundColor: '#4f8ef7' }]} onPress={() => navigation.navigate("Home")}>
             <Text style={styles.exploreText}>Explore Categories</Text>
           </TouchableOpacity>
         </View>
@@ -145,7 +145,7 @@ const MyCartScreen: React.FC<Props> = ({ navigation }) => {
               value={voucher}
               onChangeText={setVoucher}
             />
-            <TouchableOpacity style={[styles.applyBtn, { backgroundColor: isDark ? '#3B5BFF' : '#111' }]} onPress={handleApplyVoucher}>
+            <TouchableOpacity style={[styles.applyBtn, { backgroundColor: '#4f8ef7' }]} onPress={handleApplyVoucher}>
               <Text style={styles.applyText}>APPLY</Text>
             </TouchableOpacity>
           </View>
@@ -153,7 +153,7 @@ const MyCartScreen: React.FC<Props> = ({ navigation }) => {
       </ScrollView>
 
       <View style={[styles.footer, { backgroundColor: colors.background, borderColor: colors.border }]}>
-        <TouchableOpacity style={[styles.checkoutBtn, { backgroundColor: isDark ? '#3B5BFF' : '#111' }]} onPress={handleCheckout}>
+        <TouchableOpacity style={[styles.checkoutBtn, { backgroundColor: '#4f8ef7' }]} onPress={handleCheckout}>
           <Text style={styles.checkoutText}>Checkout (${total.toFixed(2)})</Text>
         </TouchableOpacity>
       </View>
@@ -176,7 +176,7 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
   emptyImg: { width: 60, height: 60, opacity: 0.5 },
   emptyTitle: { fontSize: 20, fontWeight: '800', color: colors.text, marginBottom: 8 },
   emptySub: { textAlign: 'center', color: colors.textSecondary, lineHeight: 22, fontSize: 14 },
-  exploreBtn: { marginTop: 30, backgroundColor: isDark ? '#3B5BFF' : '#111', paddingHorizontal: 30, paddingVertical: 14, borderRadius: 12 },
+  exploreBtn: { marginTop: 30, backgroundColor: '#4f8ef7', paddingHorizontal: 30, paddingVertical: 14, borderRadius: 12 },
   exploreText: { color: '#fff', fontWeight: '700' },
 
   // List
@@ -212,13 +212,13 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     color: colors.text
   },
   applyBtn: {
-    marginLeft: 12, backgroundColor: isDark ? '#3B5BFF' : '#111', borderRadius: 12,
+    marginLeft: 12, backgroundColor: '#4f8ef7', borderRadius: 12,
     paddingHorizontal: 20, alignItems: 'center', justifyContent: 'center'
   },
   applyText: { color: '#fff', fontWeight: '700', fontSize: 12 },
 
   footer: { position: 'absolute', bottom: 0, width: '100%', padding: 16, backgroundColor: colors.background, borderTopWidth: 1, borderColor: colors.border },
-  checkoutBtn: { backgroundColor: isDark ? '#3B5BFF' : '#111', paddingVertical: 16, borderRadius: 14, alignItems: 'center' },
+  checkoutBtn: { backgroundColor: '#4f8ef7', paddingVertical: 16, borderRadius: 14, alignItems: 'center' },
   checkoutText: { color: '#fff', fontWeight: '700', fontSize: 16 }
 });
 

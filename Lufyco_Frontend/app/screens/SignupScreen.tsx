@@ -96,7 +96,7 @@ const SignupScreen = ({ navigation }: Props) => {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
         <ScrollView contentContainerStyle={styles.container} showsVerticalScrollIndicator={false} keyboardShouldPersistTaps="handled">
-        <Text style={styles.brandName}>Fashion</Text>
+        <Text style={[styles.brandName, { color: '#4f8ef7' }]}>Fashion</Text>
 
         <TouchableOpacity style={styles.backBtn} onPress={() => navigation.goBack()}>
           <Ionicons name="arrow-back" size={24} color={colors.text} />
@@ -156,8 +156,8 @@ const SignupScreen = ({ navigation }: Props) => {
           ) : null}
           {email && validateEmail(email) && !emailError ? (
             <View style={styles.successContainer}>
-              <Ionicons name="checkmark-circle" size={16} color="#10b981" />
-              <Text style={styles.successText}>
+              <Ionicons name="checkmark-circle" size={16} color="#4f8ef7" />
+              <Text style={[styles.successText, { color: '#4f8ef7' }]}>
                 {isGmailEmail(email) ? 'Gmail address verified ✓' : 'Valid email address ✓'}
               </Text>
             </View>
@@ -199,14 +199,14 @@ const SignupScreen = ({ navigation }: Props) => {
         </View>
 
         <TouchableOpacity
-          style={styles.signUpButton}
+          style={[styles.signUpButton, { backgroundColor: '#4f8ef7' }]}
           onPress={handleSignup}
           disabled={loading}
         >
           {loading ? (
             <ActivityIndicator color="#fff" />
           ) : (
-            <Text style={styles.signUpButtonText}>Sign Up</Text>
+            <Text style={[styles.signUpButtonText, { color: '#fff' }]}>Sign Up</Text>
           )}
         </TouchableOpacity>
 
@@ -517,14 +517,14 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     color: colors.text,
   },
   doneButton: {
-    backgroundColor: isDark ? '#fff' : '#000',
+    backgroundColor: '#4f8ef7',
     padding: 16,
     borderRadius: 25,
     alignItems: 'center',
     marginTop: 20,
   },
   doneButtonText: {
-    color: isDark ? '#111' : '#fff',
+    color: '#fff',
     fontSize: 16,
     fontWeight: '600',
   },

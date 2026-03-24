@@ -27,7 +27,7 @@ const lightColors = {
 };
 
 const darkColors = {
-    background: '#121212',
+    background: '#111111',
     card: '#1E1E1E',
     text: '#F5F5F5',
     textSecondary: '#A0A0A0',
@@ -36,7 +36,7 @@ const darkColors = {
     inputBg: '#2A2A2A',
     iconBg: '#2A2A2A',
     tabBar: '#1A1A1A',
-    tabActive: '#5BA3EC',
+    tabActive: '#4f8ef7',
     tabInactive: '#666',
     sectionBg: '#1E1E1E',
     cardShadow: '#000',

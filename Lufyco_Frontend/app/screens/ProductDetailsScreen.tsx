@@ -201,7 +201,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
 
                     {showReadMoreButton && (
                         <TouchableOpacity onPress={() => setIsExpanded(!isExpanded)} style={{ marginTop: 4 }}>
-                            <Text style={[styles.readMore, { color: colors.text }]}>{isExpanded ? "Show less" : "Read more"}</Text>
+                            <Text style={[styles.readMore, { color: '#4f8ef7' }]}>{isExpanded ? "Show less" : "Read more"}</Text>
                         </TouchableOpacity>
                     )}
 
@@ -274,12 +274,12 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                     <Ionicons name={isWishlisted ? "heart" : "heart-outline"} size={28} color={isWishlisted ? "red" : colors.text} />
                 </TouchableOpacity>
 
-                <TouchableOpacity style={[styles.buyBtn, { borderColor: colors.text }]} onPress={handleBuyNow}>
-                    <Text style={[styles.buyBtnText, { color: colors.text }]}>Buy Now</Text>
+                <TouchableOpacity style={[styles.buyBtn, { borderColor: '#4f8ef7' }]} onPress={handleBuyNow}>
+                    <Text style={[styles.buyBtnText, { color: '#4f8ef7' }]}>Buy Now</Text>
                 </TouchableOpacity>
 
                 <Animated.View style={{ flex: 1.5, transform: [{ scale: buttonScale }] }}>
-                    <TouchableOpacity style={styles.addBtn} onPress={handleAddToCart} activeOpacity={0.9}>
+                    <TouchableOpacity style={[styles.addBtn, { backgroundColor: '#4f8ef7' }]} onPress={handleAddToCart} activeOpacity={0.9}>
                         <Feather name="shopping-bag" size={20} color="#fff" style={{ marginRight: 8 }} />
                         <Text style={styles.addBtnText}>Add to Cart</Text>
                     </TouchableOpacity>
@@ -377,7 +377,7 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
         alignItems: 'center', justifyContent: 'center',
         borderWidth: 1, borderColor: colors.border
     },
-    colorSelected: { borderWidth: 2, borderColor: colors.text },
+    colorSelected: { borderWidth: 2, borderColor: '#4f8ef7' },
 
     // Sizes
     sizeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
@@ -387,9 +387,9 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
         borderWidth: 1, borderColor: colors.border,
         alignItems: 'center', justifyContent: 'center', marginRight: 12,
     },
-    sizeChipSelected: { backgroundColor: colors.text, borderColor: colors.text },
+    sizeChipSelected: { backgroundColor: '#4f8ef7', borderColor: '#4f8ef7' },
     sizeText: { fontSize: 14, fontWeight: '600', color: colors.text },
-    sizeTextSelected: { color: colors.background },
+    sizeTextSelected: { color: '#fff' },
 
     // Stepper
     stepperContainer: {
@@ -424,10 +424,10 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     buyBtnText: { fontWeight: '700', fontSize: 15, color: colors.text },
     addBtn: {
         width: '100%', height: 52, borderRadius: 16,
-        backgroundColor: colors.text,
+        backgroundColor: '#4f8ef7',
         flexDirection: 'row', alignItems: 'center', justifyContent: 'center'
     },
-    addBtnText: { fontWeight: '700', fontSize: 15, color: colors.background },
+    addBtnText: { fontWeight: '700', fontSize: 15, color: '#fff' },
 
     // Success Overlay
     successOverlay: {
@@ -443,7 +443,7 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
         shadowColor: "#000", shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.3, shadowRadius: 5
     },
     checkCircle: {
-        width: 40, height: 40, borderRadius: 20, backgroundColor: '#22c55e',
+        width: 40, height: 40, borderRadius: 20, backgroundColor: '#4f8ef7',
         justifyContent: 'center', alignItems: 'center', marginBottom: 10
     },
     successText: { color: '#fff', fontSize: 16, fontWeight: '600' },

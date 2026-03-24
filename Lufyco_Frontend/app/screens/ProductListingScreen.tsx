@@ -16,6 +16,7 @@ type Product = {
     _id: string;
     name?: string;
     title?: string;
+    brand?: string;
     price: number;
     compareAtPrice?: number;
     image: string; // URL or base64
@@ -161,7 +162,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                 >
                     <Feather name="arrow-left" size={22} color={colors.text} />
                 </TouchableOpacity>
-                <Text style={styles.title}>{displayName.toUpperCase()}</Text>
+                <Text style={[styles.title, { color: colors.text }]}>{displayName.toUpperCase()}</Text>
                 <View style={styles.headerRight}>
                     <TouchableOpacity 
                         onPress={() => setFilterVisible(true)} 
@@ -219,7 +220,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                                 <Ionicons
                                     name={isInWishlist(item._id) ? "heart" : "heart-outline"}
                                     size={18}
-                                    color={isInWishlist(item._id) ? "red" : dark ? "#fff" : "#111"}
+                                    color={isInWishlist(item._id) ? "#EF4444" : colors.text}
                                 />
                             </TouchableOpacity>
 
@@ -227,6 +228,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                                 <ColorDots colors={item.colors} styles={styles} />
                             </View>
 
+                            <Text style={[styles.brandName, { color: colors.textSecondary }]}>FASHION</Text>
                             <Text numberOfLines={1} style={styles.pTitle}>
                                 {item.name || item.title || "Unknown Product"}
                             </Text>
@@ -297,8 +299,8 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
         fontSize: 16,
         fontWeight: "700",
         letterSpacing: 0.3,
-        color: colors.text,
     },
+    brandName: { fontSize: 10, fontWeight: "600", marginBottom: 2, textTransform: 'uppercase' },
     card: { width: "48%", marginTop: 14 },
     image: { width: "100%", height: 180, borderRadius: 14, backgroundColor: '#f0f0f0' },
     wishBtn: {

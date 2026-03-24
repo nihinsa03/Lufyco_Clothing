@@ -105,7 +105,7 @@ const ProfileScreen = () => {
     const renderMenuItem = (item: any, idx: number) => (
         <TouchableOpacity key={idx} style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={item.action}>
             <View style={[styles.iconBox, { backgroundColor: isDark ? colors.iconBg : '#F0F4FF' }]}>
-                <Feather name={item.icon as any} size={18} color={isDark ? colors.text : '#4A90D9'} />
+                <Feather name={item.icon as any} size={18} color={isDark ? colors.text : '#4f8ef7'} />
             </View>
             <Text style={[styles.menuLabel, { color: colors.text }]}>{item.label}</Text>
             <Feather name="chevron-right" size={18} color={colors.textMuted} />
@@ -117,7 +117,7 @@ const ProfileScreen = () => {
             <StatusBar barStyle="light-content" />
 
             {/* Header */}
-            <View style={[styles.headerGradient, { backgroundColor: isDark ? colors.card : '#4A90D9', borderBottomColor: isDark ? colors.border : 'transparent', borderBottomWidth: isDark ? 1 : 0 }]}>
+            <View style={[styles.headerGradient, { backgroundColor: isDark ? '#222' : '#4f8ef7', borderBottomColor: colors.border, borderBottomWidth: 1 }]}>
                 <View style={styles.headerRow}>
                     <TouchableOpacity onPress={() => navigation.goBack()}>
                         <Feather name="arrow-left" size={24} color={isDark ? colors.text : "#fff"} />
@@ -132,7 +132,7 @@ const ProfileScreen = () => {
                             source={(localAvatar || profileUser?.avatar) ? { uri: localAvatar || profileUser?.avatar } : require("../../assets/images/clothing.png")}
                             style={[styles.avatar, { borderColor: isDark ? colors.border : 'rgba(255,255,255,0.5)' }]}
                         />
-                        <View style={[styles.cameraIcon, { backgroundColor: isDark ? colors.card : '#4A90D9', borderColor: isDark ? colors.border : '#fff' }]}>
+                        <View style={[styles.cameraIcon, { backgroundColor: isDark ? '#222' : '#4f8ef7', borderColor: isDark ? colors.border : '#fff' }]}>
                             <Feather name="camera" size={12} color={isDark ? colors.text : "#fff"} />
                         </View>
                     </TouchableOpacity>
@@ -164,7 +164,7 @@ const ProfileScreen = () => {
                 <View style={[styles.sectionCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
                     <TouchableOpacity style={[styles.menuItem, { borderBottomColor: colors.border }]} onPress={() => navigation.navigate("ChangePassword")}>
                         <View style={[styles.iconBox, { backgroundColor: isDark ? colors.iconBg : '#F0F4FF' }]}>
-                            <Feather name="lock" size={18} color={isDark ? colors.text : '#4A90D9'} />
+                            <Feather name="lock" size={18} color={isDark ? colors.text : '#4f8ef7'} />
                         </View>
                         <Text style={[styles.menuLabel, { color: colors.text }]}>Change Password</Text>
                         <Feather name="chevron-right" size={18} color={colors.textMuted} />
@@ -172,13 +172,13 @@ const ProfileScreen = () => {
 
                     <View style={[styles.menuItem, { borderBottomWidth: 0 }]}>
                         <View style={[styles.iconBox, { backgroundColor: isDark ? colors.iconBg : '#F0F4FF' }]}>
-                            <Feather name="moon" size={18} color={isDark ? colors.text : '#4A90D9'} />
+                            <Feather name="moon" size={18} color={isDark ? colors.text : '#4f8ef7'} />
                         </View>
                         <Text style={[styles.menuLabel, { color: colors.text }]}>Dark Theme</Text>
                         <Switch
                             value={isDark}
                             onValueChange={toggleTheme}
-                            trackColor={{ false: "#E5E7EB", true: "#4A90D9" }}
+                            trackColor={{ false: "#E5E7EB", true: "#4f8ef7" }}
                             thumbColor={isDark ? "#fff" : "#f4f3f4"}
                         />
                     </View>
@@ -223,13 +223,13 @@ const ProfileScreen = () => {
                             <View>
                                 <Image
                                     source={(localAvatar || profileUser?.avatar) ? { uri: localAvatar || profileUser?.avatar } : require("../../assets/images/clothing.png")}
-                                    style={{ width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: isDark ? colors.border : '#4A90D9' }}
+                                    style={{ width: 80, height: 80, borderRadius: 40, borderWidth: 2, borderColor: isDark ? colors.border : '#4f8ef7' }}
                                 />
-                                <View style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: isDark ? '#3B5BFF' : '#4A90D9', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: isDark ? colors.card : '#fff' }}>
+                                <View style={{ position: 'absolute', bottom: 0, right: 0, width: 28, height: 28, borderRadius: 14, backgroundColor: '#4f8ef7', alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: isDark ? colors.card : '#fff' }}>
                                     <Feather name="camera" size={13} color="#fff" />
                                 </View>
                             </View>
-                            <Text style={{ marginTop: 8, fontSize: 14, fontWeight: '600', color: isDark ? '#60A5FA' : '#4A90D9' }}>Upload from Device</Text>
+                            <Text style={{ marginTop: 8, fontSize: 14, fontWeight: '600', color: '#4f8ef7' }}>Upload from Device</Text>
                         </TouchableOpacity>
 
                         <View style={styles.inputContainer}>
@@ -256,7 +256,7 @@ const ProfileScreen = () => {
                             />
                         </View>
 
-                        <TouchableOpacity style={[styles.saveBtn, { backgroundColor: isDark ? '#3B5BFF' : '#4A90D9' }]} onPress={handleSaveProfile}>
+                        <TouchableOpacity style={[styles.saveBtn, { backgroundColor: '#4f8ef7' }]} onPress={handleSaveProfile}>
                             <Text style={styles.saveBtnText}>Save Changes</Text>
                         </TouchableOpacity>
                     </View>
@@ -275,7 +275,7 @@ const styles = StyleSheet.create({
         paddingBottom: 25,
         borderBottomLeftRadius: 24,
         borderBottomRightRadius: 24,
-        backgroundColor: '#4A90D9',
+        backgroundColor: '#4f8ef7',
     },
     headerRow: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',
@@ -294,7 +294,7 @@ const styles = StyleSheet.create({
     cameraIcon: {
         position: 'absolute', bottom: 0, right: 0,
         width: 22, height: 22, borderRadius: 11,
-        backgroundColor: '#4A90D9', alignItems: 'center', justifyContent: 'center',
+        backgroundColor: '#4f8ef7', alignItems: 'center', justifyContent: 'center',
         borderWidth: 2, borderColor: '#fff',
     },
     profileInfo: { flex: 1, marginLeft: 14 },
@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
         paddingVertical: 14, fontSize: 15, color: '#111', borderWidth: 1, borderColor: '#E5E7EB',
     },
     saveBtn: {
-        backgroundColor: '#4A90D9', borderRadius: 12, paddingVertical: 14,
+        backgroundColor: '#4f8ef7', borderRadius: 12, paddingVertical: 14,
         alignItems: 'center', marginTop: 10,
     },
     saveBtnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
