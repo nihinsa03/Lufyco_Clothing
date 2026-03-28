@@ -21,6 +21,7 @@ const moods = [
 
 const occasions = ["Casual", "Office", "Party", "Date", "Wedding"] as const;
 const timeNeeds = ["Now", "Future"] as const;
+const genders = ["Men", "Women", "Kids"] as const;
 
 const formatDateTime = (d: Dayjs) => d.format("DD MMM YYYY | hh:mm A");
 
@@ -77,6 +78,7 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
   const [mood, setMood] = useState<string | null>(null);
   const [occasion, setOccasion] = useState<string | null>(null);
   const [timeNeed, setTimeNeed] = useState<"Now" | "Future" | null>(null);
+  const [gender, setGender] = useState<string | null>(null);
 
   // Drive the picker with dayjs to avoid click issues
   const [whenDj, setWhenDj] = useState<Dayjs>(dayjs());
@@ -98,13 +100,19 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
   const handleGenerate = () => {
     const finalMood = mood ?? "Confident";
     const finalOccasion = occasion ?? "Casual";
+    const finalGender = gender ?? "Unisex";
+    const finalCategory = finalGender === "Men" ? "Men" : finalGender === "Women" ? "Women" : "Kids";
+    const timeFlag = timeNeed === "Future" ? "FUTURE" : "NOW";
     // Keep only the params your navigator type allows
     navigation.navigate("SuggestedOutfit", {
       mood: finalMood,
       occasion: finalOccasion,
       weather: weather?.condition || "Sunny",
-      // If you later add `whenISO` to SuggestedOutfit params, then:
-      // whenISO: whenDj.toISOString(),
+      category: finalCategory,
+      gender: finalGender,
+      timeNeed: timeNeed ?? "Now",
+      selectedDate: whenDj.toISOString(),
+      nowFlag: timeFlag,
     } as any);
   };
 
@@ -159,6 +167,16 @@ const PlanMyLookScreen: React.FC<Props> = ({ navigation }) => {
           <View style={styles.rowWrap}>
             {occasions.map((o) => (
               <Chip key={o} label={o} selected={occasion === o} onPress={() => setOccasion(o)} styles={styles} />
+            ))}
+          </View>
+        </View>
+
+        {/* Gender */}
+        <View style={{ paddingHorizontal: 25, marginTop: 12 }}>
+          <SectionTitle styles={styles}>Select Gender</SectionTitle>
+          <View style={styles.rowWrap}>
+            {genders.map((g) => (
+              <Chip key={g} label={g} selected={gender === g} onPress={() => setGender(g)} styles={styles} />
             ))}
           </View>
         </View>

@@ -1,13 +1,12 @@
-import React, { useState, useRef, useEffect } from "react";
-import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert, Dimensions, Platform, Animated, Modal, StatusBar, ActivityIndicator } from "react-native";
+import React, { useState, useRef } from "react";
+import { View, Text, StyleSheet, Image, TouchableOpacity, ScrollView, SafeAreaView, Alert, Dimensions, Platform, Animated, Modal, StatusBar } from "react-native";
 import { Feather, Ionicons } from "@expo/vector-icons";
 import { useCartStore } from "../store/useCartStore";
 import { useWishlistStore } from "../store/useWishlistStore";
-import { useShopStore } from "../store/useShopStore";
+import { useProductsStore } from "../store/useProductsStore";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useTheme } from "../context/ThemeContext";
-import api from "../api/api";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductDetails">;
 
@@ -32,21 +31,16 @@ const isLightColor = (hex: string): boolean => {
 const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     // Params
     const { id, product: paramProduct } = route.params;
-    console.log('[ProductDetails] id:', id, '| paramProduct:', JSON.stringify(paramProduct)?.slice(0, 200));
 
     // Store Hooks
-    const getProductById = (id: string) => useShopStore.getState().products.find(p => p.id === id || (p as any)._id === id);
+    const getProductById = useProductsStore((state) => state.getProductById);
     const addItemToCart = useCartStore((state) => state.addItem);
     const { toggleWishlist, isInWishlist } = useWishlistStore();
     const { colors, isDark } = useTheme();
     const styles = getStyles(colors, isDark);
 
-    // Local State — paramProduct is the immediate fallback while we fetch live data
-    const storeProduct = getProductById(id) || paramProduct || null;
-    const [liveProduct, setLiveProduct] = useState<any>(null);
-    const [fetchLoading, setFetchLoading] = useState(true);
-    // Use liveProduct if fetched, otherwise fall back to paramProduct/storeProduct
-    const fullProduct = liveProduct || storeProduct || null;
+    // Local State
+    const fullProduct = getProductById(id) || paramProduct;
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [qty, setQty] = useState(1);
@@ -59,49 +53,6 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     // Animation Values
     const buttonScale = useRef(new Animated.Value(1)).current;
     const successOpacity = useRef(new Animated.Value(0)).current;
-
-    // Fetch live product details from MongoDB (background, non-blocking if paramProduct exists)
-    useEffect(() => {
-        const fetchDetail = async () => {
-            try {
-                const productId = id || (paramProduct && (paramProduct._id || paramProduct.id));
-                if (!productId) {
-                    console.warn('[ProductDetails] No product ID to fetch.');
-                    return;
-                }
-                const res = await api.get(`/products/${productId}`);
-                if (res.data && (res.data._id || res.data.id)) {
-                    setLiveProduct(res.data);
-                }
-            } catch (err) {
-                console.warn('[ProductDetails] Could not fetch live product, using passed data.', err);
-            } finally {
-                setFetchLoading(false);
-            }
-        };
-        fetchDetail();
-    }, [id]);
-
-    // Auto-select first size and color
-    useEffect(() => {
-        if (fullProduct) {
-            if (fullProduct.sizes && fullProduct.sizes.length > 0 && !selectedSize) {
-                setSelectedSize(fullProduct.sizes[0]);
-            }
-            if (fullProduct.colors && fullProduct.colors.length > 0 && !selectedColor) {
-                setSelectedColor(fullProduct.colors[0]);
-            }
-        }
-    }, [fullProduct]);
-
-    // Only show full-screen spinner if we have NO product data at all and are still fetching
-    if (fetchLoading && !fullProduct) {
-        return (
-            <SafeAreaView style={[styles.safe, { justifyContent: 'center', alignItems: 'center' }]}>
-                <ActivityIndicator size="large" color={colors.text} />
-            </SafeAreaView>
-        );
-    }
 
     if (!fullProduct) {
         return (
@@ -248,7 +199,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
                             <Text style={[styles.categoryText, { color: colors.textSecondary }]}>Men's Fashion</Text>
                         </View>
                         <View>
-                            <Text style={[styles.price, { color: colors.text }]}>LKR {(fullProduct.price || 0).toFixed(2)}</Text>
+                            <Text style={[styles.price, { color: colors.text }]}>LKR {fullProduct.price?.toFixed(2)}</Text>
                         </View>
                     </View>
 

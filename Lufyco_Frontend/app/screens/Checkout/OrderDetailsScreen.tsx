@@ -128,7 +128,7 @@ const OrderDetailsScreen = () => {
                         <View style={{ flex: 1, marginLeft: 12 }}>
                             <Text style={styles.itemTitle}>{item.title}</Text>
                             <Text style={styles.itemMeta}>Qty: {item.qty} • Size: {item.size}</Text>
-                            <Text style={styles.itemPrice}>LKR {item.price.toFixed(2)}</Text>
+                            <Text style={styles.itemPrice}>${item.price.toFixed(2)}</Text>
                         </View>
                     </View>
                 ))}
@@ -157,15 +157,15 @@ const OrderDetailsScreen = () => {
                 <View style={styles.summaryContainer}>
                     <View style={styles.row}>
                         <Text style={styles.label}>Subtotal</Text>
-                        <Text style={styles.val}>LKR {order.subtotal.toFixed(2)}</Text>
+                        <Text style={styles.val}>${order.subtotal.toFixed(2)}</Text>
                     </View>
                     <View style={styles.row}>
                         <Text style={styles.label}>Shipping</Text>
-                        <Text style={styles.val}>LKR {order.shipping.toFixed(2)}</Text>
+                        <Text style={styles.val}>${order.shipping.toFixed(2)}</Text>
                     </View>
                     <View style={[styles.row, { marginTop: 12 }]}>
                         <Text style={[styles.label, { fontSize: 18, color: '#111' }]}>Total</Text>
-                        <Text style={[styles.val, { fontSize: 18, color: '#111' }]}>LKR {order.total.toFixed(2)}</Text>
+                        <Text style={[styles.val, { fontSize: 18, color: '#111' }]}>${order.total.toFixed(2)}</Text>
                     </View>
                 </View>
 

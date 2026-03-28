@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { createJSONStorage, persist } from 'zustand/middleware';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Product, Category } from '../types';
+import { mockProducts, mockCategories, Product, Category } from '../data/mockData';
 import api from '../api/api';
 
 export interface FilterState {
@@ -62,8 +62,8 @@ const initialFilters: FilterState = {
 export const useShopStore = create<ShopState>()(
     persist(
         (set, get) => ({
-            products: [],
-            categories: [],
+            products: mockProducts,
+            categories: mockCategories,
             productsLoaded: false,
             activeFilters: initialFilters,
             recentSearches: [],
@@ -71,18 +71,20 @@ export const useShopStore = create<ShopState>()(
             fetchProducts: async () => {
                 try {
                     const [productsRes, categoriesRes] = await Promise.all([
-                        api.get('/clothing-items'),
+                        api.get('/products'),
                         api.get('/products/categories'),
                     ]);
                     const fetchedProducts: Product[] = productsRes.data?.products || productsRes.data || [];
                     const fetchedCategories: Category[] = categoriesRes.data?.categories || categoriesRes.data || [];
-                    set({ products: fetchedProducts, productsLoaded: true });
+                    if (fetchedProducts.length > 0) {
+                        set({ products: fetchedProducts, productsLoaded: true });
+                    }
                     if (fetchedCategories.length > 0) {
                         set({ categories: fetchedCategories });
                     }
                 } catch (err) {
-                    console.error('[ShopStore] Failed to fetch products from API.', err);
-                    set({ productsLoaded: true });
+                    // Silently fall back to mockData — app still works offline
+                    console.warn('[ShopStore] Failed to fetch products from API, using mock data.', err);
                 }
             },
             setQuery: (q) => set((state) => ({
@@ -149,7 +151,7 @@ export const useShopStore = create<ShopState>()(
                     // Query
                     if (query) {
                         const q = query.toLowerCase();
-                        if (!p.title.toLowerCase().includes(q) && !p.tags.some((t: string) => t.toLowerCase().includes(q))) {
+                        if (!p.title.toLowerCase().includes(q) && !p.tags.some(t => t.toLowerCase().includes(q))) {
                             return false;
                         }
                     }

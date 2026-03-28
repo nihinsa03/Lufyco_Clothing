@@ -5,6 +5,7 @@ import { useTheme } from "../context/ThemeContext";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import api from "../api/api";
+  import { useAuthStore } from '../store/useAuthStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, "AddToClosetPreview">;
 
@@ -57,8 +58,10 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const [category, setCategory] = React.useState("Men's Wear");
   const [color, setColor] = React.useState("#000000");
   const [aiColor, setAiColor] = React.useState<string | null>(null); // exact AI-detected hex
+  const [occasion, setOccasion] = React.useState("casual");
   const [extracting, setExtracting] = React.useState(true);
   const [extractError, setExtractError] = React.useState(false);
+    const user = useAuthStore.getState().user?.id;
 
   React.useEffect(() => {
     const extractDetails = async () => {
@@ -98,7 +101,7 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
   const handleSave = async () => {
     try {
       setStatus("saving");
-      const payload = { name, category, image: uri, color };
+      const payload = { name, category, image: uri, color, occasion, user };
       const res = await api.post("/closet", payload);
 
       try {
@@ -213,6 +216,23 @@ const AddToClosetPreviewScreen: React.FC<Props> = ({ route, navigation }) => {
                   <Text style={[styles.exactColorHex, { color: colors.text }]}>{color.toUpperCase()}</Text>
                 </View>
               )}
+
+              {/* Occasion */}
+              <Text style={[styles.label, { color: colors.textSecondary }]}>Occasion</Text>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 14 }}>
+                {["formal", "casual", "wedding", "date"].map(occ => {
+                  const isActive = occasion === occ;
+                  return (
+                    <TouchableOpacity
+                      key={occ}
+                      style={[styles.occasionCard, { borderColor: colors.border }, isActive && styles.occasionCardActive]}
+                      onPress={() => setOccasion(occ)}
+                    >
+                      <Text style={[styles.occasionText, { color: colors.textSecondary }, isActive && styles.occasionTextActive]}>{occ.charAt(0).toUpperCase() + occ.slice(1)}</Text>
+                    </TouchableOpacity>
+                  );
+                })}
+              </ScrollView>
 
             </View>
 
@@ -384,6 +404,26 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
   visualCatImage: { width: '100%', height: '100%' },
   visualCatText: { fontSize: 10, textAlign: 'center', fontWeight: "500" },
   visualCatTextActive: { color: '#3B82F6', fontWeight: '700' },
+
+  occasionCard: {
+    paddingHorizontal: 12,
+    paddingVertical: 8,
+    borderRadius: 10,
+    borderWidth: 1,
+    marginRight: 10,
+  },
+  occasionCardActive: {
+    borderColor: '#3B82F6',
+    backgroundColor: '#F0F7FF',
+  },
+  occasionText: {
+    fontSize: 14,
+    fontWeight: "500",
+  },
+  occasionTextActive: {
+    color: '#3B82F6',
+    fontWeight: '700',
+  },
 
   exactColorRow: {
     flexDirection: "row",

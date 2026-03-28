@@ -7,23 +7,20 @@ import { RootStackParamList } from "../navigation/AppNavigator";
 import FilterSheet, { FilterKey } from "./FilterSheet";
 import SearchOverlay from "./SearchOverlay";
 import api from "../api/api";
-
+import { MOCK_PRODUCTS } from "../data/mockProducts";
 import { useWishlistStore } from "../store/useWishlistStore";
 
 type Props = NativeStackScreenProps<RootStackParamList, "ProductListing">;
 
 type Product = {
     _id: string;
-    id?: string;
     name?: string;
     title?: string;
     price: number;
     compareAtPrice?: number;
-    oldPrice?: number;
-    image?: string;
-    images?: string[];
+    image: string; // URL or base64
     colors: string[];
-    reviewsCount?: number;
+    reviewsCount: number;
     category?: string;
     subCategory?: string;
     gender?: string;
@@ -45,8 +42,8 @@ const ColorDots = ({ colors, styles }: { colors: string[], styles: any }) => {
 };
 
 const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
-    const { colors, isDark } = useTheme();
-    const styles = useMemo(() => getStyles(colors, isDark), [colors, isDark]);
+    const { colors, isDark: dark } = useTheme();
+    const styles = getStyles(colors, dark);
     const { gender, category, subCategory, type, search, isSale, title } = route.params || {};
 
     const [products, setProducts] = useState<Product[]>([]);
@@ -66,6 +63,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
     const fetchProducts = async () => {
         setLoading(true);
         try {
+            // Build query string
             const params: any = {};
             if (gender) params.gender = gender;
             if (category) params.category = category;
@@ -73,27 +71,81 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
             if (type) params.type = type;
             if (search) params.search = search;
             if (isSale) params.isSale = 'true';
-            if (selectedFilter && selectedFilter !== 'whats_new') params.sort = selectedFilter;
+            if (selectedFilter) params.sort = selectedFilter;
 
-            const response = await api.get("/products", { params });
-            const data: any[] = response.data?.products || response.data || [];
+            // Use MOCK_PRODUCTS for now
+            let data = [...MOCK_PRODUCTS];
 
-            if (selectedFilter === 'whats_new') {
-                data.sort((a, b) => (b.isNewArrival ? 1 : 0) - (a.isNewArrival ? 1 : 0));
+            // If the route has specific filters, start with those
+            if (params.category === "Shoes") {
+                data = data.filter((p: Product) => p.category === "Shoes");
+            } else if (params.category === "Accessories") {
+                data = data.filter((p: Product) => p.category === "Accessories");
+            } else if (params.gender === "Men") {
+                data = data.filter((p: Product) => p.gender === "Men" || (p.gender === "Unisex" && p.category !== "Women"));
+            } else if (params.gender === "Women") {
+                data = data.filter((p: Product) => p.gender === "Women" || (p.gender === "Unisex" && p.category !== "Men"));
+            } else if (params.gender === "Kids") {
+                data = data.filter((p: Product) => p.gender === "Kids" || p.category === "Kids");
             }
 
-            setProducts(data);
+            // Apply specific params if not already scoped
+            if (params.category && params.category !== "Shoes" && params.category !== "Accessories") {
+                data = data.filter((p: Product) => p.category === params.category || p.subCategory === params.category);
+            }
+            if (params.subCategory) {
+                data = data.filter((p: Product) => p.subCategory === params.subCategory);
+            }
+            if (params.type) {
+                data = data.filter((p: Product) => p.type === params.type);
+            }
+
+            // Handle Search Query properly
+            if (params.search) {
+                const query = params.search.toLowerCase();
+                data = data.filter((p: Product) => {
+                    const itemName = (p.name || p.title || "").toLowerCase();
+                    const itemType = (p.type || "").toLowerCase();
+                    const itemCategory = (p.category || "").toLowerCase();
+                    const itemSubCategory = (p.subCategory || "").toLowerCase();
+                    return itemName.includes(query) || 
+                           itemType.includes(query) ||
+                           itemCategory.includes(query) ||
+                           itemSubCategory.includes(query);
+                });
+            }
+
+            // Apply sorting & filtering from selectedFilter
+            if (selectedFilter === "price_low_to_high") {
+                data.sort((a, b) => (a.price || 0) - (b.price || 0));
+            } else if (selectedFilter === "price_high_to_low") {
+                data.sort((a, b) => (b.price || 0) - (a.price || 0));
+            } else if (selectedFilter === "discount") {
+                data = data.filter((p: any) => p.compareAtPrice && p.compareAtPrice > p.price);
+            } else if (selectedFilter === "popularity") {
+                data.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
+            } else if (selectedFilter === "whats_new") {
+                const newArrivals = data.filter((p: any) => p.isNewArrival);
+                data = newArrivals.length > 0 ? newArrivals : [...data].reverse();
+            }
+
+            // Simulate delay
+            setTimeout(() => {
+                setProducts(data);
+                setLoading(false);
+            }, 500);
+
+            // const response = await api.get("/products", { params });
+            // setProducts(response.data);
         } catch (error) {
-            console.error("Error fetching from API:", error);
-            setProducts([]);
-        } finally {
+            console.error("Error fetching products:", error);
             setLoading(false);
         }
     };
 
     const handleProductPress = (product: Product) => {
-        const productId = product.id || product._id;
-        navigation.navigate("ProductDetails", { id: productId, product: product });
+        // Pass both ID and product object to ProductDetails
+        navigation.navigate("ProductDetails", { id: product._id, product: product });
     };
 
     const displayName = title || type || subCategory || category || "Products";
@@ -136,7 +188,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
             ) : (
                 <FlatList
                     data={products}
-                    keyExtractor={(item) => item.id || item._id}
+                    keyExtractor={(item) => item._id}
                     numColumns={2}
                     columnWrapperStyle={{ justifyContent: "space-between" }}
                     contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 100 }}
@@ -147,35 +199,27 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                             style={styles.card}
                             onPress={() => handleProductPress(item)}
                         >
-                            {/* Use images[] array from API, fallback to image string */}
+                            {/* Image handling: check if it's http or require */}
                             <Image
-                                source={
-                                    item.images && item.images[0]
-                                        ? { uri: item.images[0] }
-                                        : item.image && item.image.startsWith('http')
-                                            ? { uri: item.image }
-                                            : require("../../assets/images/clothing.png")
-                                }
+                                source={item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png")}
                                 style={styles.image}
                             />
                             <TouchableOpacity
                                 style={styles.wishBtn}
                                 onPress={() => {
-                                    const productId = item.id || item._id;
-                                    const imageUrl = (item.images && item.images[0]) || item.image || '';
                                     toggleWishlist({
-                                        id: productId,
-                                        productId: productId,
+                                        id: item._id,
+                                        productId: item._id,
                                         title: item.name || item.title || "Product",
                                         price: item.price,
-                                        image: imageUrl,
+                                        image: item.image,
                                     });
                                 }}
                             >
                                 <Ionicons
-                                    name={isInWishlist(item.id || item._id) ? "heart" : "heart-outline"}
+                                    name={isInWishlist(item._id) ? "heart" : "heart-outline"}
                                     size={18}
-                                    color={isInWishlist(item.id || item._id) ? "red" : isDark ? "#fff" : "#111"}
+                                    color={isInWishlist(item._id) ? "red" : dark ? "#fff" : "#111"}
                                 />
                             </TouchableOpacity>
 
@@ -184,13 +228,13 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                             </View>
 
                             <Text numberOfLines={1} style={styles.pTitle}>
-                                {item.title || item.name || "Unknown Product"}
+                                {item.name || item.title || "Unknown Product"}
                             </Text>
 
                             <View style={styles.priceRow}>
-                                <Text style={styles.price}>LKR {item.price.toFixed(2)}</Text>
-                                {(item.compareAtPrice || item.oldPrice) && (item.compareAtPrice || item.oldPrice)! > item.price && (
-                                    <Text style={styles.compare}>LKR {(item.compareAtPrice || item.oldPrice)!.toFixed(2)}</Text>
+                                <Text style={styles.price}>${item.price.toFixed(2)}</Text>
+                                {item.compareAtPrice && item.compareAtPrice > item.price && (
+                                    <Text style={styles.compare}>${item.compareAtPrice.toFixed(2)}</Text>
                                 )}
                             </View>
                         </TouchableOpacity>
@@ -232,7 +276,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
     );
 };
 
-const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
+const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
     safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
     center: { flex: 1, alignItems: 'center', justifyContent: 'center', marginTop: 50 },
     header: {
@@ -243,8 +287,7 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
         paddingBottom: 8,
         justifyContent: "space-between",
         borderBottomWidth: StyleSheet.hairlineWidth,
-        borderColor: isDark ? "#333" : "#eee",
-        backgroundColor: colors.background
+        borderColor: dark ? "#333" : "#eee",
     },
     hIcon: { padding: 6 },
     headerRight: { flexDirection: "row", alignItems: "center" },
@@ -256,13 +299,13 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
         letterSpacing: 0.3,
         color: colors.text,
     },
-    card: { width: "48%", marginTop: 14, backgroundColor: colors.background },
-    image: { width: "100%", height: 180, borderRadius: 14, backgroundColor: colors.iconBg },
+    card: { width: "48%", marginTop: 14 },
+    image: { width: "100%", height: 180, borderRadius: 14, backgroundColor: '#f0f0f0' },
     wishBtn: {
         position: "absolute",
         right: 10,
         top: 10,
-        backgroundColor: isDark ? "#333" : "#fff",
+        backgroundColor: dark ? "#333" : "#fff",
         width: 30,
         height: 30,
         borderRadius: 15,
@@ -278,15 +321,15 @@ const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
         borderRadius: 7,
         marginRight: 4,
         borderWidth: 1,
-        borderColor: isDark ? "#333" : "#e5e5e5",
+        borderColor: dark ? "#333" : "#e5e5e5",
     },
-    moreColors: { fontSize: 10, color: isDark ? '#aaa' : '#666' },
+    moreColors: { fontSize: 10, color: dark ? '#aaa' : '#666' },
     pTitle: { fontSize: 14, fontWeight: "600", marginTop: 6, color: colors.text },
     priceRow: { flexDirection: "row", alignItems: "center", marginTop: 2 },
     price: { fontSize: 14, fontWeight: "700", color: colors.text },
     compare: {
         fontSize: 12,
-        color: isDark ? '#777' : "#888",
+        color: dark ? '#777' : "#888",
         marginLeft: 8,
         textDecorationLine: "line-through",
     },

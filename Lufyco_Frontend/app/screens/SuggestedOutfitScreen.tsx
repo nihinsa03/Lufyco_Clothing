@@ -1,6 +1,7 @@
 import React from "react";
 import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, ScrollView, Platform, StatusBar } from "react-native";
 import { Feather } from "@expo/vector-icons";
+import dayjs from "dayjs";
 import { useTheme } from "../context/ThemeContext";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
@@ -18,15 +19,15 @@ const moodEmoji: Record<string, string> = {
   Excited: "😁",
 };
 
-// import api from "../api/api";
-// import { ClothingItem } from "../models";
-import { useShopStore } from "../store/useShopStore";
+import api from "../api/api";
+import { MOCK_PRODUCTS } from "../data/mockProducts";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+  import { useAuthStore } from '../store/useAuthStore';
 
 // ... (keep props and emoji map)
 
 const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
-  const { mood, weather, occasion } = route.params;
+  const { mood, weather, occasion, category, timeNeed, selectedDate, gender, nowFlag } = route.params;
   const { colors, isDark } = useTheme();
   const styles = getStyles(colors, isDark);
 
@@ -35,11 +36,12 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
 
   const [history, setHistory] = React.useState<any[][]>([]);
   const [currentIndex, setCurrentIndex] = React.useState(-1);
+  const userId = useAuthStore.getState().user?.id;
 
   React.useEffect(() => {
     generateLook();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mood, weather, occasion]);
+  }, [mood, weather, occasion, category]);
 
   const handleRegenerate = () => {
     // Slice off any future history if we are currently undo'd
@@ -47,18 +49,79 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
     generateLook();
   };
 
-  const generateLook = () => {
+  const generateLook = async () => {
     setLoading(true);
 
-    let relevantItems = [...useShopStore.getState().products];
+    try {
+      // Call the AI recommendation API
+      const response = await api.post('/ai/recommend-outfit', {
+        userId: userId, // You might want to get this from user context/store
+        mood: mood.toLowerCase(),
+        occasion: occasion.toLowerCase(),
+        weather: weather || "",
+        category: category.toLowerCase(),
+        gender: gender || "",
+        preferredColors: "", // You can add color preferences later
+        selectedDate: selectedDate || dayjs().toISOString(),
+        nowFlag: nowFlag || "NOW",
+      });
+      console.log("API outfit recommendation response:", response.data);
+
+      // Prefer structured API result, then fallback to raw response body.
+      const recommendedOutfit = response.data?.outfit.items || response.data || [];
+      console.log("Recommended outfit items from API:", recommendedOutfit);
+
+      // If API returns product IDs, map them to full product objects
+      let outfitItems = [];
+      if (recommendedOutfit.length > 0) {
+        // Check if the response contains product IDs or full objects
+        if (typeof recommendedOutfit[0] === 'string') {
+          // If IDs, find the products from MOCK_PRODUCTS
+          outfitItems = recommendedOutfit.map((id: string) =>
+            MOCK_PRODUCTS.find(p => p._id === id)
+          ).filter(Boolean);
+        } else {
+          // If full objects, use them directly
+          outfitItems = recommendedOutfit;
+        }
+      }else{
+        console.warn('[SuggestedOutfit] API returned empty outfit, using mock logic');
+      }
+
+      // Fallback to mock logic if API doesn't return items
+      // if (outfitItems.length === 0) {
+      //   outfitItems = generateMockOutfit();
+      // }
+
+      setHistory(prev => {
+        const newHistory = [...prev, outfitItems];
+        setCurrentIndex(newHistory.length - 1);
+        return newHistory;
+      });
+      setGeneratedOutfit(outfitItems);
+
+    } catch (error) {
+      console.warn('[SuggestedOutfit] API failed, using mock data:', error);
+      // Fallback to mock logic
+      const mockOutfit = generateMockOutfit();
+      setHistory(prev => {
+        const newHistory = [...prev, mockOutfit];
+        setCurrentIndex(newHistory.length - 1);
+        return newHistory;
+      });
+      setGeneratedOutfit(mockOutfit);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Fallback mock outfit generation (current logic)
+  const generateMockOutfit = () => {
+    let relevantItems = [...MOCK_PRODUCTS];
 
     const w = weather.toLowerCase();
     const isCold = w.includes("rain") || w.includes("snow") || w.includes("fog") || w.includes("cloud") || w.includes("cool");
     const isHot = w.includes("sun") || w.includes("clear") || w.includes("warm") || w.includes("hot");
-
-    // -- Gender assumption: For now, let's mix or pick based on a user profile if we had one.
-    // Since we don't have gender in props, let's just use all relevant items or maybe filter if we knew.
-    // For demo, let's just use all MOCK_PRODUCTS.
 
     // 2. Pick categories based on Occasion
     let relevantTops = relevantItems.filter(i => i.subCategory === 'Tops' || i.type === 'T-Shirt' || i.type === 'Shirt' || i.type === 'Blouse' || i.type === 'Hoodie' || i.type === 'Sweater');
@@ -78,6 +141,15 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
       // ...
     }
 
+    // Refine by Category
+    if (category === "Men") {
+      relevantItems = relevantItems.filter(i => i.category === 'Men' || i.category === 'Unisex');
+    } else if (category === "Women") {
+      relevantItems = relevantItems.filter(i => i.category === 'Women' || i.category === 'Unisex');
+    } else if (category === "Kids") {
+      relevantItems = relevantItems.filter(i => i.category === 'Kids' || i.category === 'Unisex');
+    } // Unisex includes all
+
     // Refine by Weather
     if (isCold) {
       // Prefer hoodies/sweaters if available, else standard tops + jacket
@@ -95,7 +167,7 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
     const random = (arr: any[]) => arr.length > 0 ? arr[Math.floor(Math.random() * arr.length)] : null;
 
     // Decide structure: Dress vs Top/Bottom
-    // 50/50 chance if both valid, or logic based. 
+    // 50/50 chance if both valid, or logic based.
     // Let's just do Top/Bottom for simplicity unless it's a "Dress" occasion/preference.
     const useDress = relevantDresses.length > 0 && Math.random() > 0.7; // 30% chance for dress if available
 
@@ -122,15 +194,7 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
       }
     }
 
-    setTimeout(() => {
-      setHistory(prev => {
-        const newHistory = [...prev, outfit];
-        setCurrentIndex(newHistory.length - 1);
-        return newHistory;
-      });
-      setGeneratedOutfit(outfit);
-      setLoading(false);
-    }, 600);
+    return outfit;
   };
 
   const handleUndo = () => {
@@ -155,11 +219,31 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
       const existing = existingStr ? JSON.parse(existingStr) : [];
       const newLook = {
         id: Date.now().toString(),
-        mood, weather, occasion,
+        mood,
+        weather,
+        occasion,
+        category,
+        timeNeed,
+        selectedDate,
         items: generatedOutfit,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
       };
+      console.log('Saving new look:', newLook);
       await AsyncStorage.setItem('saved_looks', JSON.stringify([newLook, ...existing]));
+
+      try {
+        const response = await api.post('/ai/saved-my-looks', {
+          userId: userId,
+          ...newLook,
+          timeout: 20000,
+        });
+        console.log("Saved to backend:", response.data);
+        alert("Outfit also saved on server!");
+      } catch (apiError) {
+        console.error("Failed to save on server:", apiError);
+        alert("Failed to save outfit on server, but saved locally.");
+      }
+
       alert("Outfit Saved!");
       navigation.navigate("AIStylist");
     } catch (e) {
@@ -187,28 +271,28 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
         <View style={[styles.pill, { backgroundColor: isDark ? colors.border : "#DFF6FF" }]}>
           <Text style={styles.pillEmoji}>{moodEmoji[mood] ?? "🙂"}</Text>
           <Text style={[styles.pillText, { color: colors.text }]}>
-            {mood} + {weather} + {occasion}
+            {mood} + {weather} + {occasion} + {category} {gender ? `+ ${gender}` : ""}
           </Text>
         </View>
 
         {/* Your Suggested Outfit */}
         <Text style={[styles.sectionTitle, { color: colors.text }]}>Your Suggested Outfit</Text>
         <View style={[styles.outfitCard, { backgroundColor: colors.card }]}>
-          <View style={styles.outfitRow}>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.outfitRow}>
             {generatedOutfit.length === 0 ? (
               <Text style={{ padding: 20, color: colors.textSecondary }}>No items found in closet to match this.</Text>
             ) : (
               generatedOutfit.map((item, idx) => (
                 <View key={idx} style={styles.outfitItem}>
                   <Image
-                    source={item.image && item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png")}
+                    source={item.image && item.image.startsWith('http') ? { uri: item.image } : { uri: item.image }}
                     style={styles.outfitImg}
                   />
                   <Text style={[styles.outfitLabel, { color: colors.text }]}>{item.name}</Text>
                 </View>
               ))
             )}
-          </View>
+          </ScrollView>
         </View>
 
         {/* Complete your look */}
@@ -328,7 +412,8 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  outfitRow: { flexDirection: "row", justifyContent: "flex-start" },
+  outfitRow: { flexDirection: "row", justifyContent: "flex-start", alignItems: "flex-start" },
+  outfitItem: { alignItems: "center", marginRight: 16, width: 140 },
   outfitItem: { alignItems: "center", marginRight: 24 },
   outfitImg: { width: 130, height: 110, borderRadius: 10, resizeMode: "cover" },
   outfitLabel: { marginTop: 8, fontWeight: "700" },

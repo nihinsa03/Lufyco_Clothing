@@ -106,7 +106,15 @@ export type RootStackParamList = {
   };
   MyCloset: undefined;
   PlanMyLook: undefined;
-  SuggestedOutfit: { mood: string; occasion: string; weather: string };
+  SuggestedOutfit: {
+    mood: string;
+    occasion: string;
+    weather: string;
+    category: string;
+    timeNeed: "Now" | "Future";
+    selectedDate: string;
+    gender?: string;
+  };
   ShopNewStyles: undefined;
   UpcomingEvents: undefined;
   AddToCloset: undefined;

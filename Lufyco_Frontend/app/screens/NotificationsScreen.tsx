@@ -1,9 +1,12 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, Image, Platform, StatusBar } from "react-native";
-import { Feather, Ionicons } from '@expo/vector-icons';
+import React, { useState, useEffect } from 'react';
+import { 
+    View, Text, StyleSheet, TouchableOpacity, FlatList, SafeAreaView, Platform, StatusBar 
+} from "react-native";
+import { Feather } from '@expo/vector-icons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList } from '../navigation/AppNavigator';
 import { useTheme } from '../context/ThemeContext';
+import api from "../api/api";
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Notifications'>;
 
@@ -19,103 +22,34 @@ type Notification = {
     iconBg: string;
 };
 
-const MOCK_NOTIFICATIONS: Notification[] = [
-    {
-        id: '1',
-        type: 'promo',
-        title: '🔥 Flash Sale is Live!',
-        message: 'Get up to 50% off on all summer collections. Hurry, offer ends tonight!',
-        time: '2 min ago',
-        read: false,
-        icon: 'percent',
-        iconColor: '#fff',
-        iconBg: '#EF4444',
-    },
-    {
-        id: '2',
-        type: 'order',
-        title: 'Order Shipped! 📦',
-        message: 'Your order #LF2847 has been shipped and is on its way. Track your delivery now.',
-        time: '15 min ago',
-        read: false,
-        icon: 'truck',
-        iconColor: '#fff',
-        iconBg: '#3B82F6',
-    },
-    {
-        id: '3',
-        type: 'wishlist',
-        title: 'Price Drop Alert! 💰',
-        message: 'The "Classic Denim Jacket" in your wishlist just dropped from LKR 12,000 to LKR 8,400!',
-        time: '1 hour ago',
-        read: false,
-        icon: 'heart',
-        iconColor: '#fff',
-        iconBg: '#EC4899',
-    },
-    {
-        id: '4',
-        type: 'promo',
-        title: 'New Arrivals Just Dropped ✨',
-        message: 'Fresh styles for the season are here. Be the first to explore our latest collection.',
-        time: '3 hours ago',
-        read: true,
-        icon: 'star',
-        iconColor: '#fff',
-        iconBg: '#F59E0B',
-    },
-    {
-        id: '5',
-        type: 'delivery',
-        title: 'Order Delivered ✅',
-        message: 'Your order #LF2790 has been delivered successfully. Rate your experience!',
-        time: '5 hours ago',
-        read: true,
-        icon: 'check-circle',
-        iconColor: '#fff',
-        iconBg: '#10B981',
-    },
-    {
-        id: '6',
-        type: 'alert',
-        title: 'Your Cart is Waiting 🛒',
-        message: 'You left 3 items in your cart. Complete your purchase before they sell out!',
-        time: 'Yesterday',
-        read: true,
-        icon: 'shopping-cart',
-        iconColor: '#fff',
-        iconBg: '#8B5CF6',
-    },
-    {
-        id: '7',
-        type: 'promo',
-        title: 'Weekend Special 🎉',
-        message: 'Enjoy free shipping on all orders above LKR 5,000 this weekend only!',
-        time: 'Yesterday',
-        read: true,
-        icon: 'gift',
-        iconColor: '#fff',
-        iconBg: '#06B6D4',
-    },
-    {
-        id: '8',
-        type: 'welcome',
-        title: 'Welcome to Fashion! 👋',
-        message: 'Thanks for joining us. Explore trending styles and get personalized recommendations.',
-        time: '2 days ago',
-        read: true,
-        icon: 'user-check',
-        iconColor: '#fff',
-        iconBg: '#6366F1',
-    },
-];
-
 const NotificationsScreen = ({ navigation }: Props) => {
     const { colors, isDark } = useTheme();
     const styles = getStyles(colors, isDark);
-    const [notifications, setNotifications] = useState<Notification[]>(MOCK_NOTIFICATIONS);
 
-    const unreadCount = notifications.filter(n => !n.read).length;
+    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [unreadCount, setUnreadCount] = useState(0);
+
+    // Fetch notifications from backend
+useEffect(() => {
+    const fetchNotifications = async () => {
+        try {
+            setLoading(true);
+            const res = await api.get('/users/notification'); // make sure to await
+            setNotifications(res.data.data); // <-- use res.data.data
+        } catch (error) {
+            console.error('Error fetching notifications:', error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    fetchNotifications();
+}, []);
+
+    useEffect(() => {
+        setUnreadCount(notifications?.filter(n => !n.read).length)
+    }, [notifications]);
 
     const markAllAsRead = () => {
         setNotifications(prev => prev.map(n => ({ ...n, read: true })));
@@ -170,7 +104,7 @@ const NotificationsScreen = ({ navigation }: Props) => {
                     </TouchableOpacity>
                 </View>
 
-                {/* Unread Badge */}
+                {/* Unread Banner */}
                 {unreadCount > 0 && (
                     <View style={styles.unreadBanner}>
                         <Feather name="bell" size={16} color="#3B82F6" />
@@ -181,21 +115,27 @@ const NotificationsScreen = ({ navigation }: Props) => {
                 )}
 
                 {/* Notifications List */}
-                <FlatList
-                    data={notifications}
-                    keyExtractor={(item) => item.id}
-                    renderItem={renderNotification}
-                    contentContainerStyle={styles.listContainer}
-                    showsVerticalScrollIndicator={false}
-                    ItemSeparatorComponent={() => <View style={styles.separator} />}
-                    ListEmptyComponent={
-                        <View style={styles.emptyState}>
-                            <Feather name="bell-off" size={48} color={colors.textMuted} />
-                            <Text style={styles.emptyText}>No notifications yet</Text>
-                            <Text style={styles.emptySubtext}>We'll notify you about deals and order updates!</Text>
-                        </View>
-                    }
-                />
+                {loading ? (
+                    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        <Text style={{ color: colors.text }}>Loading notifications...</Text>
+                    </View>
+                ) : (
+                    <FlatList
+                        data={notifications}
+                        keyExtractor={(item) => item._id} // <-- use _id from API
+                        renderItem={renderNotification}
+                        contentContainerStyle={styles.listContainer}
+                        showsVerticalScrollIndicator={false}
+                        ItemSeparatorComponent={() => <View style={styles.separator} />}
+                        ListEmptyComponent={
+                            <View style={styles.emptyState}>
+                                <Feather name="bell-off" size={48} color={colors.textMuted} />
+                                <Text style={styles.emptyText}>No notifications yet</Text>
+                                <Text style={styles.emptySubtext}>We'll notify you about deals and order updates!</Text>
+                            </View>
+                        }
+                    />
+                )}
             </View>
         </SafeAreaView>
     );
@@ -203,7 +143,7 @@ const NotificationsScreen = ({ navigation }: Props) => {
 
 const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
     safeArea: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
-    container: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+    container: { flex: 1, backgroundColor: colors.background },
 
     header: {
         flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between',

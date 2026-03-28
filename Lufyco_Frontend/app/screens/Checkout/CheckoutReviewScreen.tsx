@@ -178,7 +178,7 @@ const CheckoutReviewScreen = () => {
                                 <Text style={[styles.itemTitle, { color: colors.text }]}>{item.title}</Text>
                                 <Text style={[styles.itemMeta, { color: colors.textSecondary }]}>Size: {item.size} • Color: {item.color}</Text>
                                 <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 4 }}>
-                                    <Text style={[styles.itemPrice, { color: colors.text }]}>LKR {item.price}</Text>
+                                    <Text style={[styles.itemPrice, { color: colors.text }]}>${item.price}</Text>
                                     <Text style={[styles.itemQty, { color: colors.textSecondary }]}>x{item.qty}</Text>
                                 </View>
                             </View>
@@ -196,15 +196,15 @@ const CheckoutReviewScreen = () => {
                 <View style={styles.totalsSection}>
                     <View style={styles.row}>
                         <Text style={[styles.label, { color: colors.textSecondary }]}>Subtotal</Text>
-                        <Text style={[styles.val, { color: colors.text }]}>LKR {subtotal.toFixed(2)}</Text>
+                        <Text style={[styles.val, { color: colors.text }]}>${subtotal.toFixed(2)}</Text>
                     </View>
                     <View style={styles.row}>
                         <Text style={[styles.label, { color: colors.textSecondary }]}>Shipping</Text>
-                        <Text style={[styles.val, { color: colors.text }]}>LKR {shippingCost.toFixed(2)}</Text>
+                        <Text style={[styles.val, { color: colors.text }]}>${shippingCost.toFixed(2)}</Text>
                     </View>
                     <View style={[styles.row, { marginTop: 12 }]}>
                         <Text style={[styles.label, { fontSize: 18, color: colors.text }]}>Total</Text>
-                        <Text style={[styles.val, { fontSize: 18, color: colors.text }]}>LKR {total.toFixed(2)}</Text>
+                        <Text style={[styles.val, { fontSize: 18, color: colors.text }]}>${total.toFixed(2)}</Text>
                     </View>
                 </View>
 

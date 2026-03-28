@@ -6,21 +6,63 @@ import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import { useWeather } from "../hooks/useWeather";
 import { useTheme } from "../context/ThemeContext";
 import type { RootStackParamList } from "../navigation/AppNavigator";
-import { useEventsStore } from "../store/useEventsStore";
+import api from "../api/api";
+import { useAuthStore } from '../store/useAuthStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, "AIStylist">;
 
 const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
-  const { user } = useAuth(); // <--- Get real user
+  const { user } = useAuth();
   const { weather, loading, error } = useWeather();
   const { colors, isDark } = useTheme();
 
-  const { events: upcomingLooks } = useEventsStore();
-
+  const [upcomingLooks, setUpcomingLooks] = React.useState<any[]>([]);
+  const [loadingLooks, setLoadingLooks] = React.useState(false);
+  const [errorLooks, setErrorLooks] = React.useState<string | null>(null);
   const [currentLookIndex, setCurrentLookIndex] = React.useState(0);
-  const handlePrev = () => setCurrentLookIndex(prev => (prev > 0 ? prev - 1 : Math.max(0, upcomingLooks.length - 1)));
-  const handleNext = () => setCurrentLookIndex(prev => (prev < upcomingLooks.length - 1 ? prev + 1 : 0));
+
   const currentLook = upcomingLooks.length > 0 ? upcomingLooks[currentLookIndex] : null;
+
+  const handlePrev = () =>
+    setCurrentLookIndex(prev => (prev > 0 ? prev - 1 : upcomingLooks.length - 1));
+
+  const handleNext = () =>
+    setCurrentLookIndex(prev => (prev < upcomingLooks.length - 1 ? prev + 1 : 0));
+  const userId = useAuthStore.getState().user?.id;
+
+  // ----- API call only once on screen load -----
+  React.useEffect(() => {
+    const fetchUpcomingLooks = async () => {
+      // if (!user) return; // wait for user
+      setLoadingLooks(true);
+      setErrorLooks(null);
+      try {
+        console.log("Fetching upcoming looks for userId:",userId);
+        const res = await api.get(`/ai/my-upcomming`, {
+          params: { userId: userId }, 
+        });
+        
+        const formatted = res.data.map((event: any) => ({
+          id: event._id,
+          title: `${event.occasion} Outfit`,
+          dateLine: new Date(event.selectedDate).toDateString(),
+          outfit: event.items.map((item: any) => ({
+            label: item.name,
+            image: { uri: item.image },
+          })),
+        }));
+
+        setUpcomingLooks(formatted);
+      } catch (err: any) {
+        console.error("Failed to fetch upcoming looks:", err.message);
+        setErrorLooks("Failed to load upcoming looks");
+      } finally {
+        setLoadingLooks(false);
+      }
+    };
+
+    fetchUpcomingLooks();
+  }, []); // <-- runs only once on mount
 
   return (
     <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
@@ -67,7 +109,6 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
             icon={<Feather name="briefcase" size={22} color={isDark ? "#2ED194" : "#1EA672"} />}
             onPress={() => navigation.navigate("ShopNewStyles")}
           />
-
           <Tile
             label="Upcoming Events"
             icon={<Feather name="calendar" size={22} color={isDark ? "#A38CFF" : "#7B61FF"} />}
@@ -85,51 +126,56 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
         </View>
 
         {/* Upcoming looks */}
-        <Text style={[styles.sectionTitle, { color: isDark ? '#60A5FA' : '#2C63FF' }]}>Your Upcoming Looks</Text>
-        {currentLook ? (
+        <Text style={[styles.sectionTitle, { color: isDark ? '#60A5FA' : '#2C63FF' }]}>
+          Your Upcoming Looks
+        </Text>
+
+        {loadingLooks ? (
+          <Text style={{ color: colors.textMuted, paddingHorizontal: 16 }}>Loading...</Text>
+        ) : errorLooks ? (
+          <Text style={{ color: 'red', paddingHorizontal: 16 }}>{errorLooks}</Text>
+        ) : currentLook ? (
           <View style={[styles.lookCard, { backgroundColor: colors.card, borderColor: colors.border }]}>
-            <TouchableOpacity style={styles.lookHeader} onPress={() => navigation.navigate("UpcomingEvents")}>
+            <View style={styles.lookHeader}>
               <View>
                 <Text style={[styles.lookTitle, { color: colors.text }]}>{currentLook.title}</Text>
                 <Text style={[styles.lookSub, { color: colors.textMuted }]}>{currentLook.dateLine}</Text>
               </View>
-              <Feather name="more-horizontal" size={20} color={colors.textMuted} />
-            </TouchableOpacity>
+            </View>
 
             <View style={[styles.separator, { backgroundColor: colors.border }]} />
 
-            <TouchableOpacity style={styles.lookItems} onPress={() => navigation.navigate("UpcomingEvents")}>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingVertical: 6 }}>
               {currentLook.outfit.length > 0 ? (
                 currentLook.outfit.map((item, idx) => (
                   <LookItem key={idx} image={item.image} label={item.label} />
                 ))
               ) : (
-                <Text style={{ color: colors.textMuted, fontStyle: 'italic', paddingVertical: 10 }}>No outfit planned for this event</Text>
+                <Text style={{ color: colors.textMuted, fontStyle: 'italic', paddingVertical: 10 }}>
+                  No outfit planned for this event
+                </Text>
               )}
-            </TouchableOpacity>
+            </ScrollView>
 
             <View style={[styles.separator, { backgroundColor: colors.border }]} />
 
             <View style={styles.lookFooter}>
-              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handlePrev} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handlePrev}>
                 <Feather name="chevron-left" size={20} color={colors.text} />
               </TouchableOpacity>
 
               <Text style={[styles.pageText, { color: colors.text }]}>{currentLookIndex + 1} of {upcomingLooks.length}</Text>
 
-              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handleNext} hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}>
+              <TouchableOpacity style={[styles.navBtn, { backgroundColor: isDark ? colors.iconBg : '#fff' }]} onPress={handleNext}>
                 <Feather name="chevron-right" size={20} color={colors.text} />
               </TouchableOpacity>
             </View>
           </View>
         ) : (
-          <TouchableOpacity 
-            style={[styles.lookCard, { backgroundColor: colors.card, borderColor: colors.border, alignItems: 'center', paddingVertical: 30 }]}
-            onPress={() => navigation.navigate("UpcomingEvents")}
-          >
+          <View style={[styles.lookCard, { backgroundColor: colors.card, borderColor: colors.border, alignItems: 'center', paddingVertical: 30 }]}>
             <Feather name="calendar" size={32} color={colors.textMuted} />
             <Text style={{ color: colors.textMuted, marginTop: 10 }}>No upcoming events planned</Text>
-          </TouchableOpacity>
+          </View>
         )}
 
         {/* Weather */}
@@ -150,8 +196,6 @@ const AIStylistScreen: React.FC<Props> = ({ navigation }) => {
           </View>
         </View>
       </ScrollView>
-
-
     </SafeAreaView>
   );
 };
@@ -191,67 +235,19 @@ const LookItem = ({ image, label }: { image: any; label: string }) => {
 /* ---------- styles ---------- */
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
-
-  header: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 16,
-    paddingTop: 6,
-    paddingBottom: 8,
-    justifyContent: "space-between",
-  },
+  safe: { flex: 1, backgroundColor: "#fff", paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  header: { flexDirection: "row", alignItems: "center", paddingHorizontal: 16, paddingTop: 6, paddingBottom: 8, justifyContent: "space-between" },
   greet: { fontSize: 26, fontWeight: "700" },
   headerIcons: { flexDirection: "row", alignItems: "center" },
   hIcon: { marginLeft: 14 },
-
-  tileRow: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    marginTop: 10,
-  },
-  tile: {
-    flex: 1,
-    backgroundColor: "#D9D9D9",
-    marginRight: 10,
-    borderRadius: 14,
-    padding: 14,
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  tileRow: { flexDirection: "row", justifyContent: "space-between", paddingHorizontal: 16, marginTop: 10 },
+  tile: { flex: 1, backgroundColor: "#D9D9D9", marginRight: 10, borderRadius: 14, padding: 14, flexDirection: "row", alignItems: "center" },
   tileDim: { opacity: 0.9 },
-  tileIconWrap: {
-    width: 42,
-    height: 42,
-    borderRadius: 10,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-    marginRight: 12,
-  },
+  tileIconWrap: { width: 42, height: 42, borderRadius: 10, backgroundColor: "#fff", alignItems: "center", justifyContent: "center", marginRight: 12 },
   tileText: { fontSize: 16, fontWeight: "600", flexShrink: 1 },
-
-  sectionTitle: {
-    fontSize: 20,
-    fontWeight: "700",
-    color: "#2C63FF",
-    marginTop: 18,
-    marginBottom: 8,
-    paddingHorizontal: 16,
-  },
-
-  lookCard: {
-    marginHorizontal: 16,
-    backgroundColor: "#E2E2E2",
-    borderRadius: 14,
-    padding: 12,
-  },
-  lookHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+  sectionTitle: { fontSize: 20, fontWeight: "700", color: "#2C63FF", marginTop: 18, marginBottom: 8, paddingHorizontal: 16 },
+  lookCard: { marginHorizontal: 16, backgroundColor: "#E2E2E2", borderRadius: 14, padding: 12 },
+  lookHeader: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   lookTitle: { fontSize: 18, fontWeight: "700" },
   lookSub: { marginTop: 2, color: "#444" },
   separator: { height: 1, backgroundColor: "rgba(0,0,0,0.08)", marginVertical: 10 },
@@ -259,35 +255,12 @@ const styles = StyleSheet.create({
   lookItem: { marginRight: 18, alignItems: "center" },
   lookImg: { width: 110, height: 100, borderRadius: 10, resizeMode: "cover" },
   lookItemText: { marginTop: 8, fontWeight: "600" },
-
-  lookFooter: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-  },
+  lookFooter: { flexDirection: "row", alignItems: "center", justifyContent: "space-between" },
   pageText: { fontWeight: "600" },
-  navBtn: {
-    width: 32,
-    height: 32,
-    borderRadius: 16,
-    backgroundColor: "#fff",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  weatherCard: {
-    marginHorizontal: 16,
-    marginTop: 8,
-    backgroundColor: "#E2E2E2",
-    borderRadius: 14,
-    padding: 14,
-    flexDirection: "row",
-    alignItems: "center",
-  },
+  navBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: "#fff", alignItems: "center", justifyContent: "center" },
+  weatherCard: { marginHorizontal: 16, marginTop: 8, backgroundColor: "#E2E2E2", borderRadius: 14, padding: 14, flexDirection: "row", alignItems: "center" },
   weatherMain: { fontSize: 16, fontWeight: "700" },
   weatherSub: { color: "#333" },
-
-
 });
 
 export default AIStylistScreen;

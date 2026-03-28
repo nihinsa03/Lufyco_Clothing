@@ -21,6 +21,7 @@ interface ClosetItem {
   image: string;
   notes?: string;
   createdAt?: string;
+  occasion?: string;
 }
 
 const MyClosetScreen = ({ navigation }: Props) => {
@@ -36,6 +37,7 @@ const MyClosetScreen = ({ navigation }: Props) => {
   const [editName, setEditName] = useState("");
   const [editCategory, setEditCategory] = useState("Tops");
   const [editColor, setEditColor] = useState("#000000");
+  const [editOccasion, setEditOccasion] = useState("casual");
 
   // Fetch items from backend API
   const fetchItems = useCallback(async () => {
@@ -181,6 +183,7 @@ const MyClosetScreen = ({ navigation }: Props) => {
                   setEditName(item.name);
                   setEditCategory(item.category || "Tops");
                   setEditColor(item.color || "#000000");
+                  setEditOccasion(item.occasion || "casual");
                 }}>
                   <Feather name="edit-2" size={18} color={colors.text} />
                 </TouchableOpacity>
@@ -246,6 +249,19 @@ const MyClosetScreen = ({ navigation }: Props) => {
               ))}
             </ScrollView>
 
+            <Text style={[styles.label, { color: colors.textSecondary }]}>Occasion</Text>
+            <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ marginBottom: 16 }}>
+              {["formal", "casual", "wedding", "date"].map(occ => (
+                <TouchableOpacity
+                  key={occ}
+                  style={[styles.catChip, { backgroundColor: isDark ? colors.inputBg : '#F3F4F6' }, editOccasion === occ && styles.catChipActive]}
+                  onPress={() => setEditOccasion(occ)}
+                >
+                  <Text style={[styles.catChipText, { color: colors.textSecondary }, editOccasion === occ && styles.catChipTextActive]}>{occ.charAt(0).toUpperCase() + occ.slice(1)}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+
             <View style={{ flexDirection: 'row', justifyContent: 'space-between', gap: 12 }}>
               <TouchableOpacity style={[styles.modalBtn, { backgroundColor: isDark ? colors.border : '#E5E7EB' }]} onPress={() => setEditItem(null)}>
                 <Text style={{ fontWeight: '700', color: colors.text }}>Cancel</Text>
@@ -253,8 +269,8 @@ const MyClosetScreen = ({ navigation }: Props) => {
               <TouchableOpacity style={[styles.modalBtn, { backgroundColor: '#2563EB' }]} onPress={async () => {
                 if (!editItem) return;
                 try {
-                  await api.put(`/closet/${editItem._id}`, { name: editName, category: editCategory, color: editColor });
-                  setItems(prev => prev.map(i => i._id === editItem._id ? { ...i, name: editName, category: editCategory, color: editColor } : i));
+                  await api.put(`/closet/${editItem._id}`, { name: editName, category: editCategory, color: editColor, occasion: editOccasion });
+                  setItems(prev => prev.map(i => i._id === editItem._id ? { ...i, name: editName, category: editCategory, color: editColor, occasion: editOccasion } : i));
                   setEditItem(null);
                 } catch (e) {
                   Alert.alert("Error", "Could not update item.");

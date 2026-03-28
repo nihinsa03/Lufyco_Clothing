@@ -1,19 +1,51 @@
-import React, { useState } from "react";
-import { SafeAreaView, View, Text, StyleSheet, TouchableOpacity, Image, FlatList, Modal, TextInput, ScrollView, Platform, StatusBar, Alert } from "react-native";
+import React, { useEffect, useState } from "react";
+import {
+  SafeAreaView,
+  View,
+  Text,
+  StyleSheet,
+  TouchableOpacity,
+  Image,
+  FlatList,
+  Modal,
+  TextInput,
+  Platform,
+  StatusBar,
+  Alert,
+  ActivityIndicator,
+  ScrollView
+} from "react-native";
 import { Feather } from "@expo/vector-icons";
 import type { NativeStackScreenProps } from "@react-navigation/native-stack";
 import type { RootStackParamList } from "../navigation/AppNavigator";
 import { useTheme } from "../context/ThemeContext";
-import { useEventsStore, EventCard } from "../store/useEventsStore";
+
+import api from "../api/api";
+import { useAuthStore } from '../store/useAuthStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, "UpcomingEvents">;
 
+export type OutfitItem = {
+  label: string;
+  image: any;
+};
 
+export type EventCard = {
+  id: string;
+  title: string;
+  dateLine: string;
+  time: string;
+  outfit: OutfitItem[];
+};
+
+const USER_ID = 1; // you can make this dynamic later
 
 const UpcomingEventsScreen: React.FC<Props> = ({ navigation }) => {
   const { colors, isDark } = useTheme();
-  const { events, addEvent, updateEvent, deleteEvent } = useEventsStore();
   const styles = getStyles(colors, isDark);
+
+  const [events, setEvents] = useState<EventCard[]>([]);
+  const [loading, setLoading] = useState(false);
 
   // Edit modal state
   const [editVisible, setEditVisible] = useState(false);
@@ -27,6 +59,36 @@ const UpcomingEventsScreen: React.FC<Props> = ({ navigation }) => {
   const [addTitle, setAddTitle] = useState("");
   const [addDate, setAddDate] = useState("");
   const [addTime, setAddTime] = useState("");
+  const userId = useAuthStore.getState().user?.id;
+
+  const mapApiToEventCard = (apiEvent: any): EventCard => ({
+    id: apiEvent._id,
+    title: apiEvent.occasion || "Event",
+    dateLine: new Date(apiEvent.selectedDate).toDateString(), // e.g., "Sat Mar 28 2026"
+    time: apiEvent.timeNeed || "TBD",
+    outfit: apiEvent.items.map((item: any) => ({
+      label: item.name,
+      image: { uri: item.image } // React Native Image source
+    }))
+  });
+
+  const fetchEvents = async () => {
+    setLoading(true);
+    try {
+      const res = await api.get(`/ai/my-upcomming?userId=${userId}`);
+      const mapped = res.data.map(mapApiToEventCard);
+      setEvents(mapped);
+    } catch (err: any) {
+      console.error("Fetch Events Error:", err.message);
+      Alert.alert("Error", "Failed to fetch events");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchEvents();
+  }, []);
 
   const openEdit = (event: EventCard) => {
     setEditTarget(event);
@@ -36,37 +98,73 @@ const UpcomingEventsScreen: React.FC<Props> = ({ navigation }) => {
     setEditVisible(true);
   };
 
-  const saveEdit = () => {
+  const saveEdit = async () => {
     if (!editTarget) return;
-    if (!editTitle.trim()) { Alert.alert("Required", "Event title cannot be empty."); return; }
-    updateEvent(editTarget.id, {
-      title: editTitle,
-      dateLine: editDate,
-      time: editTime
-    });
-    setEditVisible(false);
+    if (!editTitle.trim()) {
+      Alert.alert("Required", "Event title cannot be empty.");
+      return;
+    }
+    try {
+      await api.put(`/events/${editTarget.id}`, {
+        title: editTitle,
+        dateLine: editDate,
+        time: editTime
+      });
+      setEvents(events.map(e => e.id === editTarget.id ? { ...e, title: editTitle, dateLine: editDate, time: editTime } : e));
+      setEditVisible(false);
+    } catch (err: any) {
+      console.error("Edit Event Error:", err.message);
+      Alert.alert("Error", "Failed to update event");
+    }
   };
 
-  const saveAdd = () => {
-    if (!addTitle.trim()) { Alert.alert("Required", "Event title cannot be empty."); return; }
-    addEvent({
-      title: addTitle,
-      dateLine: addDate || "TBD",
-      time: addTime || "TBD",
-      outfit: [],
-    });
-    setAddTitle(""); setAddDate(""); setAddTime("");
-    setAddVisible(false);
+  const saveAdd = async () => {
+    if (!addTitle.trim()) {
+      Alert.alert("Required", "Event title cannot be empty.");
+      return;
+    }
+    try {
+      const res = await api.post(`/events`, {
+        title: addTitle,
+        dateLine: addDate || "TBD",
+        time: addTime || "TBD",
+        outfit: [],
+      });
+      setEvents([res.data, ...events]);
+      setAddTitle(""); setAddDate(""); setAddTime("");
+      setAddVisible(false);
+    } catch (err: any) {
+      console.error("Add Event Error:", err.message);
+      Alert.alert("Error", "Failed to add event");
+    }
   };
 
-  const handleDelete = (id: string) => {
+  const handleDelete = async (id: string) => {
     Alert.alert("Delete Event", "Remove this event?", [
       { text: "Cancel", style: "cancel" },
-      { text: "Delete", style: "destructive", onPress: () => deleteEvent(id) }
+      {
+        text: "Delete", style: "destructive", onPress: async () => {
+          try {
+            await api.delete(`/events/${id}`);
+            setEvents(events.filter(e => e.id !== id));
+          } catch (err: any) {
+            console.error("Delete Event Error:", err.message);
+            Alert.alert("Error", "Failed to delete event");
+          }
+        }
+      }
     ]);
   };
 
   const inputStyle = [styles.input, { backgroundColor: colors.inputBg, borderColor: colors.border, color: colors.text }];
+
+  if (loading) {
+    return (
+      <SafeAreaView style={[styles.safe, { justifyContent: 'center', alignItems: 'center' }]}>
+        <ActivityIndicator size="large" color="#0A58FF" />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -102,12 +200,12 @@ const UpcomingEventsScreen: React.FC<Props> = ({ navigation }) => {
               </View>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                 <Text style={styles.eventTime}>{item.time}</Text>
-                <TouchableOpacity onPress={() => openEdit(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
+                {/* <TouchableOpacity onPress={() => openEdit(item)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Feather name="edit-3" size={18} color={colors.textSecondary} />
                 </TouchableOpacity>
                 <TouchableOpacity onPress={() => handleDelete(item.id)} hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}>
                   <Feather name="trash-2" size={18} color="#EF4444" />
-                </TouchableOpacity>
+                </TouchableOpacity> */}
               </View>
             </View>
 
@@ -118,15 +216,19 @@ const UpcomingEventsScreen: React.FC<Props> = ({ navigation }) => {
               <Text style={styles.planLabel}>Planned Outfit</Text>
             </View>
 
-            {item.outfit.length > 0 ? (
-              <View style={styles.outfitRow}>
+            {item?.outfit?.length > 0 ? (
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={{ paddingVertical: 4 }}
+              >
                 {item.outfit.map((o) => (
                   <View key={o.label} style={styles.outfitItem}>
                     <Image source={o.image} style={styles.outfitImg} />
                     <Text style={styles.outfitText}>{o.label}</Text>
                   </View>
                 ))}
-              </View>
+              </ScrollView>
             ) : (
               <Text style={styles.noOutfitText}>No outfit planned yet</Text>
             )}
@@ -137,16 +239,14 @@ const UpcomingEventsScreen: React.FC<Props> = ({ navigation }) => {
       {/* Floating add button */}
       <TouchableOpacity
         style={styles.fab}
-        onPress={() => navigation.navigate("PlanMyLook")}
-        accessibilityRole="button"
-        accessibilityLabel="Plan My Look"
+        onPress={() => setAddVisible(true)}
       >
         <View style={styles.fabInner}>
           <Feather name="plus" size={30} color="#fff" />
         </View>
       </TouchableOpacity>
 
-      {/* ── Edit Modal ── */}
+      {/* Edit Modal */}
       <Modal visible={editVisible} transparent animationType="slide" onRequestClose={() => setEditVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -169,7 +269,7 @@ const UpcomingEventsScreen: React.FC<Props> = ({ navigation }) => {
         </View>
       </Modal>
 
-      {/* ── Add Modal ── */}
+      {/* Add Modal */}
       <Modal visible={addVisible} transparent animationType="slide" onRequestClose={() => setAddVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -196,7 +296,7 @@ const UpcomingEventsScreen: React.FC<Props> = ({ navigation }) => {
 };
 
 const getStyles = (colors: any, isDark: boolean) => StyleSheet.create({
-  safe: { flex: 1, backgroundColor: colors.background , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  safe: { flex: 1, backgroundColor: colors.background, paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
 
   header: {
     flexDirection: "row",
