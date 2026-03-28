@@ -8,6 +8,7 @@
 
 const Product = require('../models/Product');
 const outfitMLService = require('./outfitMLService');
+const ClosetItem = require("../models/ClosetItem");
 
 // ─── Weather helpers ─────────────────────────────────────────────────────────
 
@@ -53,7 +54,15 @@ const filterByWeather = (products, conditionStr, tempC) => {
     }
     return products; // cold or moderate → keep all
 };
+// ─── Gender-based filter ────────────────────────────────────────────────────────
 
+const filterByGender = (products, gender) => {
+    if (!gender) return products; // no gender filter
+    return products.filter(p => {
+        const productGender = p.gender || 'Unisex';
+        return productGender === gender || productGender === 'Unisex';
+    });
+};
 // ─── ML-powered outfit builder ────────────────────────────────────────────────
 
 /**
@@ -76,8 +85,14 @@ const productToMLType = (product) => {
 /**
  * Use the ML model to pick the best top+bottom+shoes combo.
  * Falls back to randomPick if ML is unavailable.
+ * @param {Object} categorized - products categorized by type
+ * @param {string} occasion - e.g., 'Casual', 'Office', 'Party'
+ * @param {string} conditionStr - weather condition
+ * @param {number} tempC - temperature in Celsius
+ * @param {string} mood - e.g., 'Happy', 'Professional'
+ * @param {string} gender - user's gender (for filtering, not ML input yet)
  */
-const mlAssembleOutfit = async (categorized, occasion, conditionStr, tempC, mood) => {
+const mlAssembleOutfit = async (categorized, occasion, conditionStr, tempC, mood, gender) => {
     const outfit = [];
     const useDress = categorized.dresses.length > 0 &&
         ['Party', 'Date', 'Wedding'].includes(occasion) &&
@@ -179,8 +194,10 @@ const calculateTotalPrice = (items) =>
  * @param {string} params.occasion
  * @param {Object} params.weather   { condition, temperature }
  * @param {string} params.userId
+ * @param {string} params.gender - 'Men', 'Women', 'Kids', or falsy for all
  */
-const generateOutfit = async ({ mood, occasion, weather, userId }) => {
+const generateOutfit = async ({ mood, occasion, weather, userId, gender }) => {
+    console.log('Generating outfit with params:', { mood, occasion, weather, userId, gender });     
     try {
         // 1. Build MongoDB query based on occasion (keep existing logic)
         let query = {};
@@ -209,12 +226,15 @@ const generateOutfit = async ({ mood, occasion, weather, userId }) => {
         // 4. Weather pre-filter
         const weatherFiltered = filterByWeather(allProducts, conditionStr, tempC);
 
+        // 4.5 Gender filter
+        const genderFiltered = filterByGender(weatherFiltered, gender);
+
         // 5. Categorise
-        const categorized = categorizeProducts(weatherFiltered);
+        const categorized = categorizeProducts(genderFiltered);
 
         // 6. ML-powered outfit assembly (with rule-based fallback built in)
         const outfitItems = await mlAssembleOutfit(
-            categorized, occasion || 'Casual', conditionStr, tempC, mood || 'Happy'
+            categorized, occasion || 'Casual', conditionStr, tempC, mood || 'Happy', gender
         );
 
         // 7. Accessories
@@ -235,4 +255,71 @@ const generateOutfit = async ({ mood, occasion, weather, userId }) => {
     }
 };
 
-module.exports = { generateOutfit };
+const getRandomClosetItems = async (userId, occasion) => {
+  try {
+    const count = await ClosetItem.countDocuments({
+      user: userId,
+      ...(occasion && { occasion })
+    });
+
+    const sampleSize = count >= 3 ? 3 : count;
+
+    const items = sampleSize > 0
+      ? await ClosetItem.aggregate([
+          {
+            $match: {
+              user: userId,
+              ...(occasion && { occasion })
+            }
+          },
+          {
+            $sample: { size: sampleSize }
+          }
+        ])
+      : [];
+
+    // Normalize each item (fill missing fields with null)
+    const normalizedItems = items.map(item => ({
+      _id: item._id || null,
+      name: item.name || null,
+      price: item.price ?? null,
+      description: item.description || null,
+      image: item.image || null,
+      category: item.category || null,
+      subCategory: item.subCategory || null,
+      type: item.type || null,
+      gender: item.gender || null,
+      colors: item.colors || null,
+      reviewsCount: item.reviewsCount ?? null,
+      sizes: item.sizes || null,
+      isNewArrival: item.isNewArrival ?? null,
+      rating: item.rating ?? null,
+      featureVector: item.featureVector || [],
+      occasion: item.occasion || null,
+      quantity: item.quantity ?? null
+    }));
+
+    // Final payload
+    const payload = {
+      outfitId: `outfit_${Date.now()}`,
+      outfit: {
+        items: normalizedItems,
+        accessories: [], // default
+        totalPrice: normalizedItems.reduce((sum, i) => sum + (i.price || 0), 0),
+        mood: null,
+        occasion: occasion || null,
+        weather: null,
+        mlPowered: false
+      }
+    };
+
+    return payload;
+
+  } catch (error) {
+    console.error('Error creating outfit payload:', error);
+    throw error;
+  }
+};
+
+
+module.exports = { generateOutfit, getRandomClosetItems };

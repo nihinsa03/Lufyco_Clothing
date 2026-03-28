@@ -7,7 +7,12 @@ const {
     recommendOutfit,
     getSavedLooks,
     saveLook,
-    deleteSavedLook
+    deleteSavedLook,
+    saveMyLook,
+    getSavedLooksByUser,
+    deleteSavedLookById,
+    getUpcomingSavedLooks,
+    getFeatures
 } = require('../controllers/aiController');
 
 // @route   POST /api/ai/image-search
@@ -39,5 +44,15 @@ router.post('/saved-looks', saveLook);
 // @desc    Delete saved outfit
 // @access  Private
 router.delete('/saved-looks/:id', deleteSavedLook);
+
+router.post('/saved-my-looks', saveMyLook);
+
+router.get('/saved-my-looks', getSavedLooksByUser);
+
+router.delete('/saved-my-looks/:id', deleteSavedLookById);
+
+router.get('/my-upcomming', getUpcomingSavedLooks);
+
+router.get('/extract-feature', getFeatures);
 
 module.exports = router;

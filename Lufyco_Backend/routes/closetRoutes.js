@@ -25,7 +25,7 @@ router.get('/', async (req, res) => {
 // @route   POST /api/closet
 // @desc    Add item to closet
 router.post('/', async (req, res) => {
-    const { userId, name, category, image, notes, color } = req.body;
+    const { userId, name, category, image, notes, color, occasion, user } = req.body;
 
     try {
         const newItem = new ClosetItem({
@@ -35,6 +35,8 @@ router.post('/', async (req, res) => {
             image,
             notes,
             color,
+            occasion,
+            user,
         });
 
         const savedItem = await newItem.save();

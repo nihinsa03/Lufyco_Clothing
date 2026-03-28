@@ -1,54 +1,8 @@
 const express = require('express');
 const router = express.Router();
 const Product = require('../models/Product');
-const ClothingItem = require('../models/ClothingItem');
 const { extractFeatures } = require('../services/mlFeatureExtractor');
 const axios = require('axios');
-
-// @route   GET /api/products/latest
-// @desc    Get most recent clothing items
-router.get('/latest', async (req, res) => {
-    try {
-        const items = await ClothingItem.find()
-            .sort({ created_at: -1 })
-            .limit(12);
-
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
-
-        const mapped = items.map(item => {
-            const fileName = item.image_file_name || (item.file_path ? item.file_path.split('/').pop() : '');
-            const imageUrl = `${hostUrl}/uploads/products/${fileName}`;
-
-            return {
-                id:           item._id.toString(),
-                title:        item.image_title || item.image_file_name || `${item.category} Item`,
-                name:         item.image_title || item.image_file_name || `${item.category} Item`,
-                price:        item.price || 0,
-                description:  item.description || '',
-                images:       [imageUrl],
-                categoryId:   item.category,
-                category:     item.category,
-                subCategory:  item.sub_category,
-                type:         item.type,
-                gender:       item.gender,
-                occasion:     item.occasion,
-                tags:         [item.category, item.type, item.occasion].filter(Boolean).map(t => t.toLowerCase()),
-                colors:       item.color ? [item.color] : ['#000000'],
-                sizes:        item.size  ? item.size.split(',').map(s => s.trim()) : ['S', 'M', 'L', 'XL'],
-                rating:       item.rating || 4.5,
-                reviews:      Math.floor(Math.random() * 80) + 20,
-                isNewArrival: true,
-                isSale:       item.is_sale || false,
-                qty:          item.qty || 0,
-            };
-        });
-
-        res.json({ products: mapped });
-    } catch (error) {
-        console.error('[ProductsLatest] Error:', error.message);
-        res.status(500).json({ message: error.message });
-    }
-});
 
 // @route   GET /api/products
 // @desc    Get all products with filtering, search, and sorting
@@ -75,7 +29,7 @@ router.get('/', async (req, res) => {
             query.compareAtPrice = { $gt: 0 }; // simplified check, ideal is strictly > price
             query.$expr = { $gt: ["$compareAtPrice", "$price"] };
         }
-
+        console.log('Product query:', query, 'Sort:', sort);
         let productsQuery = Product.find(query);
 
         // Sorting
@@ -89,14 +43,14 @@ router.get('/', async (req, res) => {
         const products = await productsQuery;
 
         // Map to match Expo Frontend Product Interface
-        const baseUrl = req.app.locals.serverBaseUrl || `${req.protocol}://${req.get('host')}`;
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
         
         const mappedProducts = products.map(p => {
             const isLocal = p.image && p.image.startsWith('/uploads');
-            const fullImageUrl = isLocal ? `${baseUrl}${p.image}` : p.image;
+            const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
 
             return {
-                id: p._id.toString(),
+                id: p._id,
                 title: p.name,
                 name: p.name,
                 price: p.price,
@@ -107,12 +61,14 @@ router.get('/', async (req, res) => {
                 tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
                 colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
                 sizes: ['S', 'M', 'L', 'XL'],
-                isNewArrival: p.isNewArrival || false,
+                isNewArrival: true, // Defaulting flags to true to populate "Latest Products"
                 isPopular: p.reviewsCount > 5 || p.price > 2000, 
                 rating: p.rating || 4.5,
                 reviews: p.reviewsCount || Math.floor(Math.random() * 50) + 10,
                 oldPrice: p.compareAtPrice,
-                featureVector: p.featureVector
+                featureVector: p.featureVector,
+                occasion: p.occasion || 'Uncategorized',
+                quantity: p.quantity || 0
             };
         });
 
@@ -122,11 +78,124 @@ router.get('/', async (req, res) => {
     }
 });
 
+// @route   GET /api/products/getAllProducts
+// @desc    Get all products without any filters
+router.get('/getAllProducts', async (req, res) => {
+    try {
+        const products = await Product.find({});
+
+        // Map to match Expo Frontend Product Interface
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
+        
+        const mappedProducts = products.map(p => {
+            const isLocal = p.image && p.image.startsWith('/uploads');
+            const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
+
+            return {
+                id: p._id,
+                title: p.name,
+                name: p.name,
+                price: p.price,
+                description: p.description,
+                images: [fullImageUrl],
+                categoryId: p.category, 
+                category: p.category,
+                tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
+                colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
+                sizes: ['S', 'M', 'L', 'XL'],
+                isNewArrival: true,
+                isPopular: p.reviewsCount > 5 || p.price > 2000, 
+                rating: p.rating || 4.5,
+                reviews: p.reviewsCount || Math.floor(Math.random() * 50) + 10,
+                oldPrice: p.compareAtPrice,
+                featureVector: p.featureVector,
+                occasion: p.occasion || 'Uncategorized',
+                quantity: p.quantity || 0
+            };
+        });
+
+        res.json({ products: mappedProducts });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   GET /api/products/byCategory
+// @desc    Get products for a category grouped by subCategory
+// @query   ?category=<categoryName>
+router.get('/byCategory', async (req, res) => {
+    try {
+        const { category } = req.query;
+        if (!category) {
+            return res.status(400).json({ message: 'Missing category parameter' });
+        }
+
+        const products = await Product.find({ category });
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
+
+        const mappedProducts = products.map(p => {
+            const isLocal = p.image && p.image.startsWith('/uploads');
+            const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
+
+            return {
+                id: p._id,
+                title: p.name,
+                name: p.name,
+                price: p.price,
+                description: p.description,
+                images: [fullImageUrl],
+                categoryId: p.category,
+                category: p.category,
+                subCategory: p.subCategory,
+                tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
+                colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
+                sizes: ['S', 'M', 'L', 'XL'],
+                isNewArrival: true,
+                isPopular: p.reviewsCount > 5 || p.price > 2000,
+                rating: p.rating || 4.5,
+                reviews: p.reviewsCount || Math.floor(Math.random() * 50) + 10,
+                oldPrice: p.compareAtPrice,
+                featureVector: p.featureVector,
+                occasion: p.occasion || 'Uncategorized',
+                quantity: p.quantity || 0
+            };
+        });
+
+        const groupedBySubCategory = mappedProducts.reduce((acc, product) => {
+            const key = product.occasion || 'Uncategorized';
+            if (!acc[key]) acc[key] = [];
+            acc[key].push(product);
+            return acc;
+        }, {});
+
+        const grouped = Object.entries(groupedBySubCategory).map(([occasion, items]) => ({
+            occasion,
+            products: items,
+        }));
+
+        res.json({ category, groups: grouped });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+// @route   GET /api/products/getCategories
+// @desc    Get all distinct categories from products
+router.get('/getCategories', async (req, res) => {
+    try {
+        const categories = await Product.distinct('category');
+        
+        res.json({ categories: categories.filter(cat => cat !== null && cat !== undefined) });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
 // @route   GET /api/products/categories
 // @desc    Get dynamically aggregated categories from products
 router.get('/categories', async (req, res) => {
     try {
-        const baseUrl = req.app.locals.serverBaseUrl || `${req.protocol}://${req.get('host')}`;
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
         
         const categories = await Product.aggregate([
             {
@@ -140,131 +209,18 @@ router.get('/categories', async (req, res) => {
 
         const mappedCategories = categories.map((cat, index) => {
             const isLocal = cat.image && cat.image.startsWith('/uploads');
-            const fullImageUrl = isLocal ? `${baseUrl}${cat.image}` : cat.image;
+            const fullImageUrl = isLocal ? `${hostUrl}${cat.image}` : cat.image;
 
             return {
                 id: `cat_dyn_${index}`, // Unique dynamic ID
                 name: cat._id || 'Uncategorized',
-                image: cat.image && cat.image.startsWith('/uploads') ? `${baseUrl}${cat.image}` : cat.image,
+                image: fullImageUrl,
                 gender: cat.gender ? cat.gender.toLowerCase() : 'unisex'
             };
         });
 
         // Filter out null names if any
         res.json({ categories: mappedCategories.filter(c => c.name !== 'Uncategorized') });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// @route   GET /api/products/latest
-// @desc    Get the 10 newest products sorted by createdAt desc
-router.get('/latest', async (req, res) => {
-    try {
-        const baseUrl = req.app.locals.serverBaseUrl || `${req.protocol}://${req.get('host')}`;
-        const products = await Product.find({}).sort({ createdAt: -1 }).limit(10);
-
-        const mapped = products.map(p => {
-            const imageUrl = p.image && p.image.startsWith('/uploads')
-                ? `${baseUrl}${p.image}` : p.image;
-            return {
-                id: p._id.toString(),
-                title: p.name,
-                name: p.name,
-                price: p.price,
-                description: p.description,
-                images: [imageUrl],
-                category: p.category,
-                colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
-                sizes: p.sizes && p.sizes.length > 0 ? p.sizes : ['S', 'M', 'L', 'XL'],
-                rating: p.rating || 4.5,
-                reviews: p.reviewsCount || 0,
-                oldPrice: p.compareAtPrice,
-                isNewArrival: true,
-                featureVector: p.featureVector
-            };
-        });
-
-        res.json({ products: mapped });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// @route   GET /api/products/sales
-// @desc    Get products on sale (compareAtPrice > price)
-router.get('/sales', async (req, res) => {
-    try {
-        const baseUrl = req.app.locals.serverBaseUrl || `${req.protocol}://${req.get('host')}`;
-        const products = await Product.find({
-            compareAtPrice: { $gt: 0 },
-            $expr: { $gt: ['$compareAtPrice', '$price'] }
-        }).limit(20);
-
-        const mapped = products.map(p => {
-            const imageUrl = p.image && p.image.startsWith('/uploads')
-                ? `${baseUrl}${p.image}` : p.image;
-            const discountPct = p.compareAtPrice
-                ? Math.round((1 - p.price / p.compareAtPrice) * 100)
-                : 0;
-            return {
-                id: p._id.toString(),
-                title: p.name,
-                name: p.name,
-                price: p.price,
-                description: p.description,
-                images: [imageUrl],
-                category: p.category,
-                colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
-                sizes: p.sizes && p.sizes.length > 0 ? p.sizes : ['S', 'M', 'L', 'XL'],
-                rating: p.rating || 4.5,
-                reviews: p.reviewsCount || 0,
-                oldPrice: p.compareAtPrice,
-                discountPercent: discountPct,
-                featureVector: p.featureVector
-            };
-        });
-
-        res.json({ products: mapped });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// @route   GET /api/products/:id
-// @desc    Get a single product by ID
-router.get('/:id', async (req, res) => {
-    try {
-        const p = await Product.findById(req.params.id);
-        if (!p) return res.status(404).json({ message: 'Product not found' });
-
-        const baseUrl = req.app.locals.serverBaseUrl || `${req.protocol}://${req.get('host')}`;
-        const isLocal = p.image && p.image.startsWith('/uploads');
-        const fullImageUrl = isLocal ? `${baseUrl}${p.image}` : p.image;
-
-        res.json({
-            id: p._id.toString(),
-            title: p.name,
-            name: p.name,
-            price: p.price,
-            description: p.description,
-            images: [fullImageUrl],
-            categoryId: p.category,
-            category: p.category,
-            subCategory: p.subCategory,
-            type: p.type,
-            gender: p.gender,
-            tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
-            colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
-            sizes: p.sizes && p.sizes.length > 0 ? p.sizes : ['S', 'M', 'L', 'XL'],
-            isNewArrival: p.isNewArrival || false,
-            isPopular: p.reviewsCount > 5 || p.price > 2000,
-            rating: p.rating || 4.5,
-            reviews: p.reviewsCount || 0,
-            reviewsCount: p.reviewsCount || 0,
-            oldPrice: p.compareAtPrice,
-            featureVector: p.featureVector
-        });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }

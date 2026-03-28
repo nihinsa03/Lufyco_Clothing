@@ -2,6 +2,9 @@ const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema(
     {
+        _id: {
+            type: String,
+        },
         name: {
             type: String,
             required: true,
@@ -55,16 +58,21 @@ const productSchema = new mongoose.Schema(
             required: false,
             default: []
         },
-        isNewArrival: {
-            type: Boolean,
-            default: false
-        }
+         occasion: {
+                type: String, // e.g., "Casual", "Formal", "Party"
+                required: false,
+            },
+        quantity:{
+            type: Number,
+            required: false,
+            default: 0
+        }    
     },
     {
         timestamps: true,
     }
 );
 
-const Product = mongoose.model('Product', productSchema);
+const Product = mongoose.model('products', productSchema);
 
 module.exports = Product;

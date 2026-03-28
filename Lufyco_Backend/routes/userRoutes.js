@@ -3,6 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const validator = require('validator');
 const { generateOTP, sendVerificationEmail } = require('../utils/emailService');
+const Notification = require('../models/Notifications'); 
 
 // Supported email providers
 const SUPPORTED_PROVIDERS = [
@@ -454,6 +455,20 @@ router.post('/reset-password', async (req, res) => {
     } catch (error) {
         console.error("Reset Password API Error:", error);
         res.status(500).json({ message: error.message });
+    }
+});
+
+router.get('/notification', async (req, res) => {
+    try {
+        const notifications = await Notification.find().sort({ date: -1 }); // newest first
+        res.status(200).json({
+            success: true,
+            count: notifications.length,
+            data: notifications
+        });
+    } catch (error) {
+        console.error('Error fetching notifications:', error);
+        res.status(500).json({ success: false, message: 'Server error' });
     }
 });
 

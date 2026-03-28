@@ -3,9 +3,8 @@ const mongoose = require('mongoose');
 const closetItemSchema = new mongoose.Schema(
     {
         user: {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'User',
-            required: false, // Make it optional for now if strict auth isn't enforced
+            type: String,
+            required: true,
         },
         name: {
             type: String,
@@ -31,6 +30,10 @@ const closetItemSchema = new mongoose.Schema(
         featureVector: {
             type: [Number],
             default: [],
+        },
+        occasion:{
+            type: String,
+            required: false,
         }
     },
     {

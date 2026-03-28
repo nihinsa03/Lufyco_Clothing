@@ -236,6 +236,7 @@ const cosineSimilarity = (vector1, vector2) => {
 const findSimilarProducts = (queryVector, products, topK = 10) => {
     // Filter products that have valid feature vectors
     const productsWithFeatures = products.filter(p => p.featureVector && p.featureVector.length > 0);
+    console.log(`🔍 Finding similar products among ${queryVector} with feature vectors`);
 
     if (productsWithFeatures.length > 0 && queryVector && queryVector.length > 0) {
         // ML-based similarity search
