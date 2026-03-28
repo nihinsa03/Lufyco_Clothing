@@ -4,8 +4,134 @@ const Product = require('../models/Product');
 const { extractFeatures } = require('../services/mlFeatureExtractor');
 const axios = require('axios');
 
-// @route   GET /api/products
-// @desc    Get all products with filtering, search, and sorting
+/**
+ * @swagger
+ * tags:
+ *   - name: Products
+ *     description: Product browsing, filtering, and management APIs
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     Product:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           example: "67f123abc456def789gh123"
+ *         name:
+ *           type: string
+ *           example: "Blue Shirt"
+ *         price:
+ *           type: number
+ *           example: 3500
+ *         description:
+ *           type: string
+ *           example: "Stylish cotton shirt"
+ *         images:
+ *           type: array
+ *           items:
+ *             type: string
+ *         category:
+ *           type: string
+ *           example: "Men"
+ *         rating:
+ *           type: number
+ *           example: 4.5
+ *         reviews:
+ *           type: number
+ *           example: 25
+ *         oldPrice:
+ *           type: number
+ *           example: 4500
+ *         quantity:
+ *           type: number
+ *           example: 10
+ *
+ *     CreateProductRequest:
+ *       type: object
+ *       required:
+ *         - name
+ *         - price
+ *         - image
+ *       properties:
+ *         name:
+ *           type: string
+ *           example: "Blue Shirt"
+ *         price:
+ *           type: number
+ *           example: 3500
+ *         description:
+ *           type: string
+ *           example: "Stylish cotton shirt"
+ *         image:
+ *           type: string
+ *           example: "https://example.com/shirt.jpg"
+ *         category:
+ *           type: string
+ *           example: "Men"
+ *
+ *     CategoryResponse:
+ *       type: object
+ *       properties:
+ *         categories:
+ *           type: array
+ *           items:
+ *             type: string
+ *
+ *     ErrorResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "Something went wrong"
+ */
+
+/**
+ * @swagger
+ * /api/products:
+ *   get:
+ *     summary: Get all products with filters and sorting
+ *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: gender
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: subCategory
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: isSale
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           example: price_low_to_high
+ *     responses:
+ *       200:
+ *         description: Products fetched successfully
+ *       500:
+ *         description: Server error
+ */
+// GET /api/products
 router.get('/', async (req, res) => {
     try {
         const { gender, category, subCategory, type, search, isSale, sort } = req.query;
@@ -16,7 +142,6 @@ router.get('/', async (req, res) => {
         if (subCategory) query.subCategory = subCategory;
         if (type) query.type = type;
 
-        // Search in name or description
         if (search) {
             query.$or = [
                 { name: { $regex: search, $options: 'i' } },
@@ -24,15 +149,13 @@ router.get('/', async (req, res) => {
             ];
         }
 
-        // Sale filter: if isSale=true, ensure compareAtPrice exists and is > price
         if (isSale === 'true') {
-            query.compareAtPrice = { $gt: 0 }; // simplified check, ideal is strictly > price
+            query.compareAtPrice = { $gt: 0 };
             query.$expr = { $gt: ["$compareAtPrice", "$price"] };
         }
-        console.log('Product query:', query, 'Sort:', sort);
+
         let productsQuery = Product.find(query);
 
-        // Sorting
         if (sort) {
             if (sort === 'price_low_to_high') productsQuery = productsQuery.sort({ price: 1 });
             else if (sort === 'price_high_to_low') productsQuery = productsQuery.sort({ price: -1 });
@@ -42,74 +165,22 @@ router.get('/', async (req, res) => {
 
         const products = await productsQuery;
 
-        // Map to match Expo Frontend Product Interface
         const hostUrl = `${req.protocol}://${req.get('host')}`;
-        
+
         const mappedProducts = products.map(p => {
             const isLocal = p.image && p.image.startsWith('/uploads');
             const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
 
             return {
                 id: p._id,
-                title: p.name,
-                name: p.name,
-                price: p.price,
-                description: p.description,
-                images: [fullImageUrl], // Wrap string in array for frontend carousel and logic
-                categoryId: p.category, 
-                category: p.category,
-                tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
-                colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
-                sizes: ['S', 'M', 'L', 'XL'],
-                isNewArrival: true, // Defaulting flags to true to populate "Latest Products"
-                isPopular: p.reviewsCount > 5 || p.price > 2000, 
-                rating: p.rating || 4.5,
-                reviews: p.reviewsCount || Math.floor(Math.random() * 50) + 10,
-                oldPrice: p.compareAtPrice,
-                featureVector: p.featureVector,
-                occasion: p.occasion || 'Uncategorized',
-                quantity: p.quantity || 0
-            };
-        });
-
-        res.json({ products: mappedProducts });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-});
-
-// @route   GET /api/products/getAllProducts
-// @desc    Get all products without any filters
-router.get('/getAllProducts', async (req, res) => {
-    try {
-        const products = await Product.find({});
-
-        // Map to match Expo Frontend Product Interface
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
-        
-        const mappedProducts = products.map(p => {
-            const isLocal = p.image && p.image.startsWith('/uploads');
-            const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
-
-            return {
-                id: p._id,
-                title: p.name,
                 name: p.name,
                 price: p.price,
                 description: p.description,
                 images: [fullImageUrl],
-                categoryId: p.category, 
                 category: p.category,
-                tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
-                colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
-                sizes: ['S', 'M', 'L', 'XL'],
-                isNewArrival: true,
-                isPopular: p.reviewsCount > 5 || p.price > 2000, 
                 rating: p.rating || 4.5,
-                reviews: p.reviewsCount || Math.floor(Math.random() * 50) + 10,
+                reviews: p.reviewsCount || 0,
                 oldPrice: p.compareAtPrice,
-                featureVector: p.featureVector,
-                occasion: p.occasion || 'Uncategorized',
                 quantity: p.quantity || 0
             };
         });
@@ -120,9 +191,45 @@ router.get('/getAllProducts', async (req, res) => {
     }
 });
 
-// @route   GET /api/products/byCategory
-// @desc    Get products for a category grouped by subCategory
-// @query   ?category=<categoryName>
+/**
+ * @swagger
+ * /api/products/getAllProducts:
+ *   get:
+ *     summary: Get all products without filters
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: All products fetched
+ */
+// GET ALL
+router.get('/getAllProducts', async (req, res) => {
+    try {
+        const products = await Product.find({});
+        res.json({ products });
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+});
+
+/**
+ * @swagger
+ * /api/products/byCategory:
+ *   get:
+ *     summary: Get products grouped by category
+ *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: category
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Products grouped successfully
+ *       400:
+ *         description: Missing category
+ */
+// BY CATEGORY
 router.get('/byCategory', async (req, res) => {
     try {
         const { category } = req.query;
@@ -131,72 +238,43 @@ router.get('/byCategory', async (req, res) => {
         }
 
         const products = await Product.find({ category });
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
-
-        const mappedProducts = products.map(p => {
-            const isLocal = p.image && p.image.startsWith('/uploads');
-            const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
-
-            return {
-                id: p._id,
-                title: p.name,
-                name: p.name,
-                price: p.price,
-                description: p.description,
-                images: [fullImageUrl],
-                categoryId: p.category,
-                category: p.category,
-                subCategory: p.subCategory,
-                tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
-                colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
-                sizes: ['S', 'M', 'L', 'XL'],
-                isNewArrival: true,
-                isPopular: p.reviewsCount > 5 || p.price > 2000,
-                rating: p.rating || 4.5,
-                reviews: p.reviewsCount || Math.floor(Math.random() * 50) + 10,
-                oldPrice: p.compareAtPrice,
-                featureVector: p.featureVector,
-                occasion: p.occasion || 'Uncategorized',
-                quantity: p.quantity || 0
-            };
-        });
-
-        const groupedBySubCategory = mappedProducts.reduce((acc, product) => {
-            const key = product.occasion || 'Uncategorized';
-            if (!acc[key]) acc[key] = [];
-            acc[key].push(product);
-            return acc;
-        }, {});
-
-        const grouped = Object.entries(groupedBySubCategory).map(([occasion, items]) => ({
-            occasion,
-            products: items,
-        }));
-
-        res.json({ category, groups: grouped });
+        res.json({ category, products });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
-// @route   GET /api/products/getCategories
-// @desc    Get all distinct categories from products
+/**
+ * @swagger
+ * /api/products/getCategories:
+ *   get:
+ *     summary: Get all unique categories
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: Categories fetched
+ */
 router.get('/getCategories', async (req, res) => {
     try {
         const categories = await Product.distinct('category');
-        
-        res.json({ categories: categories.filter(cat => cat !== null && cat !== undefined) });
+        res.json({ categories });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
-// @route   GET /api/products/categories
-// @desc    Get dynamically aggregated categories from products
+/**
+ * @swagger
+ * /api/products/categories:
+ *   get:
+ *     summary: Get dynamic categories with images
+ *     tags: [Products]
+ *     responses:
+ *       200:
+ *         description: Dynamic categories fetched
+ */
 router.get('/categories', async (req, res) => {
     try {
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
-        
         const categories = await Product.aggregate([
             {
                 $group: {
@@ -207,27 +285,31 @@ router.get('/categories', async (req, res) => {
             }
         ]);
 
-        const mappedCategories = categories.map((cat, index) => {
-            const isLocal = cat.image && cat.image.startsWith('/uploads');
-            const fullImageUrl = isLocal ? `${hostUrl}${cat.image}` : cat.image;
-
-            return {
-                id: `cat_dyn_${index}`, // Unique dynamic ID
-                name: cat._id || 'Uncategorized',
-                image: fullImageUrl,
-                gender: cat.gender ? cat.gender.toLowerCase() : 'unisex'
-            };
-        });
-
-        // Filter out null names if any
-        res.json({ categories: mappedCategories.filter(c => c.name !== 'Uncategorized') });
+        res.json({ categories });
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
 });
 
-// @route   POST /api/products
-// @desc    Create a product
+/**
+ * @swagger
+ * /api/products:
+ *   post:
+ *     summary: Create a new product
+ *     tags: [Products]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateProductRequest'
+ *     responses:
+ *       201:
+ *         description: Product created successfully
+ *       400:
+ *         description: Invalid input
+ */
+// CREATE PRODUCT
 router.post('/', async (req, res) => {
     const { name, price, description, image, category } = req.body;
 
@@ -240,16 +322,14 @@ router.post('/', async (req, res) => {
             category,
         });
 
-        // Extract features for AI similarity search
         if (image && image.startsWith('http')) {
             try {
                 const response = await axios.get(image, { responseType: 'arraybuffer' });
                 const buffer = Buffer.from(response.data);
                 const features = await extractFeatures(buffer);
                 product.featureVector = features;
-                console.log(`🤖 Auto-indexed new product: ${name}`);
             } catch (err) {
-                console.warn(`⚠️ Failed to auto-index new product ${name}:`, err.message);
+                console.warn(`Feature extraction failed:`, err.message);
             }
         }
 

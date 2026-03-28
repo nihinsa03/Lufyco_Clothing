@@ -2,8 +2,190 @@ const express = require('express');
 const router = express.Router();
 const ClosetItem = require('../models/ClosetItem');
 const { extractFeatures } = require('../services/mlFeatureExtractor');
-const axios = require('axios'); // For fetching image from URL if needed
+const axios = require('axios');
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Closet
+ *     description: Closet item management and AI feature extraction APIs
+ */
+
+/**
+ * @swagger
+ * components:
+ *   schemas:
+ *     ClosetItem:
+ *       type: object
+ *       properties:
+ *         _id:
+ *           type: string
+ *           example: "67f123abc456def789gh123"
+ *         user:
+ *           type: string
+ *           example: "67f111aaa222bbb333ccc444"
+ *         name:
+ *           type: string
+ *           example: "Blue Denim Jacket"
+ *         category:
+ *           type: string
+ *           example: "Jackets"
+ *         image:
+ *           type: string
+ *           example: "https://example.com/jacket.jpg"
+ *         notes:
+ *           type: string
+ *           example: "Good for casual outings"
+ *         color:
+ *           type: string
+ *           example: "Blue"
+ *         occasion:
+ *           type: string
+ *           example: "Casual"
+ *         featureVector:
+ *           type: array
+ *           items:
+ *             type: number
+ *       example:
+ *         _id: "67f123abc456def789gh123"
+ *         user: "67f111aaa222bbb333ccc444"
+ *         name: "Blue Denim Jacket"
+ *         category: "Jackets"
+ *         image: "https://example.com/jacket.jpg"
+ *         notes: "Good for casual outings"
+ *         color: "Blue"
+ *         occasion: "Casual"
+ *
+ *     ClosetItemCreateRequest:
+ *       type: object
+ *       required:
+ *         - name
+ *         - category
+ *         - image
+ *       properties:
+ *         userId:
+ *           type: string
+ *           example: "67f111aaa222bbb333ccc444"
+ *         user:
+ *           type: string
+ *           example: "67f111aaa222bbb333ccc444"
+ *         name:
+ *           type: string
+ *           example: "Blue Denim Jacket"
+ *         category:
+ *           type: string
+ *           example: "Jackets"
+ *         image:
+ *           type: string
+ *           example: "https://example.com/jacket.jpg"
+ *         notes:
+ *           type: string
+ *           example: "Good for casual outings"
+ *         color:
+ *           type: string
+ *           example: "Blue"
+ *         occasion:
+ *           type: string
+ *           example: "Casual"
+ *
+ *     ClosetItemUpdateRequest:
+ *       type: object
+ *       properties:
+ *         name:
+ *           type: string
+ *           example: "Black Denim Jacket"
+ *         category:
+ *           type: string
+ *           example: "Jackets"
+ *         image:
+ *           type: string
+ *           example: "https://example.com/black-jacket.jpg"
+ *         notes:
+ *           type: string
+ *           example: "Updated notes"
+ *         color:
+ *           type: string
+ *           example: "Black"
+ *         occasion:
+ *           type: string
+ *           example: "Party"
+ *
+ *     ClosetTrainRequest:
+ *       type: object
+ *       required:
+ *         - itemId
+ *       properties:
+ *         itemId:
+ *           type: string
+ *           example: "67f123abc456def789gh123"
+ *
+ *     ClosetTrainResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         featureVectorDim:
+ *           type: integer
+ *           example: 1280
+ *
+ *     MessageResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "Item removed"
+ *
+ *     ErrorResponse:
+ *       type: object
+ *       properties:
+ *         message:
+ *           type: string
+ *           example: "Something went wrong"
+ */
+
+/**
+ * @swagger
+ * /api/closet:
+ *   get:
+ *     summary: Get all closet items
+ *     description: Optionally filter closet items by userId, category, and search term.
+ *     tags: [Closet]
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: User ID to filter closet items
+ *       - in: query
+ *         name: category
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Category name to filter items
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         required: false
+ *         description: Search by item name
+ *     responses:
+ *       200:
+ *         description: Closet items fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/ClosetItem'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   GET /api/closet
 // @desc    Get all closet items (optionally filter by user if we passed userId in query)
 router.get('/', async (req, res) => {
@@ -22,6 +204,32 @@ router.get('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/closet:
+ *   post:
+ *     summary: Add a new closet item
+ *     tags: [Closet]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ClosetItemCreateRequest'
+ *     responses:
+ *       201:
+ *         description: Closet item created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ClosetItem'
+ *       400:
+ *         description: Invalid request body
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   POST /api/closet
 // @desc    Add item to closet
 router.post('/', async (req, res) => {
@@ -29,7 +237,7 @@ router.post('/', async (req, res) => {
 
     try {
         const newItem = new ClosetItem({
-            user: userId, // might be null/undefined if not enforcing auth
+            user: userId,
             name,
             category,
             image,
@@ -46,6 +254,45 @@ router.post('/', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/closet/{id}:
+ *   put:
+ *     summary: Update a closet item
+ *     tags: [Closet]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Closet item ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ClosetItemUpdateRequest'
+ *     responses:
+ *       200:
+ *         description: Closet item updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ClosetItem'
+ *       404:
+ *         description: Item not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   PUT /api/closet/:id
 // @desc    Update a closet item
 router.put('/:id', async (req, res) => {
@@ -62,6 +309,39 @@ router.put('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/closet/{id}:
+ *   delete:
+ *     summary: Delete a closet item
+ *     tags: [Closet]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Closet item ID
+ *     responses:
+ *       200:
+ *         description: Closet item deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/MessageResponse'
+ *       404:
+ *         description: Item not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   DELETE /api/closet/:id
 // @desc    Delete closet item
 router.delete('/:id', async (req, res) => {
@@ -76,6 +356,45 @@ router.delete('/:id', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/closet/train:
+ *   post:
+ *     summary: Extract visual features for a closet item
+ *     description: Fetches the image from URL or base64 image data, extracts AI feature vectors, and stores them in the closet item.
+ *     tags: [Closet]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ClosetTrainRequest'
+ *     responses:
+ *       200:
+ *         description: Feature extraction completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ClosetTrainResponse'
+ *       400:
+ *         description: Unsupported image format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: Item not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Feature extraction failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   POST /api/closet/train
 // @desc    Extract visual features for an item (AI Training trigger)
 router.post('/train', async (req, res) => {

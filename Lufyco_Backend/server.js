@@ -1,13 +1,14 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const swaggerUi = require('swagger-ui-express');
+const swaggerSpec = require('./swagger');
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
 
-// Connect to Database
 const connectDB = require('./config/db');
 console.log('Attempting to connect to MongoDB...');
 connectDB();
@@ -16,7 +17,6 @@ app.use(cors());
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
-// Request Logger
 app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} from ${req.ip}`);
     next();
@@ -36,13 +36,13 @@ app.use('/api/wishlist', wishlistRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/ai', aiRoutes);
 
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+
 app.get('/', (req, res) => {
     res.send('Lufyco Clothing Backend is running!');
 });
 
-// Final Error Handler
 app.use((err, req, res, next) => {
-    // Catch JSON parsing errors
     if (err instanceof SyntaxError && err.status === 400 && 'body' in err) {
         console.error('Invalid JSON received:', err.message);
         return res.status(400).json({ message: 'Invalid JSON', error: err.message });

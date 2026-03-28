@@ -3,7 +3,7 @@ const router = express.Router();
 const User = require('../models/User');
 const validator = require('validator');
 const { generateOTP, sendVerificationEmail } = require('../utils/emailService');
-const Notification = require('../models/Notifications'); 
+const Notification = require('../models/Notifications');
 
 // Supported email providers
 const SUPPORTED_PROVIDERS = [
@@ -24,6 +24,47 @@ const isValidEmailProvider = (email) => {
     return SUPPORTED_PROVIDERS.includes(domain);
 };
 
+/**
+ * @swagger
+ * tags:
+ *   - name: Users
+ *     description: User authentication and account management
+ *   - name: Notifications
+ *     description: Notification related APIs
+ */
+
+/**
+ * @swagger
+ * /api/users/register:
+ *   post:
+ *     summary: Register a new user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/RegisterRequest'
+ *     responses:
+ *       201:
+ *         description: User registered successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/RegisterSuccessResponse'
+ *       400:
+ *         description: Invalid input
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   POST /api/users/register
 // @desc    Register a new user and send verification email
 // @access  Public
@@ -31,37 +72,31 @@ router.post('/register', async (req, res) => {
     const { name, phone, email, password } = req.body;
 
     try {
-        // Validate input
         if (!name || !email || !password) {
             return res.status(400).json({ message: 'Please provide all required fields' });
         }
 
-        // Validate email format
         if (!validator.isEmail(email)) {
             return res.status(400).json({ message: 'Please enter a valid email address' });
         }
 
-        // Check if email provider is supported
         if (!isValidEmailProvider(email)) {
             return res.status(400).json({
                 message: 'Email provider not supported. Please use Gmail, Yahoo, Outlook, or other common email providers.'
             });
         }
 
-        // Check if user already exists
         const userExists = await User.findOne({ email });
 
         if (userExists) {
-            // If user exists but not verified, allow resending OTP
             if (!userExists.isVerified) {
                 const otp = generateOTP();
-                const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+                const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
                 userExists.verificationOTP = otp;
                 userExists.otpExpiry = otpExpiry;
                 await userExists.save();
 
-                // Send verification email
                 try {
                     await sendVerificationEmail(email, otp);
                     return res.status(200).json({
@@ -75,26 +110,24 @@ router.post('/register', async (req, res) => {
                     });
                 }
             }
+
             return res.status(400).json({ message: 'User already exists and is verified. Please login.' });
         }
 
-        // Generate OTP
         const otp = generateOTP();
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes from now
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
-        // Create new user
         const user = await User.create({
             name,
             phone,
             email,
-            password, // Note: In production, hash the password with bcrypt
+            password,
             isVerified: false,
             verificationOTP: otp,
             otpExpiry: otpExpiry,
         });
 
         if (user) {
-            // Send verification email
             try {
                 await sendVerificationEmail(email, otp);
 
@@ -105,7 +138,6 @@ router.post('/register', async (req, res) => {
                 });
             } catch (emailError) {
                 console.error('Email sending failed:', emailError);
-                // Delete the user if email fails
                 await User.deleteOne({ _id: user._id });
                 return res.status(500).json({
                     message: 'Failed to send verification email. Please check your email configuration and try again.'
@@ -120,6 +152,44 @@ router.post('/register', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/users/verify-email:
+ *   post:
+ *     summary: Verify email with OTP
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyEmailRequest'
+ *     responses:
+ *       200:
+ *         description: Email verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/VerifyEmailSuccessResponse'
+ *       400:
+ *         description: Invalid verification code or expired OTP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   POST /api/users/verify-email
 // @desc    Verify email with OTP
 // @access  Public
@@ -141,17 +211,14 @@ router.post('/verify-email', async (req, res) => {
             return res.status(400).json({ message: 'Email already verified. Please login.' });
         }
 
-        // Check if OTP matches
         if (user.verificationOTP !== otp) {
             return res.status(400).json({ message: 'Invalid verification code' });
         }
 
-        // Check if OTP has expired
         if (new Date() > user.otpExpiry) {
             return res.status(400).json({ message: 'Verification code has expired. Please request a new one.' });
         }
 
-        // Mark user as verified
         user.isVerified = true;
         user.verificationOTP = undefined;
         user.otpExpiry = undefined;
@@ -167,6 +234,48 @@ router.post('/verify-email', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/users/resend-otp:
+ *   post:
+ *     summary: Resend OTP to user email
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ResendOtpRequest'
+ *     responses:
+ *       200:
+ *         description: OTP resent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: A new verification code has been sent to your email.
+ *       400:
+ *         description: Invalid request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   POST /api/users/resend-otp
 // @desc    Resend OTP to email
 // @access  Public
@@ -188,15 +297,13 @@ router.post('/resend-otp', async (req, res) => {
             return res.status(400).json({ message: 'Email already verified. Please login.' });
         }
 
-        // Generate new OTP
         const otp = generateOTP();
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
         user.verificationOTP = otp;
         user.otpExpiry = otpExpiry;
         await user.save();
 
-        // Send verification email
         try {
             await sendVerificationEmail(email, otp);
             res.json({ message: 'A new verification code has been sent to your email.' });
@@ -212,6 +319,44 @@ router.post('/resend-otp', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/users/login:
+ *   post:
+ *     summary: Login user
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/LoginRequest'
+ *     responses:
+ *       200:
+ *         description: Login success
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/LoginSuccessResponse'
+ *       401:
+ *         description: Invalid email or password
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       403:
+ *         description: Email not verified
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   POST /api/users/login
 // @desc    Auth user & get token
 // @access  Public
@@ -219,8 +364,6 @@ router.post('/login', async (req, res) => {
     const { email, password } = req.body;
 
     try {
-        // Offline / Backdoor Login
-        // Allows login with user/user (case insensitive for username)
         if (email && email.toLowerCase() === 'user' && password === 'user') {
             console.log('Offline login used');
             return res.json({
@@ -238,7 +381,6 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ message: 'Invalid email or password' });
         }
 
-        // Check if email is verified
         if (!user.isVerified) {
             return res.status(403).json({
                 message: 'Please verify your email before logging in. Check your inbox for the verification code.',
@@ -246,7 +388,7 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        if (user.password === password) { // Note: Compare hashed password in production
+        if (user.password === password) {
             res.json({
                 _id: user._id,
                 name: user.name,
@@ -263,6 +405,51 @@ router.post('/login', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/users/forgot-password:
+ *   post:
+ *     summary: Send password reset OTP to email
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ForgotPasswordRequest'
+ *     responses:
+ *       200:
+ *         description: Reset OTP sent successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: A 6-digit verification code has been sent to your email.
+ *                 email:
+ *                   type: string
+ *                   example: nihinsa@gmail.com
+ *       400:
+ *         description: Invalid email
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   POST /api/users/forgot-password
 // @desc    Send password reset OTP to email
 // @access  Public
@@ -274,7 +461,6 @@ router.post('/forgot-password', async (req, res) => {
             return res.status(400).json({ message: 'Email is required' });
         }
 
-        // Validate email format
         if (!validator.isEmail(email)) {
             return res.status(400).json({ message: 'Please enter a valid email address' });
         }
@@ -285,15 +471,13 @@ router.post('/forgot-password', async (req, res) => {
             return res.status(404).json({ message: 'No account found with this email address' });
         }
 
-        // Generate 6-digit OTP for password reset
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
-        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
         user.verificationOTP = otp;
         user.otpExpiry = otpExpiry;
         await user.save();
 
-        // Send password reset email
         try {
             const nodemailer = require('nodemailer');
             const transporter = nodemailer.createTransport({
@@ -375,6 +559,51 @@ router.post('/forgot-password', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/users/verify-reset-otp:
+ *   post:
+ *     summary: Verify password reset OTP
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/VerifyResetOtpRequest'
+ *     responses:
+ *       200:
+ *         description: OTP verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: OTP verified successfully. You can now reset your password.
+ *                 verified:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Invalid or expired verification code
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   POST /api/users/verify-reset-otp
 // @desc    Verify OTP for password reset
 // @access  Public
@@ -392,12 +621,10 @@ router.post('/verify-reset-otp', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Check if OTP matches
         if (user.verificationOTP !== otp) {
             return res.status(400).json({ message: 'Invalid verification code' });
         }
 
-        // Check if OTP has expired
         if (new Date() > user.otpExpiry) {
             return res.status(400).json({ message: 'Verification code has expired. Please request a new one.' });
         }
@@ -412,6 +639,51 @@ router.post('/verify-reset-otp', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/users/reset-password:
+ *   post:
+ *     summary: Reset password after OTP verification
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ResetPasswordRequest'
+ *     responses:
+ *       200:
+ *         description: Password reset successful
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Password reset successfully! You can now login with your new password.
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Invalid request or expired OTP
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       404:
+ *         description: User not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 // @route   POST /api/users/reset-password
 // @desc    Reset password after OTP verification
 // @access  Public
@@ -433,7 +705,6 @@ router.post('/reset-password', async (req, res) => {
             return res.status(404).json({ message: 'User not found' });
         }
 
-        // Verify OTP one more time
         if (user.verificationOTP !== otp) {
             return res.status(400).json({ message: 'Invalid verification code' });
         }
@@ -442,8 +713,7 @@ router.post('/reset-password', async (req, res) => {
             return res.status(400).json({ message: 'Verification code has expired' });
         }
 
-        // Update password and clear OTP
-        user.password = newPassword; // Note: Should hash password in production
+        user.password = newPassword;
         user.verificationOTP = undefined;
         user.otpExpiry = undefined;
         await user.save();
@@ -458,9 +728,29 @@ router.post('/reset-password', async (req, res) => {
     }
 });
 
+/**
+ * @swagger
+ * /api/users/notification:
+ *   get:
+ *     summary: Get all notifications
+ *     tags: [Notifications]
+ *     responses:
+ *       200:
+ *         description: Notifications fetched successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/NotificationResponse'
+ *       500:
+ *         description: Server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/ErrorResponse'
+ */
 router.get('/notification', async (req, res) => {
     try {
-        const notifications = await Notification.find().sort({ date: -1 }); // newest first
+        const notifications = await Notification.find().sort({ date: -1 });
         res.status(200).json({
             success: true,
             count: notifications.length,
@@ -473,5 +763,3 @@ router.get('/notification', async (req, res) => {
 });
 
 module.exports = router;
-
-
