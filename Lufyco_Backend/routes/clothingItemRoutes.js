@@ -2,109 +2,167 @@ const express = require('express');
 const router = express.Router();
 const ClothingItem = require('../models/ClothingItem');
 
-// @route   GET /api/clothing-items
-// @desc    Get all clothing items from clothing_items collection
+/**
+ * @route   GET /api/clothing-items
+ * @desc    Get clothing items with optional filters
+ * @access  Public
+ */
 router.get('/', async (req, res) => {
-    try {
-        const { category, gender, isSale, isNewArrival, search } = req.query;
-        let query = {};
+  try {
+    const {
+      category,
+      gender,
+      color,
+      size,
+      isSale,
+      isNewArrival,
+      search,
+      sortBy,
+      limit,
+    } = req.query;
 
-        if (category)     query.category = { $regex: category, $options: 'i' };
-        if (gender)       query.gender   = { $regex: gender,   $options: 'i' };
-        if (isSale === 'true')       query.isSale       = true;
-        if (isNewArrival === 'true') query.isNewArrival = true;
+    const query = {};
 
-        if (search) {
-            query.$or = [
-                { image_name:   { $regex: search, $options: 'i' } },
-                { description:  { $regex: search, $options: 'i' } },
-                { category:     { $regex: search, $options: 'i' } },
-                { sub_category: { $regex: search, $options: 'i' } },
-                { type:         { $regex: search, $options: 'i' } },
-            ];
-        }
-
-        const items = await ClothingItem.find(query);
-
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
-
-        const mapped = items.map(item => {
-            // Logic to handle image path mismatches
-            const fileName = item.image_file_name || (item.file_path ? item.file_path.split('/').pop() : '');
-            // Some files might be .png on disk but .jpg in DB
-            const imageUrl = `${hostUrl}/uploads/products/${fileName}`;
-
-            return {
-                id:           item._id.toString(),
-                title:        item.image_title || item.image_file_name || `${item.category} Item`,
-                name:         item.image_title || item.image_file_name || `${item.category} Item`,
-                price:        item.price || 0,
-                description:  item.description || '',
-                images:       [imageUrl],
-                categoryId:   item.category,
-                category:     item.category,
-                subCategory:  item.sub_category,
-                type:         item.type,
-                gender:       item.gender,
-                occasion:     item.occasion,
-                tags:         [
-                    item.category,
-                    item.type,
-                    item.occasion,
-                ].filter(Boolean).map(t => t.toLowerCase()),
-                colors:       item.color ? [item.color] : ['#000000'],
-                sizes:        item.size  ? item.size.split(',').map(s => s.trim()) : ['S', 'M', 'L', 'XL'],
-                rating:       item.rating || 4.5,
-                reviews:      Math.floor(Math.random() * 80) + 20,
-                isNewArrival: item.is_new_arrival || false,
-                isSale:       item.is_sale       || false,
-                qty:          item.qty          || 0,
-            };
-        });
-
-        res.json({ products: mapped, total: mapped.length });
-    } catch (error) {
-        console.error('[ClothingItems] Error:', error.message);
-        res.status(500).json({ message: error.message });
+    // Filter by category
+    if (category) {
+      query.category = category;
     }
+
+    // Filter by gender
+    if (gender) {
+      query.gender = gender;
+    }
+
+    // Filter by color
+    if (color) {
+      query.color = color;
+    }
+
+    // Filter by size
+    if (size) {
+      query.size = size;
+    }
+
+    // Fix: use snake_case fields because DB/model uses these
+    if (isSale === 'true') {
+      query.is_sale = true;
+    }
+
+    if (isNewArrival === 'true') {
+      query.is_new_arrival = true;
+    }
+
+    // Search by title or description
+    if (search) {
+      query.$or = [
+        { image_title: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } },
+        { sub_category: { $regex: search, $options: 'i' } },
+        { type: { $regex: search, $options: 'i' } },
+      ];
+    }
+
+    // Sorting
+    let sortOptions = { created_at: -1 };
+
+    if (sortBy === 'price_asc') {
+      sortOptions = { price: 1 };
+    } else if (sortBy === 'price_desc') {
+      sortOptions = { price: -1 };
+    } else if (sortBy === 'rating_desc') {
+      sortOptions = { rating: -1 };
+    } else if (sortBy === 'newest') {
+      sortOptions = { created_at: -1 };
+    }
+
+    let dbQuery = ClothingItem.find(query).sort(sortOptions);
+
+    // Optional limit
+    if (limit) {
+      const parsedLimit = parseInt(limit, 10);
+      if (!isNaN(parsedLimit) && parsedLimit > 0) {
+        dbQuery = dbQuery.limit(parsedLimit);
+      }
+    }
+
+    const items = await dbQuery;
+
+    // Consistent response mapping
+    const formattedItems = items.map((item) => ({
+      _id: item._id,
+      image_title: item.image_title || '',
+      image_name: item.image_name || '',
+      image_file_name: item.image_file_name || '',
+      file_path: item.file_path || '',
+      description: item.description || '',
+      category: item.category || '',
+      sub_category: item.sub_category || '',
+      type: item.type || '',
+      gender: item.gender || '',
+      occasion: item.occasion || '',
+      color: item.color || '',
+      size: item.size || '',
+      price: item.price || 0,
+      qty: item.qty || 0,
+      rating: item.rating || 0,
+      is_sale: item.is_sale || false,
+      is_new_arrival: item.is_new_arrival || false,
+      created_at: item.created_at || null,
+      updated_at: item.updated_at || null,
+    }));
+
+    res.status(200).json(formattedItems);
+  } catch (error) {
+    console.error('Error fetching clothing items:', error.message);
+    res.status(500).json({
+      message: 'Failed to fetch clothing items',
+      error: error.message,
+    });
+  }
 });
 
-// @route   GET /api/clothing-items/:id
-// @desc    Get single clothing item by ID
+/**
+ * @route   GET /api/clothing-items/:id
+ * @desc    Get single clothing item by ID
+ * @access  Public
+ */
 router.get('/:id', async (req, res) => {
-    try {
-        const item = await ClothingItem.findById(req.params.id);
-        if (!item) return res.status(404).json({ message: 'Item not found' });
+  try {
+    const item = await ClothingItem.findById(req.params.id);
 
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
-        const fileName = item.image_file_name || (item.file_path ? item.file_path.split('/').pop() : '');
-        const imageUrl = `${hostUrl}/uploads/products/${fileName}`;
-
-        res.json({
-            id:           item._id.toString(),
-            title:        item.image_title || item.image_file_name || `${item.category} Item`,
-            name:         item.image_title || item.image_file_name || `${item.category} Item`,
-            price:        item.price || 0,
-            description:  item.description || '',
-            images:       [imageUrl],
-            categoryId:   item.category,
-            category:     item.category,
-            subCategory:  item.sub_category,
-            type:         item.type,
-            gender:       item.gender,
-            occasion:     item.occasion,
-            tags:         [item.category, item.type, item.occasion].filter(Boolean).map(t => t.toLowerCase()),
-            colors:       item.color ? [item.color] : ['#000000'],
-            sizes:        item.size  ? item.size.split(',').map(s => s.trim()) : ['S', 'M', 'L', 'XL'],
-            rating:       item.rating || 4.5,
-            reviews:      Math.floor(Math.random() * 80) + 20,
-            isNewArrival: item.is_new_arrival || false,
-            isSale:       item.is_sale       || false,
-            qty:          item.qty          || 0,
-        });
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if (!item) {
+      return res.status(404).json({ message: 'Clothing item not found' });
     }
+
+    res.status(200).json({
+      _id: item._id,
+      image_title: item.image_title || '',
+      image_name: item.image_name || '',
+      image_file_name: item.image_file_name || '',
+      file_path: item.file_path || '',
+      description: item.description || '',
+      category: item.category || '',
+      sub_category: item.sub_category || '',
+      type: item.type || '',
+      gender: item.gender || '',
+      occasion: item.occasion || '',
+      color: item.color || '',
+      size: item.size || '',
+      price: item.price || 0,
+      qty: item.qty || 0,
+      rating: item.rating || 0,
+      is_sale: item.is_sale || false,
+      is_new_arrival: item.is_new_arrival || false,
+      created_at: item.created_at || null,
+      updated_at: item.updated_at || null,
+    });
+  } catch (error) {
+    console.error('Error fetching clothing item:', error.message);
+    res.status(500).json({
+      message: 'Failed to fetch clothing item',
+      error: error.message,
+    });
+  }
 });
 
 module.exports = router;
