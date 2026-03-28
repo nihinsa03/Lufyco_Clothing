@@ -4,6 +4,7 @@ const User = require('../models/User');
 const validator = require('validator');
 const { generateOTP, sendVerificationEmail } = require('../utils/emailService');
 const Notification = require('../models/Notifications');
+const bcrypt = require('bcryptjs');
 
 // Supported email providers
 const SUPPORTED_PROVIDERS = [
@@ -117,11 +118,13 @@ router.post('/register', async (req, res) => {
         const otp = generateOTP();
         const otpExpiry = new Date(Date.now() + 10 * 60 * 1000);
 
+        const hashedPassword = await bcrypt.hash(password, 10);
+
         const user = await User.create({
             name,
             phone,
             email,
-            password,
+            password: hashedPassword,
             isVerified: false,
             verificationOTP: otp,
             otpExpiry: otpExpiry,
@@ -388,7 +391,9 @@ router.post('/login', async (req, res) => {
             });
         }
 
-        if (user.password === password) {
+        const isMatch = await bcrypt.compare(password, user.password);
+
+        if (isMatch) {
             res.json({
                 _id: user._id,
                 name: user.name,
@@ -713,7 +718,8 @@ router.post('/reset-password', async (req, res) => {
             return res.status(400).json({ message: 'Verification code has expired' });
         }
 
-        user.password = newPassword;
+        const hashedPassword = await bcrypt.hash(newPassword, 10);
+        user.password = hashedPassword;
         user.verificationOTP = undefined;
         user.otpExpiry = undefined;
         await user.save();
