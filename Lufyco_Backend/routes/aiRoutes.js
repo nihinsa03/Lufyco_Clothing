@@ -214,6 +214,7 @@ router.post('/saved-looks', saveLook);
 // @access  Private
 router.delete('/saved-looks/:id', deleteSavedLook);
 
+
 /**
  * @swagger
  * /api/ai/saved-my-looks:
@@ -250,6 +251,7 @@ router.delete('/saved-looks/:id', deleteSavedLook);
  */
 router.post('/saved-my-looks', saveMyLook);
 
+
 /**
  * @swagger
  * /api/ai/saved-my-looks:
@@ -270,6 +272,7 @@ router.post('/saved-my-looks', saveMyLook);
  *         description: Server error
  */
 router.get('/saved-my-looks', getSavedLooksByUser);
+
 
 /**
  * @swagger
@@ -293,6 +296,7 @@ router.get('/saved-my-looks', getSavedLooksByUser);
  *         description: Server error
  */
 router.delete('/saved-my-looks/:id', deleteSavedLookById);
+
 
 /**
  * @swagger

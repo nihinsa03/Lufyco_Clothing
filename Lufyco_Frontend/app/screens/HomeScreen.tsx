@@ -60,7 +60,7 @@ const HomeScreen = ({ navigation }: Props) => {
   // Filter for Latest Products (New Arrivals)
   const latestProducts = products.filter(p => p.isNewArrival);
 
-  const handleCategoryPress = (catId: string) => {
+  const handleCategoryPress = (catId: string, name: string) => {
     const cat = categories.find(c => c.id === catId);
     setFilter({
       query: '',
@@ -75,7 +75,7 @@ const HomeScreen = ({ navigation }: Props) => {
       priceMax: undefined,
       categoryId: catId,
     });
-    navigation.navigate("ProductListing", { search: cat?.name, title: cat?.name });
+    navigation.navigate("Categories", {c_id: catId , name});
   };
 
   const handleProductPress = (item: any) => {
@@ -165,7 +165,7 @@ const HomeScreen = ({ navigation }: Props) => {
                 return (
                   <View key={colIndex} style={{ width: colWidth, paddingRight: 8, rowGap: 16 }}>
                     {topItem && (
-                      <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => handleCategoryPress(topItem.id)}>
+                      <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => handleCategoryPress(topItem.id,topItem.name)}>
                         <View style={[styles.categoryImageContainer, { width: colWidth - 12, height: colWidth - 12 }]}>
                           <Image source={typeof topItem.image === 'string' ? { uri: topItem.image } : topItem.image} style={styles.categoryImage} resizeMode="cover" />
                         </View>
@@ -173,7 +173,7 @@ const HomeScreen = ({ navigation }: Props) => {
                       </TouchableOpacity>
                     )}
                     {bottomItem && (
-                      <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => handleCategoryPress(bottomItem.id)}>
+                      <TouchableOpacity style={{ alignItems: 'center' }} onPress={() => handleCategoryPress(bottomItem.id, topItem.name)}>
                         <View style={[styles.categoryImageContainer, { width: colWidth - 12, height: colWidth - 12 }]}>
                           <Image source={typeof bottomItem.image === 'string' ? { uri: bottomItem.image } : bottomItem.image} style={styles.categoryImage} resizeMode="cover" />
                         </View>

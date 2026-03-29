@@ -181,8 +181,8 @@ const Order = require('../models/Order');
 router.post('/', async (req, res) => {
     const {
         user,
-        orderItems,
-        shippingAddress,
+        orderItems,   // [{ name, qty, image, price, product }]
+        shippingAddress, // { fullName, phone, address, city, postalCode, country }
         paymentMethod,
         taxPrice,
         shippingPrice,

@@ -7,6 +7,7 @@ import type { RootStackParamList } from "../navigation/AppNavigator";
 import api from "../api/api";
 import { useFocusEffect } from "@react-navigation/native";
 import { useTheme } from "../context/ThemeContext";
+  import { useAuthStore } from '../store/useAuthStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, "MyCloset">;
 
@@ -38,12 +39,14 @@ const MyClosetScreen = ({ navigation }: Props) => {
   const [editCategory, setEditCategory] = useState("Tops");
   const [editColor, setEditColor] = useState("#000000");
   const [editOccasion, setEditOccasion] = useState("casual");
+     const user = useAuthStore.getState().user?.id;
 
   // Fetch items from backend API
   const fetchItems = useCallback(async () => {
     try {
       const params: any = {};
       if (active !== "All") params.category = active;
+      params.userId = user;
       if (q) params.search = q;
 
       const res = await api.get("/closet", { params });

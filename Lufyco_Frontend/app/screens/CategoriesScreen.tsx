@@ -6,6 +6,7 @@ import { Feather, Ionicons } from '@expo/vector-icons';
 import { Category } from '../data/mockData';
 import { useTheme } from '../context/ThemeContext';
 import api from '../api/api';
+import { useRoute } from '@react-navigation/native';
   
 
 const { width } = Dimensions.get('window');
@@ -22,7 +23,7 @@ const SIDEBAR_ITEMS = [
 ];
 
 // Map sidebar ID to store categories filter or specific subcategories
-const getSubCategories = (sidebarId: string, storeCategories: Category[]) => {
+const getSubCategories = (sidebarId: string, storeCategories: Category[], ) => {
   const { categories } = useShopStore();
   switch (sidebarId) {
     case 'men':
@@ -62,6 +63,32 @@ const CategoriesScreen = () => {
   const [fetchedSections, setFetchedSections] = useState<any[]>([]);
   const [isLoadingCategories, setIsLoadingCategories] = useState(false);
   const { colors, isDark } = useTheme();
+  const route = useRoute();
+  const { c_id, name, foo } = route.params || {};
+
+  const CATEGORY_ORDER = [
+  "Men",
+  "Women",
+  "Kids",
+  "Unisex",
+  "Shoes",
+  "Jewellery",
+  "Accessories",
+  "Beauty"
+];
+
+const sortCategories = (categories: any[]) => {
+  return categories.sort((a, b) => {
+    const indexA = CATEGORY_ORDER.indexOf(a.name);
+    const indexB = CATEGORY_ORDER.indexOf(b.name);
+
+    // If not found, push to end
+    const safeA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
+    const safeB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
+
+    return safeA - safeB;
+  });
+};
 
   // Fetch main categories from /products/categories
   useEffect(() => {
@@ -73,10 +100,11 @@ const CategoriesScreen = () => {
 
         // Handle different API response formats
         const fetchedCategories: Category[] = res.data?.categories || res.data?.data?.categories || res.data || [];
+        const sortedCategories = sortCategories(fetchedCategories);
 
-        if (fetchedCategories.length > 0) {
-          console.log('[CategoriesScreen] Setting sidebar items from API, count:', fetchedCategories.length);
-          setSidebarItems(fetchedCategories);
+        if (sortedCategories?.length > 0) {
+          console.log('[CategoriesScreen] Setting sidebar items from API, count:', sortedCategories.length);
+          setSidebarItems(sortedCategories);
         }
       } catch (err) {
         console.warn('[CategoriesScreen] Failed to fetch categories, using defaults.', err);
@@ -84,6 +112,10 @@ const CategoriesScreen = () => {
     };
 
     fetchMainCategories();
+    if(c_id){
+    setSelectedCategory(c_id)
+    handleSidebarItemPress(c_id, name);
+    }
   }, []);
 
   // Fetch products by category when sidebar item is clicked
@@ -93,14 +125,14 @@ const CategoriesScreen = () => {
     try {
       setIsLoadingCategories(true);
       console.log('[CategoriesScreen] Fetching products by category:', itemName);
-      const res = await api.get(`/products/byCategory?category=${itemName}`);
+      const res = await api.get(`/products/byCategoryUpdate?category=${itemName}`);
       console.log('[CategoriesScreen] Category products response:', res.data);
 
       // Transform API response to sections format
       const groups = res.data?.groups || [];
-      if (groups.length > 0) {
+      if (groups?.length > 0) {
         setFetchedSections(groups);
-        console.log('[CategoriesScreen] Fetched sections count:', groups.length);
+        console.log('[CategoriesScreen] Fetched sections count:', groups?.length);
       }
     } catch (err) {
       console.warn('[CategoriesScreen] Failed to fetch category products.', err);
@@ -329,42 +361,81 @@ const CategoriesScreen = () => {
         </View>
 
         {/* Right Content Area */}
-        <View style={[styles.mainContent, { backgroundColor: colors.background }]}>
-          {isLoadingCategories ? (
-            <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-              <ActivityIndicator size="large" color="#667eea" />
-              <Text style={{ marginTop: 10, color: colors.text }}>Loading...</Text>
-            </View>
-          ) : fetchedSections.length > 0 ? (
-            <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 15 }}>
-              {fetchedSections.map((section: any, index: number) => (
-                <View key={`${section.occasion}_${index}`} style={styles.section}>
-                  <Text style={[styles.sectionTitle, { color: colors.text }]}>{section.occasion}</Text>
-                  <View style={styles.sectionGrid}>
-                    {section.products && section.products.map((item: any) => (
-                      <TouchableOpacity
-                        key={item.id}
-                        style={styles.sectionItem}
-                        onPress={() => navigation.navigate('ProductListing', { title: item.name, search: item.name, category: section.occasion })}
-                      >
-                        <Image
-                          source={typeof item.images?.[0] === 'string' ? { uri: item.images[0] } : item.images?.[0]}
-                          style={[styles.sectionItemImage, { backgroundColor: colors.iconBg }]}
-                        />
-                        <Text style={[styles.sectionItemName, { color: colors.textSecondary }]}>{item.name}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </View>
-                </View>
-              ))}
-            </ScrollView>
-          ) : (
-            <View style={styles.emptyState}>
-              <Feather name="package" size={40} color="#ccc" />
-              <Text style={styles.emptyText}>Select a category</Text>
-            </View>
-          )}
+<View style={[styles.mainContent, { backgroundColor: colors.background }]}>
+  {isLoadingCategories ? (
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <ActivityIndicator size="large" color="#667eea" />
+      <Text style={{ marginTop: 10, color: colors.text }}>Loading...</Text>
+    </View>
+  ) : fetchedSections?.length > 0 ? (
+    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 15 }}>
+      
+      {fetchedSections.map((section: any, index: number) => (
+        <View key={`${section.occasion}_${index}`} style={styles.section}>
+          
+          {/* Occasion Title */}
+          <Text style={[styles.sectionTitle, { color: colors.text }]}>
+            {section.occasion}
+          </Text>
+
+          {/* Subcategory Grid */}
+          <View style={styles.sectionGrid}>
+            {section.subCategories?.map((sub: any, subIndex: number) => {
+              
+              const firstProduct = sub.products?.[0];
+              if (!firstProduct) return null;
+
+              const image = firstProduct?.images?.[0];
+
+              return (
+                <TouchableOpacity
+                  key={`${sub.subCategory}_${subIndex}`}
+                  style={styles.sectionItem}
+                  onPress={() =>
+                    navigation.navigate('ProductListing', {
+                      title: sub.subCategory,
+                      subCategory: sub.subCategory,
+                      category: section.occasion,
+                      productsN: sub.products
+                    })
+                  }
+                >
+                  <Image
+                    source={
+                      image
+                        ? { uri: image }
+                        : { uri: image } // fallback image
+                    }
+                    style={[
+                      styles.sectionItemImage,
+                      { backgroundColor: colors.iconBg }
+                    ]}
+                  />
+
+                  <Text
+                    style={[
+                      styles.sectionItemName,
+                      { color: colors.textSecondary }
+                    ]}
+                    numberOfLines={1}
+                  >
+                    {sub.subCategory}
+                  </Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
         </View>
+      ))}
+
+    </ScrollView>
+  ) : (
+    <View style={styles.emptyState}>
+      <Feather name="package" size={40} color="#ccc" />
+      <Text style={styles.emptyText}>Select a category</Text>
+    </View>
+  )}
+</View>
       </View>
     </SafeAreaView>
   );

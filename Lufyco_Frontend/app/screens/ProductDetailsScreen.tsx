@@ -40,7 +40,7 @@ const ProductDetailsScreen: React.FC<Props> = ({ route, navigation }) => {
     const styles = getStyles(colors, isDark);
 
     // Local State
-    const fullProduct = getProductById(id) || paramProduct;
+    const fullProduct = paramProduct;
     const [selectedSize, setSelectedSize] = useState<string | null>(null);
     const [selectedColor, setSelectedColor] = useState<string | null>(null);
     const [qty, setQty] = useState(1);

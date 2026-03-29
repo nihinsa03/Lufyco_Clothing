@@ -229,6 +229,8 @@ const axios = require('axios');
  *       500:
  *         description: Server error
  */
+// @route   GET /api/products
+// @desc    Get all products with filtering, search, and sorting
 router.get('/', async (req, res) => {
     try {
         const { gender, category, subCategory, type, search, isSale, sort } = req.query;
@@ -239,6 +241,7 @@ router.get('/', async (req, res) => {
         if (subCategory) query.subCategory = subCategory;
         if (type) query.type = type;
 
+        // Search in name or description
         if (search) {
             query.$or = [
                 { name: { $regex: search, $options: 'i' } },
@@ -246,14 +249,15 @@ router.get('/', async (req, res) => {
             ];
         }
 
+        // Sale filter: if isSale=true, ensure compareAtPrice exists and is > price
         if (isSale === 'true') {
-            query.compareAtPrice = { $gt: 0 };
+            query.compareAtPrice = { $gt: 0 }; // simplified check, ideal is strictly > price
             query.$expr = { $gt: ["$compareAtPrice", "$price"] };
         }
-
         console.log('Product query:', query, 'Sort:', sort);
         let productsQuery = Product.find(query);
 
+        // Sorting
         if (sort) {
             if (sort === 'price_low_to_high') productsQuery = productsQuery.sort({ price: 1 });
             else if (sort === 'price_high_to_low') productsQuery = productsQuery.sort({ price: -1 });
@@ -262,8 +266,10 @@ router.get('/', async (req, res) => {
         }
 
         const products = await productsQuery;
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
 
+        // Map to match Expo Frontend Product Interface
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
+        
         const mappedProducts = products.map(p => {
             const isLocal = p.image && p.image.startsWith('/uploads');
             const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
@@ -274,14 +280,14 @@ router.get('/', async (req, res) => {
                 name: p.name,
                 price: p.price,
                 description: p.description,
-                images: [fullImageUrl],
-                categoryId: p.category,
+                images: [fullImageUrl], // Wrap string in array for frontend carousel and logic
+                categoryId: p.category, 
                 category: p.category,
                 tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
                 colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
                 sizes: ['S', 'M', 'L', 'XL'],
-                isNewArrival: true,
-                isPopular: p.reviewsCount > 5 || p.price > 2000,
+                isNewArrival: true, // Defaulting flags to true to populate "Latest Products"
+                isPopular: p.reviewsCount > 5 || p.price > 2000, 
                 rating: p.rating || 4.5,
                 reviews: p.reviewsCount || Math.floor(Math.random() * 50) + 10,
                 oldPrice: p.compareAtPrice,
@@ -313,11 +319,15 @@ router.get('/', async (req, res) => {
  *       500:
  *         description: Server error
  */
+// @route   GET /api/products/getAllProducts
+// @desc    Get all products without any filters
 router.get('/getAllProducts', async (req, res) => {
     try {
         const products = await Product.find({});
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
 
+        // Map to match Expo Frontend Product Interface
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
+        
         const mappedProducts = products.map(p => {
             const isLocal = p.image && p.image.startsWith('/uploads');
             const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
@@ -329,13 +339,13 @@ router.get('/getAllProducts', async (req, res) => {
                 price: p.price,
                 description: p.description,
                 images: [fullImageUrl],
-                categoryId: p.category,
+                categoryId: p.category, 
                 category: p.category,
                 tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
                 colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
                 sizes: ['S', 'M', 'L', 'XL'],
                 isNewArrival: true,
-                isPopular: p.reviewsCount > 5 || p.price > 2000,
+                isPopular: p.reviewsCount > 5 || p.price > 2000, 
                 rating: p.rating || 4.5,
                 reviews: p.reviewsCount || Math.floor(Math.random() * 50) + 10,
                 oldPrice: p.compareAtPrice,
@@ -376,6 +386,9 @@ router.get('/getAllProducts', async (req, res) => {
  *       500:
  *         description: Server error
  */
+// @route   GET /api/products/byCategory
+// @desc    Get products for a category grouped by subCategory
+// @query   ?category=<categoryName>
 router.get('/byCategory', async (req, res) => {
     try {
         const { category } = req.query;
@@ -448,9 +461,12 @@ router.get('/byCategory', async (req, res) => {
  *       500:
  *         description: Server error
  */
+// @route   GET /api/products/getCategories
+// @desc    Get all distinct categories from products
 router.get('/getCategories', async (req, res) => {
     try {
         const categories = await Product.distinct('category');
+        
         res.json({ categories: categories.filter(cat => cat !== null && cat !== undefined) });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -473,10 +489,12 @@ router.get('/getCategories', async (req, res) => {
  *       500:
  *         description: Server error
  */
+// @route   GET /api/products/categories
+// @desc    Get dynamically aggregated categories from products
 router.get('/categories', async (req, res) => {
     try {
         const hostUrl = `${req.protocol}://${req.get('host')}`;
-
+        
         const categories = await Product.aggregate([
             {
                 $group: {
@@ -492,13 +510,14 @@ router.get('/categories', async (req, res) => {
             const fullImageUrl = isLocal ? `${hostUrl}${cat.image}` : cat.image;
 
             return {
-                id: `cat_dyn_${index}`,
+                id: `cat_dyn_${index}`, // Unique dynamic ID
                 name: cat._id || 'Uncategorized',
                 image: fullImageUrl,
                 gender: cat.gender ? cat.gender.toLowerCase() : 'unisex'
             };
         });
 
+        // Filter out null names if any
         res.json({ categories: mappedCategories.filter(c => c.name !== 'Uncategorized') });
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -523,6 +542,8 @@ router.get('/categories', async (req, res) => {
  *       400:
  *         description: Invalid request
  */
+// @route   POST /api/products
+// @desc    Create a product
 router.post('/', async (req, res) => {
     const { name, price, description, image, category } = req.body;
 
@@ -535,6 +556,7 @@ router.post('/', async (req, res) => {
             category,
         });
 
+        // Extract features for AI similarity search
         if (image && image.startsWith('http')) {
             try {
                 const response = await axios.get(image, { responseType: 'arraybuffer' });
@@ -551,6 +573,109 @@ router.post('/', async (req, res) => {
         res.status(201).json(createdProduct);
     } catch (error) {
         res.status(400).json({ message: error.message });
+    }
+});
+
+
+router.get('/byCategoryUpdate', async (req, res) => {
+    try {
+        const { category } = req.query;
+
+        if (!category) {
+            return res.status(400).json({ message: 'Missing category parameter' });
+        }
+
+        // Fetch products
+        const products = await Product.find({ category });
+
+        const hostUrl = `${req.protocol}://${req.get('host')}`;
+
+        // Map products
+        const mappedProducts = products.map(p => {
+            const isLocal = p.image && p.image.startsWith('/uploads');
+            const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
+
+            return {
+                id: p._id,
+                title: p.name,
+                name: p.name,
+                price: p.price,
+                description: p.description,
+                images: [fullImageUrl],
+                categoryId: p.category,
+                category: p.category,
+                subCategory: p.subCategory,
+                tags: [
+                    p.category?.toLowerCase(),
+                    p.type ? p.type.toLowerCase() : 'fashion'
+                ],
+                colors: p.colors && p.colors.length > 0 ? p.colors : ['#000000', '#FFFFFF'],
+                sizes: ['S', 'M', 'L', 'XL'],
+                isNewArrival: true,
+                isPopular: p.reviewsCount > 5 || p.price > 2000,
+                rating: p.rating || 4.5,
+                reviews: p.reviewsCount || Math.floor(Math.random() * 50) + 10,
+                oldPrice: p.compareAtPrice,
+                featureVector: p.featureVector,
+                occasion: p.occasion || 'Uncategorized',
+                quantity: p.quantity || 0
+            };
+        });
+
+        // 🔥 GROUPING: Occasion → SubCategory
+        const groupedByOccasion = mappedProducts.reduce((acc, product) => {
+            const occasionKey = product.occasion || 'Uncategorized';
+            const subCategoryKey = product.subCategory || 'Others';
+
+            if (!acc[occasionKey]) {
+                acc[occasionKey] = {};
+            }
+
+            if (!acc[occasionKey][subCategoryKey]) {
+                acc[occasionKey][subCategoryKey] = [];
+            }
+
+            acc[occasionKey][subCategoryKey].push(product);
+
+            return acc;
+        }, {});
+
+        // Convert to structured response
+        let grouped = Object.entries(groupedByOccasion).map(([occasion, subCategories]) => ({
+            occasion,
+            subCategories: Object.entries(subCategories).map(([subCategory, items]) => ({
+                subCategory,
+                products: items
+            }))
+        }));
+
+        // ✅ OPTIONAL: Sort occasions
+        const OCCASION_ORDER = ['Casual', 'Formal', 'Party'];
+
+        grouped.sort((a, b) => {
+            const iA = OCCASION_ORDER.indexOf(a.occasion);
+            const iB = OCCASION_ORDER.indexOf(b.occasion);
+
+            return (iA === -1 ? 999 : iA) - (iB === -1 ? 999 : iB);
+        });
+
+        // ✅ OPTIONAL: Sort subcategories alphabetically
+        grouped.forEach(group => {
+            group.subCategories.sort((a, b) =>
+                a.subCategory.localeCompare(b.subCategory)
+            );
+        });
+
+        // Final response
+        res.json({
+            category,
+            totalProducts: mappedProducts.length,
+            groups: grouped
+        });
+
+    } catch (error) {
+        console.error('❌ Error in /byCategory:', error);
+        res.status(500).json({ message: error.message });
     }
 });
 

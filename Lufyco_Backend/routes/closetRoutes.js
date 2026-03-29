@@ -2,7 +2,7 @@ const express = require('express');
 const router = express.Router();
 const ClosetItem = require('../models/ClosetItem');
 const { extractFeatures } = require('../services/mlFeatureExtractor');
-const axios = require('axios');
+const axios = require('axios'); // For fetching image from URL if needed
 
 /**
  * @swagger
@@ -237,7 +237,7 @@ router.post('/', async (req, res) => {
 
     try {
         const newItem = new ClosetItem({
-            user: userId,
+            user: userId, // might be null/undefined if not enforcing auth
             name,
             category,
             image,

@@ -80,7 +80,37 @@ export const useShopStore = create<ShopState>()(
                         set({ products: fetchedProducts, productsLoaded: true });
                     }
                     if (fetchedCategories.length > 0) {
-                        set({ categories: fetchedCategories });
+                      const categoryOrder = [
+                        "Men",
+                        "Women",
+                        "Kids",
+                        "Unisex",
+                        "Shoes",
+                        "Jewellery",
+                        "Accessories",
+                        "Beauty",
+                      ];
+
+                      const sortedCategories = fetchedCategories.sort(
+                        (a, b) => {
+                          const indexA = categoryOrder.indexOf(a.name);
+                          const indexB = categoryOrder.indexOf(b.name);
+
+                          // If both are not in the list → keep original order
+                          if (indexA === -1 && indexB === -1) return 0;
+
+                          // If only A is not in list → move A to end
+                          if (indexA === -1) return 1;
+
+                          // If only B is not in list → move B to end
+                          if (indexB === -1) return -1;
+
+                          // Both exist in list → sort by predefined order
+                          return indexA - indexB;
+                        },
+                      );
+
+                      set({ categories: sortedCategories });
                     }
                 } catch (err) {
                     // Silently fall back to mockData — app still works offline

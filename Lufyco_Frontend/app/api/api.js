@@ -11,7 +11,7 @@ const getDevHost = () => {
 
 // Use the dynamic host if in dev mode, otherwise fallback to local IP
 // For local backend development, change this to your machine's local IP
-const HOST_IP = __DEV__ ? '192.168.8.149' : '192.168.8.149'; // Update 192.168.1.10 with your actual LOCAL IP
+const HOST_IP = __DEV__ ? '192.168.1.4' : '192.168.1.4'; // Update 192.168.1.10 with your actual LOCAL IP
 const API_URL = `http://${HOST_IP}:5001/api`;
 
 console.log('[API] Using API URL:', API_URL);

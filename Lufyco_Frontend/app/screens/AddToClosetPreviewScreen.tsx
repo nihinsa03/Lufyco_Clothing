@@ -33,12 +33,12 @@ const PALETTE = [
 ];
 
 const VISUAL_CATEGORIES = [
-  { name: "Men's Wear", image: require('../../assets/images/categories/men/mens_wear_hero.png') },
-  { name: "Women's Wear", image: require('../../assets/images/categories/women/womens_wear_hero.png') },
-  { name: "Kids' Wear", image: require('../../assets/images/categories/kids_wear_hero.png') },
-  { name: "Footwear", image: require('../../assets/images/categories/footwear/footwear_hero_new.jpg') },
+  { name: "Men", image: require('../../assets/images/categories/men/mens_wear_hero.png') },
+  { name: "Women", image: require('../../assets/images/categories/women/womens_wear_hero.png') },
+  { name: "Kids", image: require('../../assets/images/categories/kids_wear_hero.png') },
+  { name: "Shoes", image: require('../../assets/images/categories/footwear/footwear_hero_new.jpg') },
   { name: "Jewellery", image: require('../../assets/images/categories/jewellery/jewellery.png') },
-  { name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
+  { name: "Beauty", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
   { name: "Accessories", image: require('../../assets/images/categories/accessories/handbag_hero.png') },
   { name: "Shirts", image: require('../../assets/images/shirt.png') },
   { name: "T-Shirts", image: require('../../assets/images/men/casual/tshirts.jpg') },

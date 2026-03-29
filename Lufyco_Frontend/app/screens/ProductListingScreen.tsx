@@ -44,7 +44,7 @@ const ColorDots = ({ colors, styles }: { colors: string[], styles: any }) => {
 const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
     const { colors, isDark: dark } = useTheme();
     const styles = getStyles(colors, dark);
-    const { gender, category, subCategory, type, search, isSale, title } = route.params || {};
+    const { gender, category, subCategory, type, search, isSale, title, productsN } = route.params || {};
 
     const [products, setProducts] = useState<Product[]>([]);
     const [loading, setLoading] = useState(true);
@@ -63,78 +63,79 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
     const fetchProducts = async () => {
         setLoading(true);
         try {
-            // Build query string
-            const params: any = {};
-            if (gender) params.gender = gender;
-            if (category) params.category = category;
-            if (subCategory) params.subCategory = subCategory;
-            if (type) params.type = type;
-            if (search) params.search = search;
-            if (isSale) params.isSale = 'true';
-            if (selectedFilter) params.sort = selectedFilter;
+            // // Build query string
+            // const params: any = {};
+            // if (gender) params.gender = gender;
+            // if (category) params.category = category;
+            // if (subCategory) params.subCategory = subCategory;
+            // if (type) params.type = type;
+            // if (search) params.search = search;
+            // if (isSale) params.isSale = 'true';
+            // if (selectedFilter) params.sort = selectedFilter;
 
-            // Use MOCK_PRODUCTS for now
-            let data = [...MOCK_PRODUCTS];
+            // // Use MOCK_PRODUCTS for now
+            // let data = [...MOCK_PRODUCTS];
 
-            // If the route has specific filters, start with those
-            if (params.category === "Shoes") {
-                data = data.filter((p: Product) => p.category === "Shoes");
-            } else if (params.category === "Accessories") {
-                data = data.filter((p: Product) => p.category === "Accessories");
-            } else if (params.gender === "Men") {
-                data = data.filter((p: Product) => p.gender === "Men" || (p.gender === "Unisex" && p.category !== "Women"));
-            } else if (params.gender === "Women") {
-                data = data.filter((p: Product) => p.gender === "Women" || (p.gender === "Unisex" && p.category !== "Men"));
-            } else if (params.gender === "Kids") {
-                data = data.filter((p: Product) => p.gender === "Kids" || p.category === "Kids");
-            }
+            // // If the route has specific filters, start with those
+            // if (params.category === "Shoes") {
+            //     data = data.filter((p: Product) => p.category === "Shoes");
+            // } else if (params.category === "Accessories") {
+            //     data = data.filter((p: Product) => p.category === "Accessories");
+            // } else if (params.gender === "Men") {
+            //     data = data.filter((p: Product) => p.gender === "Men" || (p.gender === "Unisex" && p.category !== "Women"));
+            // } else if (params.gender === "Women") {
+            //     data = data.filter((p: Product) => p.gender === "Women" || (p.gender === "Unisex" && p.category !== "Men"));
+            // } else if (params.gender === "Kids") {
+            //     data = data.filter((p: Product) => p.gender === "Kids" || p.category === "Kids");
+            // }
 
-            // Apply specific params if not already scoped
-            if (params.category && params.category !== "Shoes" && params.category !== "Accessories") {
-                data = data.filter((p: Product) => p.category === params.category || p.subCategory === params.category);
-            }
-            if (params.subCategory) {
-                data = data.filter((p: Product) => p.subCategory === params.subCategory);
-            }
-            if (params.type) {
-                data = data.filter((p: Product) => p.type === params.type);
-            }
+            // // Apply specific params if not already scoped
+            // if (params.category && params.category !== "Shoes" && params.category !== "Accessories") {
+            //     data = data.filter((p: Product) => p.category === params.category || p.subCategory === params.category);
+            // }
+            // if (params.subCategory) {
+            //     data = data.filter((p: Product) => p.subCategory === params.subCategory);
+            // }
+            // if (params.type) {
+            //     data = data.filter((p: Product) => p.type === params.type);
+            // }
 
-            // Handle Search Query properly
-            if (params.search) {
-                const query = params.search.toLowerCase();
-                data = data.filter((p: Product) => {
-                    const itemName = (p.name || p.title || "").toLowerCase();
-                    const itemType = (p.type || "").toLowerCase();
-                    const itemCategory = (p.category || "").toLowerCase();
-                    const itemSubCategory = (p.subCategory || "").toLowerCase();
-                    return itemName.includes(query) || 
-                           itemType.includes(query) ||
-                           itemCategory.includes(query) ||
-                           itemSubCategory.includes(query);
-                });
-            }
+            // // Handle Search Query properly
+            // if (params.search) {
+            //     const query = params.search.toLowerCase();
+            //     data = data.filter((p: Product) => {
+            //         const itemName = (p.name || p.title || "").toLowerCase();
+            //         const itemType = (p.type || "").toLowerCase();
+            //         const itemCategory = (p.category || "").toLowerCase();
+            //         const itemSubCategory = (p.subCategory || "").toLowerCase();
+            //         return itemName.includes(query) || 
+            //                itemType.includes(query) ||
+            //                itemCategory.includes(query) ||
+            //                itemSubCategory.includes(query);
+            //     });
+            // }
 
-            // Apply sorting & filtering from selectedFilter
-            if (selectedFilter === "price_low_to_high") {
-                data.sort((a, b) => (a.price || 0) - (b.price || 0));
-            } else if (selectedFilter === "price_high_to_low") {
-                data.sort((a, b) => (b.price || 0) - (a.price || 0));
-            } else if (selectedFilter === "discount") {
-                data = data.filter((p: any) => p.compareAtPrice && p.compareAtPrice > p.price);
-            } else if (selectedFilter === "popularity") {
-                data.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
-            } else if (selectedFilter === "whats_new") {
-                const newArrivals = data.filter((p: any) => p.isNewArrival);
-                data = newArrivals.length > 0 ? newArrivals : [...data].reverse();
-            }
+            // // Apply sorting & filtering from selectedFilter
+            // if (selectedFilter === "price_low_to_high") {
+            //     data.sort((a, b) => (a.price || 0) - (b.price || 0));
+            // } else if (selectedFilter === "price_high_to_low") {
+            //     data.sort((a, b) => (b.price || 0) - (a.price || 0));
+            // } else if (selectedFilter === "discount") {
+            //     data = data.filter((p: any) => p.compareAtPrice && p.compareAtPrice > p.price);
+            // } else if (selectedFilter === "popularity") {
+            //     data.sort((a, b) => (b.reviewsCount || 0) - (a.reviewsCount || 0));
+            // } else if (selectedFilter === "whats_new") {
+            //     const newArrivals = data.filter((p: any) => p.isNewArrival);
+            //     data = newArrivals.length > 0 ? newArrivals : [...data].reverse();
+            // }
 
             // Simulate delay
             setTimeout(() => {
-                setProducts(data);
+                setProducts(productsN);
                 setLoading(false);
             }, 500);
-
+            console.log("Applied Filters:", productsN.length);
+            console.log("Query Params:", productsN);
             // const response = await api.get("/products", { params });
             // setProducts(response.data);
         } catch (error) {
@@ -201,7 +202,7 @@ const ProductListingScreen: React.FC<Props> = ({ navigation, route }) => {
                         >
                             {/* Image handling: check if it's http or require */}
                             <Image
-                                source={item.image.startsWith('http') ? { uri: item.image } : require("../../assets/images/clothing.png")}
+                                source={item.images[0].startsWith('http') ? { uri: item.images[0] } : require("../../assets/images/clothing.png")}
                                 style={styles.image}
                             />
                             <TouchableOpacity
