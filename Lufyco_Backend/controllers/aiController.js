@@ -2,11 +2,11 @@ const multer = require("multer");
 const sharp = require("sharp");
 const Product = require("../models/Product");
 const SavedLook = require("../models/SavedLook");
+const { generate_closet } = require("../services/outfitService");
 const {
   uploadToCloudinary,
   extractDominantColorLocal,
 } = require("../services/imageService");
-const { generateOutfit, getRandomClosetItems } = require("../services/outfitService");
 const {
   extractFeatures,
   findSimilarProducts,
@@ -274,11 +274,60 @@ const extractImageDetails = async (req, res) => {
   }
 };
 
-/**
- * @route   POST /api/ai/recommend-outfit
- * @desc    Generate AI outfit recommendation
- * @access  Private
- */
+// /**
+//  * @route   POST /api/ai/recommend-outfit
+//  * @desc    Generate AI outfit recommendation
+//  * @access  Private
+//  */
+// const recommendOutfit = async (req, res) => {
+//   try {
+//     const {
+//       userId,
+//       mood,
+//       occasion,
+//       weather,
+//       preferredColors,
+//       selectedDate,
+//       gender,
+//       nowFlag,
+//     } = req.body;
+//     if (nowFlag == "NOW") {
+
+//         const outfit = await getRandomClosetItems(userId, occasion)
+
+//               res.json({
+//         outfitId: `outfit_${Date.now()}`,
+//         ...outfit,
+//       });
+//     } else {
+//       if (!occasion) {
+//         return res.status(400).json({ message: "Occasion is required" });
+//       }
+
+//       // Generate outfit
+//       const outfit = await generateOutfit({
+//         mood,
+//         occasion,
+//         weather,
+//         userId,
+//         gender,
+//       });
+
+//       res.json({
+//         outfitId: `outfit_${Date.now()}`,
+//         outfit,
+//       });
+//     }
+//   } catch (error) {
+//     console.error("Outfit recommendation error:", error);
+//     res
+//       .status(500)
+//       .json({ message: error.message || "Failed to generate outfit" });
+//   }
+// };
+
+
+
 const recommendOutfit = async (req, res) => {
   try {
     const {
@@ -286,44 +335,70 @@ const recommendOutfit = async (req, res) => {
       mood,
       occasion,
       weather,
-      preferredColors,
-      selectedDate,
-      gender,
+      preferredColors, // kept for request compatibility
+      selectedDate,    // kept for request compatibility
+      gender,          // kept for request compatibility
       nowFlag,
     } = req.body;
-    if (nowFlag == "NOW") {
 
-        const outfit = await getRandomClosetItems(userId, occasion)
-
-              res.json({
-        outfitId: `outfit_${Date.now()}`,
-        ...outfit,
+    // Validate required request structure
+    if (!nowFlag) {
+      return res.status(400).json({
+        message: "nowFlag is required",
       });
-    } else {
-      if (!occasion) {
-        return res.status(400).json({ message: "Occasion is required" });
+    }
+
+    // NOW mode
+    if (String(nowFlag).toUpperCase() === "NOW") {
+      if (!userId) {
+        return res.status(400).json({
+          message: "userId is required for NOW mode",
+        });
       }
 
-      // Generate outfit
-      const outfit = await generateOutfit({
+      const outfit = await generate_closet({
+        userId,
         mood,
         occasion,
         weather,
-        userId,
-        gender,
       });
 
-      res.json({
+      return res.json({
         outfitId: `outfit_${Date.now()}`,
         outfit,
       });
     }
+
+    // FUTURE / non-NOW mode
+    // TODO: implement future rule-based recommendation function next
+    // Example:
+    // const outfit = await generate_future({
+    //   userId,
+    //   mood,
+    //   occasion,
+    //   weather,
+    //   preferredColors,
+    //   selectedDate,
+    //   gender,
+    // });
+    // return res.json({
+    //   outfitId: `outfit_${Date.now()}`,
+    //   outfit,
+    // });
+
+    return res.status(501).json({
+      message: "Future outfit generation is not implemented yet",
+    });
   } catch (error) {
-    console.error("Outfit recommendation error:", error);
-    res
-      .status(500)
-      .json({ message: error.message || "Failed to generate outfit" });
+    console.error("recommendOutfit error:", error);
+    return res.status(500).json({
+      message: error.message || "Failed to generate outfit",
+    });
   }
+};
+
+module.exports = {
+  recommendOutfit,
 };
 
 /**

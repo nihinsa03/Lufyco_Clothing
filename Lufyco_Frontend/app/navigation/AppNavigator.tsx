@@ -78,6 +78,7 @@ export type RootStackParamList = {
   ForgotPasswordVerification: { email: string };
   ResetPassword: { email: string; otp: string };
   PasswordResetSuccess: undefined;
+  
 
 
   // Existing..

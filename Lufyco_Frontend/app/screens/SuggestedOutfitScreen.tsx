@@ -285,8 +285,10 @@ const SuggestedOutfitScreen: React.FC<Props> = ({ route, navigation }) => {
               generatedOutfit.map((item, idx) => (
                 <View key={idx} style={styles.outfitItem}>
                   <Image
-                    source={item.image && item.image.startsWith('http') ? { uri: item.image } : { uri: item.image }}
+                    source={{ uri: item.image }}
                     style={styles.outfitImg}
+                    onLoad={() => console.log("Image loaded:", item.image)}
+                    onError={(e) => console.log("Image load error:", item.image, e.nativeEvent)}
                   />
                   <Text style={[styles.outfitLabel, { color: colors.text }]}>{item.name}</Text>
                 </View>
@@ -413,7 +415,6 @@ const getStyles = (colors: any, dark: boolean) => StyleSheet.create({
     borderColor: colors.border,
   },
   outfitRow: { flexDirection: "row", justifyContent: "flex-start", alignItems: "flex-start" },
-  outfitItem: { alignItems: "center", marginRight: 16, width: 140 },
   outfitItem: { alignItems: "center", marginRight: 24 },
   outfitImg: { width: 130, height: 110, borderRadius: 10, resizeMode: "cover" },
   outfitLabel: { marginTop: 8, fontWeight: "700" },

@@ -1,9 +1,9 @@
 const express = require('express');
 const cors = require('cors');
 const dotenv = require('dotenv');
+const path = require('path');
 const swaggerUi = require('swagger-ui-express');
 const swaggerSpec = require('./swagger');
-
 
 dotenv.config();
 
@@ -24,6 +24,16 @@ app.use((req, res, next) => {
     console.log(`[${new Date().toISOString()}] ${req.method} ${req.url} from ${req.ip}`);
     next();
 });
+
+/**
+ * Serve uploaded user files as static files
+ * Example:
+ * DB path: userFiles\\69c246...\\closets\\1.jpg
+ * Public URL: http://YOUR_IP:5001/uploads/69c246.../closets/1.jpg
+ */
+
+
+app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
 const productRoutes = require('./routes/productRoutes');
 const userRoutes = require('./routes/userRoutes');
@@ -53,7 +63,7 @@ app.use((err, req, res, next) => {
         return res.status(400).json({ message: 'Invalid JSON', error: err.message });
     }
 
-    console.error("Global Server Error:", err.stack);
+    console.error('Global Server Error:', err.stack);
     res.status(500).json({
         message: 'Internal Server Error',
         error: process.env.NODE_ENV === 'production' ? {} : err.message

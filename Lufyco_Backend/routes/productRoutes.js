@@ -3,6 +3,7 @@ const router = express.Router();
 const Product = require('../models/Product');
 const { extractFeatures } = require('../services/mlFeatureExtractor');
 const axios = require('axios');
+const buildImageUrl = require("../utils/buildImageUrl");
 
 /**
  * @swagger
@@ -280,7 +281,7 @@ router.get('/', async (req, res) => {
                 name: p.name,
                 price: p.price,
                 description: p.description,
-                images: [fullImageUrl], // Wrap string in array for frontend carousel and logic
+                images: buildImageUrl(p.image), // Wrap string in array for frontend carousel and logic
                 categoryId: p.category, 
                 category: p.category,
                 tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
@@ -325,12 +326,7 @@ router.get('/getAllProducts', async (req, res) => {
     try {
         const products = await Product.find({});
 
-        // Map to match Expo Frontend Product Interface
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
-        
         const mappedProducts = products.map(p => {
-            const isLocal = p.image && p.image.startsWith('/uploads');
-            const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
 
             return {
                 id: p._id,
@@ -338,7 +334,7 @@ router.get('/getAllProducts', async (req, res) => {
                 name: p.name,
                 price: p.price,
                 description: p.description,
-                images: [fullImageUrl],
+                images: buildImageUrl(p.image),
                 categoryId: p.category, 
                 category: p.category,
                 tags: [p.category.toLowerCase(), p.type ? p.type.toLowerCase() : 'fashion'],
@@ -397,11 +393,8 @@ router.get('/byCategory', async (req, res) => {
         }
 
         const products = await Product.find({ category });
-        const hostUrl = `${req.protocol}://${req.get('host')}`;
 
         const mappedProducts = products.map(p => {
-            const isLocal = p.image && p.image.startsWith('/uploads');
-            const fullImageUrl = isLocal ? `${hostUrl}${p.image}` : p.image;
 
             return {
                 id: p._id,
@@ -409,7 +402,7 @@ router.get('/byCategory', async (req, res) => {
                 name: p.name,
                 price: p.price,
                 description: p.description,
-                images: [fullImageUrl],
+                images: buildImageUrl(p.image),
                 categoryId: p.category,
                 category: p.category,
                 subCategory: p.subCategory,
@@ -506,13 +499,12 @@ router.get('/categories', async (req, res) => {
         ]);
 
         const mappedCategories = categories.map((cat, index) => {
-            const isLocal = cat.image && cat.image.startsWith('/uploads');
-            const fullImageUrl = isLocal ? `${hostUrl}${cat.image}` : cat.image;
+
 
             return {
                 id: `cat_dyn_${index}`, // Unique dynamic ID
                 name: cat._id || 'Uncategorized',
-                image: fullImageUrl,
+                image: buildImageUrl(cat.image),
                 gender: cat.gender ? cat.gender.toLowerCase() : 'unisex'
             };
         });
@@ -601,7 +593,7 @@ router.get('/byCategoryUpdate', async (req, res) => {
                 name: p.name,
                 price: p.price,
                 description: p.description,
-                images: [fullImageUrl],
+                images: buildImageUrl(p.image),
                 categoryId: p.category,
                 category: p.category,
                 subCategory: p.subCategory,

@@ -381,49 +381,53 @@ const sortCategories = (categories: any[]) => {
           {/* Subcategory Grid */}
           <View style={styles.sectionGrid}>
             {section.subCategories?.map((sub: any, subIndex: number) => {
-              
-              const firstProduct = sub.products?.[0];
-              if (!firstProduct) return null;
+  const firstProduct = sub.products?.[0];
+  if (!firstProduct) return null;
 
-              const image = firstProduct?.images?.[0];
+  let imageUri = "";
 
-              return (
-                <TouchableOpacity
-                  key={`${sub.subCategory}_${subIndex}`}
-                  style={styles.sectionItem}
-                  onPress={() =>
-                    navigation.navigate('ProductListing', {
-                      title: sub.subCategory,
-                      subCategory: sub.subCategory,
-                      category: section.occasion,
-                      productsN: sub.products
-                    })
-                  }
-                >
-                  <Image
-                    source={
-                      image
-                        ? { uri: image }
-                        : { uri: image } // fallback image
-                    }
-                    style={[
-                      styles.sectionItemImage,
-                      { backgroundColor: colors.iconBg }
-                    ]}
-                  />
+  if (Array.isArray(firstProduct.images) && firstProduct.images.length > 0) {
+    imageUri = firstProduct.images[0];
+  } else if (typeof firstProduct.images === "string") {
+    imageUri = firstProduct.images;
+  } else if (typeof firstProduct.image === "string") {
+    imageUri = firstProduct.image;
+  }
 
-                  <Text
-                    style={[
-                      styles.sectionItemName,
-                      { color: colors.textSecondary }
-                    ]}
-                    numberOfLines={1}
-                  >
-                    {sub.subCategory}
-                  </Text>
-                </TouchableOpacity>
-              );
-            })}
+  return (
+    <TouchableOpacity
+      key={`${sub.subCategory}_${subIndex}`}
+      style={styles.sectionItem}
+      onPress={() =>
+        navigation.navigate("ProductListing", {
+          title: sub.subCategory,
+          subCategory: sub.subCategory,
+          category: section.occasion,
+          productsN: sub.products,
+        })
+      }
+    >
+      {imageUri ? (
+        <Image
+          source={{ uri: imageUri }}
+          style={[styles.sectionItemImage, { backgroundColor: colors.iconBg }]}
+          resizeMode="cover"
+        />
+      ) : (
+        <View style={[styles.sectionItemImage, { backgroundColor: colors.iconBg, justifyContent: "center", alignItems: "center" }]}>
+          <Text>No Image</Text>
+        </View>
+      )}
+
+      <Text
+        style={[styles.sectionItemName, { color: colors.textSecondary }]}
+        numberOfLines={1}
+      >
+        {sub.subCategory}
+      </Text>
+    </TouchableOpacity>
+  );
+})}
           </View>
         </View>
       ))}

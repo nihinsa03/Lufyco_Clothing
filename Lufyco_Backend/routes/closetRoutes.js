@@ -3,6 +3,7 @@ const router = express.Router();
 const ClosetItem = require('../models/ClosetItem');
 const { extractFeatures } = require('../services/mlFeatureExtractor');
 const axios = require('axios'); // For fetching image from URL if needed
+const buildImageUrl = require("../utils/buildImageUrl");
 
 /**
  * @swagger
@@ -188,21 +189,69 @@ const axios = require('axios'); // For fetching image from URL if needed
  */
 // @route   GET /api/closet
 // @desc    Get all closet items (optionally filter by user if we passed userId in query)
-router.get('/', async (req, res) => {
-    try {
-        const { userId, category, search } = req.query;
-        let query = {};
+// GET /api/closet
+router.get("/", async (req, res) => {
+  try {
+    const { userId, search, category, subCategory, type } = req.query;
 
-        if (userId) query.user = userId;
-        if (category && category !== 'All') query.category = category;
-        if (search) query.name = { $regex: search, $options: 'i' };
+    const query = {};
 
-        const items = await ClosetItem.find(query).sort({ createdAt: -1 });
-        res.json(items);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
+    if (userId) query.user = userId;
+    if (category) query.category = category;
+    if (subCategory) query.subCategory = subCategory;
+    if (type) query.type = type;
+
+    if (search) {
+      query.$or = [
+        { name: { $regex: search, $options: "i" } },
+        { category: { $regex: search, $options: "i" } },
+        { subCategory: { $regex: search, $options: "i" } },
+        { type: { $regex: search, $options: "i" } },
+        { occasion: { $regex: search, $options: "i" } },
+      ];
     }
+
+    const items = await ClosetItem.find(query).sort({ createdAt: -1 });
+
+    const normalizedItems = items.map((item) => ({
+      _id: item._id,
+      closetID: item.closetID ?? null,
+      user: item.user ?? null,
+      name: item.name ?? null,
+      category: item.category ?? null,
+      subCategory: item.subCategory ?? null,
+      type: item.type ?? null,
+      color: item.color ?? null,
+      colors: Array.isArray(item.colors) ? item.colors : [],
+      image: buildImageUrl(item.image),
+      notes: item.notes ?? null,
+      occasion: item.occasion ?? null,
+      sizes: Array.isArray(item.sizes) ? item.sizes : [],
+      style_tags: Array.isArray(item.style_tags) ? item.style_tags : [],
+      season_tags: Array.isArray(item.season_tags) ? item.season_tags : [],
+      material: item.material ?? null,
+      fit: item.fit ?? null,
+      weather_tag: item.weather_tag ?? null,
+      pattern: item.pattern ?? null,
+      price: Number(item.price || 0),
+      quantity: Number(item.quantity || 0),
+      rating: Number(item.rating || 0),
+      reviewsCount: Number(item.reviewsCount || 0),
+      isNewArrival: Boolean(item.isNewArrival),
+      isActive: Boolean(item.isActive),
+      createdAt: item.createdAt ?? null,
+      updatedAt: item.updatedAt ?? null,
+      // featureVector intentionally omitted
+    }));
+
+    res.json(normalizedItems);
+  } catch (error) {
+    console.error("Failed to fetch closet items:", error);
+    res.status(500).json({ message: error.message || "Failed to fetch closet items" });
+  }
 });
+
+module.exports = router;
 
 /**
  * @swagger

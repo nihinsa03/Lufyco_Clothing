@@ -2,9 +2,16 @@ const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema(
     {
-        _id: {
+        productId: {
+            type: Number, 
+            index: true,
+            unique: true
+        },
+
+        seller: {
             type: String,
         },
+
         name: {
             type: String,
             required: true,
@@ -22,28 +29,23 @@ const productSchema = new mongoose.Schema(
             required: true,
         },
         category: {
-            type: String, // e.g., "Men's Wear"
+            type: String,
             required: true,
         },
         subCategory: {
-            type: String, // e.g., "Casual Wear"
-            required: false,
+            type: String,
         },
         type: {
-            type: String, // e.g., "SHIRTS"
-            required: false,
+            type: String,
         },
         gender: {
-            type: String, // "Men", "Women", "Kids"
-            required: false,
+            type: String,
         },
         compareAtPrice: {
             type: Number,
-            required: false,
         },
         colors: {
-            type: [String], // Array of hex codes
-            required: false,
+            type: [String],
         },
         rating: {
             type: Number,
@@ -55,18 +57,46 @@ const productSchema = new mongoose.Schema(
         },
         featureVector: {
             type: [Number],
-            required: false,
             default: []
         },
-         occasion: {
-                type: String, // e.g., "Casual", "Formal", "Party"
-                required: false,
-            },
-        quantity:{
+
+        // 🔥 FIXED
+        occasion: {
+            type: [String],
+            default: [],
+        },
+
+        quantity: {
             type: Number,
-            required: false,
             default: 0
-        }    
+        },
+
+        sizes: {
+            type: [String],
+            default: [],
+        },
+        style_tags: {
+            type: [String],
+            default: [],
+        },
+        season_tags: {
+            type: [String],
+            default: [],
+        },
+        material: {
+            type: String,
+        },
+        fit: {
+            type: String,
+        },
+        isNewArrival: {
+            type: Boolean,
+            default: false,
+        },
+        isActive: {
+            type: Boolean,
+            default: true,
+        }
     },
     {
         timestamps: true,

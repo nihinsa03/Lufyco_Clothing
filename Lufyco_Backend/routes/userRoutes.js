@@ -70,7 +70,7 @@ const isValidEmailProvider = (email) => {
 // @desc    Register a new user and send verification email
 // @access  Public
 router.post('/register', async (req, res) => {
-    const { name, phone, email, password } = req.body;
+    const { name, phone, email, password, userType } = req.body;
 
     try {
         if (!name || !email || !password) {
@@ -125,6 +125,7 @@ router.post('/register', async (req, res) => {
             phone,
             email,
             password: hashedPassword,
+            userType,
             isVerified: false,
             verificationOTP: otp,
             otpExpiry: otpExpiry,

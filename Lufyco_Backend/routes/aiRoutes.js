@@ -127,7 +127,7 @@ router.post('/extract-details', upload.single('image'), extractImageDetails);
 // @route   POST /api/ai/recommend-outfit
 // @desc    Generate outfit recommendation
 // @access  Private (userId in body for now)
-router.post('/recommend-outfit', recommendOutfit);
+router.post("/recommend-outfit", recommendOutfit);
 
 /**
  * @swagger
