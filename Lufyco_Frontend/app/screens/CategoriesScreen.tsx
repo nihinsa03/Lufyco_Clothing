@@ -1,72 +1,60 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, FlatList, Image, TouchableOpacity, SafeAreaView, Dimensions, ScrollView, Platform, StatusBar, ActivityIndicator } from "react-native";
-import { useShopStore } from '../store/useShopStore';
-import { useNavigation } from '@react-navigation/native';
-import { Feather, Ionicons } from '@expo/vector-icons';
-import { Category } from '../data/mockData';
-import { useTheme } from '../context/ThemeContext';
-import api from '../api/api';
-import { useRoute } from '@react-navigation/native';
-  
+import React, { useEffect, useMemo, useState } from "react";
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  Image,
+  TouchableOpacity,
+  ScrollView,
+  Platform,
+  StatusBar,
+  ActivityIndicator,
+} from "react-native";
+import { useNavigation, useRoute } from "@react-navigation/native";
+import type { NativeStackNavigationProp } from "@react-navigation/native-stack";
+import type { RouteProp } from "@react-navigation/native";
+import { Feather } from "@expo/vector-icons";
+import { SafeAreaView } from "react-native-safe-area-context";
 
-const { width } = Dimensions.get('window');
+import { useTheme } from "../context/ThemeContext";
+import { RootStackParamList } from "../navigation/AppNavigator";
+import api from "../api/api";
 
-// Sidebar categories data with actual product images
-const SIDEBAR_ITEMS = [
-  { id: 'men', name: "Men's Wear", image: "https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&q=80&w=500" },
-  { id: 'women', name: "Women's Wear", image: require('../../assets/images/categories/women/womens_wear_hero.png') },
-  { id: 'kids', name: "Kids' Wear", image: require('../../assets/images/categories/kids_wear_hero.png') },
-  { id: 'footwear', name: "Footwear", image: require('../../assets/images/categories/footwear/footwear_hero_new.jpg') },
-  { id: 'jewellery', name: "Jewellery", image: require('../../assets/images/categories/jewellery/jewellery.png') },
-  { id: 'beauty', name: "Beauty Products", image: require('../../assets/images/categories/beauty/beauty_hero_new.jpg') },
-  { id: 'accessories', name: "Accessories", image: require('../../assets/images/categories/accessories/handbag_hero.png') },
-];
+type NavigationProp = NativeStackNavigationProp<RootStackParamList, "Categories">;
+type CategoriesRouteProp = RouteProp<RootStackParamList, "Categories">;
 
-// Map sidebar ID to store categories filter or specific subcategories
-const getSubCategories = (sidebarId: string, storeCategories: Category[], ) => {
-  const { categories } = useShopStore();
-  switch (sidebarId) {
-    case 'men':
-      return storeCategories.filter(c => c.gender === 'men');
-    case 'women':
-      return storeCategories.filter(c => c.gender === 'women');
-    case 'footwear':
-      return storeCategories.filter(c =>
-        c.id.includes('shoes') || c.id.includes('heels') || c.name.toLowerCase().includes('shoe')
-      );
-    case 'kids':
-      return storeCategories.filter(c =>
-        ['cat_tshirts', 'cat_jeans', 'cat_dresses', 'cat_sports_shoes', 'cat_jackets', 'cat_sweater'].includes(c.id)
-      );
-    case 'beauty':
-      return storeCategories.filter(c =>
-        ['cat_skincare', 'cat_makeup', 'cat_haircare', 'cat_nailpolish', 'cat_perfume'].includes(c.id)
-      );
-    case 'jewellery':
-      return storeCategories.filter(c =>
-        ['cat_necklaces', 'cat_rings', 'cat_earrings', 'cat_bracelets'].includes(c.id)
-      );
-    case 'accessories':
-      return storeCategories.filter(c =>
-        ['cat_handbags', 'cat_watches', 'cat_belts', 'cat_sunglasses'].includes(c.id)
-      );
-    default:
-      return storeCategories;
-  }
+type MainCategory = {
+  id: string;
+  name: string;
+  image?: string | string[];
+  gender?: string;
 };
 
-const CategoriesScreen = () => {
-  const { setFilter, resetFilters, categories } = useShopStore();
-  const navigation = useNavigation<any>();
-  const [selectedCategory, setSelectedCategory] = useState<string>('men');
-  const [sidebarItems, setSidebarItems] = useState(categories);
-  const [fetchedSections, setFetchedSections] = useState<any[]>([]);
-  const [isLoadingCategories, setIsLoadingCategories] = useState(false);
-  const { colors, isDark } = useTheme();
-  const route = useRoute();
-  const { c_id, name, foo } = route.params || {};
+type TypeItem = {
+  type: string;
+  image?: string | string[];
+};
 
-  const CATEGORY_ORDER = [
+type ProductItem = {
+  id: string;
+  title?: string;
+  name?: string;
+  price?: number;
+  image?: string;
+  images?: string[] | string;
+  category?: string;
+  subCategory?: string;
+  type?: string;
+  occasion?: string[] | string;
+};
+
+type OccasionGroup = {
+  occasion: string;
+  products: ProductItem[];
+};
+
+const CATEGORY_ORDER = [
   "Men",
   "Women",
   "Kids",
@@ -74,15 +62,14 @@ const CategoriesScreen = () => {
   "Shoes",
   "Jewellery",
   "Accessories",
-  "Beauty"
+  "Beauty",
 ];
 
-const sortCategories = (categories: any[]) => {
-  return categories.sort((a, b) => {
+const sortCategories = (items: MainCategory[]) => {
+  return [...items].sort((a, b) => {
     const indexA = CATEGORY_ORDER.indexOf(a.name);
     const indexB = CATEGORY_ORDER.indexOf(b.name);
 
-    // If not found, push to end
     const safeA = indexA === -1 ? Number.MAX_SAFE_INTEGER : indexA;
     const safeB = indexB === -1 ? Number.MAX_SAFE_INTEGER : indexB;
 
@@ -90,443 +77,578 @@ const sortCategories = (categories: any[]) => {
   });
 };
 
-  // Fetch main categories from /products/categories
-  useEffect(() => {
-    const fetchMainCategories = async () => {
-      try {
-        console.log('[CategoriesScreen] Fetching categories from /products/categories...');
-        const res = await api.get('/products/categories');
-        console.log('[CategoriesScreen] Categories response:', res.data);
+const normalizeImage = (value: string | string[] | undefined): string => {
+  if (!value) return "";
+  if (Array.isArray(value)) return value[0] || "";
+  return value;
+};
 
-        // Handle different API response formats
-        const fetchedCategories: Category[] = res.data?.categories || res.data?.data?.categories || res.data || [];
-        const sortedCategories = sortCategories(fetchedCategories);
+const getProductImage = (product: ProductItem | null | undefined): string => {
+  if (!product) return "";
 
-        if (sortedCategories?.length > 0) {
-          console.log('[CategoriesScreen] Setting sidebar items from API, count:', sortedCategories.length);
-          setSidebarItems(sortedCategories);
-        }
-      } catch (err) {
-        console.warn('[CategoriesScreen] Failed to fetch categories, using defaults.', err);
-      }
-    };
-
-    fetchMainCategories();
-    if(c_id){
-    setSelectedCategory(c_id)
-    handleSidebarItemPress(c_id, name);
-    }
-  }, []);
-
-  // Fetch products by category when sidebar item is clicked
-  const handleSidebarItemPress = async (itemId: string, itemName: string) => {
-    setSelectedCategory(itemId);
-
-    try {
-      setIsLoadingCategories(true);
-      console.log('[CategoriesScreen] Fetching products by category:', itemName);
-      const res = await api.get(`/products/byCategoryUpdate?category=${itemName}`);
-      console.log('[CategoriesScreen] Category products response:', res.data);
-
-      // Transform API response to sections format
-      const groups = res.data?.groups || [];
-      if (groups?.length > 0) {
-        setFetchedSections(groups);
-        console.log('[CategoriesScreen] Fetched sections count:', groups?.length);
-      }
-    } catch (err) {
-      console.warn('[CategoriesScreen] Failed to fetch category products.', err);
-      setFetchedSections([]);
-    } finally {
-      setIsLoadingCategories(false);
-    }
+  if (Array.isArray(product.images) && product.images.length > 0) {
+    return product.images[0];
   }
 
-  // Categories that have sections (multi-row layouts like Casual, Work, Sports)
-  const MEN_SECTIONS = [
-    {
-      title: "Casual Wear",
-      items: [
-        { id: "cat_casual_shirts", name: "SHIRTS", image: require("../../assets/images/men/casual/shirts.jpg") },
-        { id: "cat_casual_jeans", name: "JEANS", image: require("../../assets/images/men/casual/jeans.jpg") },
-        { id: "cat_casual_tshirts", name: "TSHIRTS", image: require("../../assets/images/men/casual/tshirts.jpg") },
-        { id: "cat_casual_trousers", name: "TROUSERS", image: require("../../assets/images/men/casual/trousers.jpg") },
-        { id: "cat_casual_shorts", name: "SHORTS", image: require("../../assets/images/men/casual/shorts.jpg") },
-        { id: "cat_casual_trackpants", name: "TRACK PANTS", image: require("../../assets/images/men/casual/trackpants.jpg") },
-        { id: "cat_casual_jackets", name: "JACKETS", image: require("../../assets/images/men/casual/jackets.jpg") },
-        { id: "cat_casual_sweater", name: "SWEATER", image: require("../../assets/images/men/casual/sweater.jpg") },
-      ],
-    },
-    {
-      title: "Work Wear",
-      items: [
-        { id: "cat_work_shirts", name: "FORMAL SHIRTS", image: require("../../assets/images/men/work/formal-shirts.jpg") },
-        { id: "cat_work_blazers", name: "BLAZERS", image: require("../../assets/images/men/work/blazers.jpg") },
-        { id: "cat_work_trousers", name: "FORMAL TROUSERS", image: require("../../assets/images/men/work/formal-trousers.jpg") },
-        { id: "cat_work_ties", name: "TIES", image: require("../../assets/images/men/work/ties.jpg") },
-        { id: "cat_work_shoes", name: "FORMAL SHOES", image: require("../../assets/images/men/work/formal-shoes.jpg") },
-      ],
-    },
-    {
-      title: "Sports Wear",
-      items: [
-        { id: "cat_sports_tshirts", name: "TSHIRTS", image: require("../../assets/images/men/sports/sports-tshirts.jpg") },
-        { id: "cat_sports_trackpants", name: "TRACK PANTS", image: require("../../assets/images/men/sports/track-pants.jpg") },
-        { id: "cat_sports_jackets", name: "JACKETS", image: require("../../assets/images/men/sports/s-jackets.jpg") },
-        { id: "cat_sports_shorts", name: "SHORTS", image: require("../../assets/images/men/sports/s-shorts.jpg") },
-        { id: "cat_sports_tracksuits", name: "TRACKSUITS", image: require("../../assets/images/men/sports/s-tracksuits.jpg") },
-      ],
-    },
-  ];
+  if (typeof product.images === "string") {
+    return product.images;
+  }
 
-  const WOMEN_SECTIONS = [
-    {
-      title: "Western Wear",
-      items: [
-        { id: "cat_women_dresses", name: "DRESSES", image: require("../../assets/images/categories/women/dresses.jpg") },
-        { id: "cat_women_tops", name: "TOPS", image: require("../../assets/images/categories/women/tops_new.jpg") },
-        { id: "cat_women_jeans", name: "JEANS", image: require("../../assets/images/categories/women/jeans.jpg") },
-        { id: "cat_women_trousers", name: "TROUSERS", image: require("../../assets/images/categories/women/trousers.jpg") },
-        { id: "cat_women_tshirts", name: "T-SHIRTS", image: require("../../assets/images/categories/women/tshirts.jpg") },
-        { id: "cat_women_shirts", name: "SHIRTS", image: require("../../assets/images/categories/women/shirts.jpg") },
-      ]
-    },
-    {
-      title: "Ethnic Wear",
-      items: [
-        { id: "cat_women_anarkali", name: "ANARKALI", image: require("../../assets/images/categories/women/anarkali.jpg") },
-        { id: "cat_women_sarees", name: "SAREES", image: require("../../assets/images/categories/women/sarees.jpg") },
-        { id: "cat_women_lehenga", name: "LEHENGA", image: require("../../assets/images/categories/women/lehenga.jpg") },
-        { id: "cat_women_kurtas", name: "KURTAS", image: require("../../assets/images/categories/women/kurtas_new.jpg") },
-      ]
-    },
-    {
-      title: "Sports Wear",
-      items: [
-        { id: "cat_women_sports_tshirt", name: "T-SHIRTS", image: require("../../assets/images/categories/women/sports_tshirt.jpg") },
-        { id: "cat_women_sports_sweatshirt", name: "SWEATSHIRTS", image: require("../../assets/images/categories/women/sports_sweatshirt.jpg") },
-        { id: "cat_women_sports_trackpants", name: "TRACK PANTS", image: require("../../assets/images/categories/women/sports_trackpants.jpg") },
-        { id: "cat_women_sports_shorts", name: "SHORTS", image: require("../../assets/images/categories/women/sports_shorts.jpg") },
-        { id: "cat_women_sports_jackets", name: "JACKETS", image: require("../../assets/images/categories/women/sports_jackets.jpg") },
-      ]
+  if (typeof product.image === "string") {
+    return product.image;
+  }
+
+  return "";
+};
+
+const buildTypeImageFromProducts = (products: ProductItem[] = []): string => {
+  const first = products[0];
+  return getProductImage(first);
+};
+
+const CategoriesScreen = () => {
+  const navigation = useNavigation<NavigationProp>();
+  const route = useRoute<CategoriesRouteProp>();
+  const { colors, isDark } = useTheme();
+
+  const initialSelectedCategory = route.params?.selectedCategory;
+  const initialSelectedType = route.params?.selectedType;
+
+  const [mainCategories, setMainCategories] = useState<MainCategory[]>([]);
+  const [types, setTypes] = useState<TypeItem[]>([]);
+  const [groupedProducts, setGroupedProducts] = useState<OccasionGroup[]>([]);
+
+  const [selectedCategory, setSelectedCategory] = useState<string>(
+    initialSelectedCategory || ""
+  );
+  const [selectedType, setSelectedType] = useState<string>(
+    initialSelectedType || ""
+  );
+
+  const [loadingMainCategories, setLoadingMainCategories] = useState(false);
+  const [loadingTypes, setLoadingTypes] = useState(false);
+  const [loadingProducts, setLoadingProducts] = useState(false);
+
+  const selectedCategoryObject = useMemo(
+    () => mainCategories.find((c) => c.name === selectedCategory),
+    [mainCategories, selectedCategory]
+  );
+
+  useEffect(() => {
+    fetchMainCategories();
+  }, []);
+
+  useEffect(() => {
+    if (selectedCategory) {
+      fetchTypesForCategory(selectedCategory);
+    } else {
+      setTypes([]);
+      setGroupedProducts([]);
+      setSelectedType("");
     }
-  ];
+  }, [selectedCategory]);
 
-  const KIDS_SECTIONS = [
-    {
-      title: "For Girls",
-      items: [
-        { id: "cat_kids_girls_dresses", name: "DRESSES", image: require("../../assets/images/categories/kids/dresses.jpg") },
-        { id: "cat_kids_girls_tops", name: "TOPS & TSHIRTS", image: require("../../assets/images/categories/kids/tops_tshirts.jpg") },
-        { id: "cat_kids_girls_clothing_sets", name: "CLOTHING SETS", image: require("../../assets/images/categories/kids/clothing_sets.jpg") },
-        { id: "cat_kids_girls_shorts_skirts", name: "SHORTS & SKIRTS", image: require("../../assets/images/categories/kids/shorts_skirts.jpg") },
-        { id: "cat_kids_girls_jeans", name: "JEANS", image: require("../../assets/images/categories/kids/jeans.jpg") },
-        { id: "cat_kids_girls_footwear", name: "FOOTWEAR", image: require("../../assets/images/categories/kids/footwear.jpg") },
-      ]
-    },
-    {
-      title: "For Boys",
-      items: [
-        { id: "cat_kids_boys_tshirts", name: "TSHIRTS", image: require("../../assets/images/categories/kids/boys_tshirts.jpg") },
-        { id: "cat_kids_boys_clothing_sets", name: "CLOTHING SETS", image: require("../../assets/images/categories/kids/boys_clothing_sets.jpg") },
-        { id: "cat_kids_boys_jeans", name: "JEANS", image: require("../../assets/images/categories/kids/boys_jeans.jpg") },
-        { id: "cat_kids_boys_shirts", name: "SHIRTS", image: require("../../assets/images/categories/kids/boys_shirts.jpg") },
-        { id: "cat_kids_boys_footwear", name: "FOOTWEAR", image: require("../../assets/images/categories/kids/boys_footwear.jpg") },
-      ]
+  useEffect(() => {
+    if (selectedCategory && selectedType) {
+      fetchProductsByCategoryType(selectedCategory, selectedType);
+    } else {
+      setGroupedProducts([]);
     }
-  ];
+  }, [selectedCategory, selectedType]);
 
-  const FOOTWEAR_SECTIONS = [
-    {
-      title: "Women's Footwear",
-      items: [
-        { id: "cat_footwear_women_heels", name: "HEELS", image: require("../../assets/images/categories/footwear/women_heels.jpg") },
-        { id: "cat_footwear_women_flats", name: "FLATS", image: require("../../assets/images/categories/footwear/women_flats.jpg") },
-        { id: "cat_footwear_women_casual", name: "CASUAL SHOES", image: require("../../assets/images/categories/footwear/women_casual.jpg") },
-        { id: "cat_footwear_women_boots", name: "BOOTS", image: require("../../assets/images/categories/footwear/women_boots.jpg") },
-        { id: "cat_footwear_women_sports", name: "SPORTS SHOES", image: require("../../assets/images/categories/footwear/women_sports.jpg") },
-      ]
-    },
-    {
-      title: "Men's Footwear",
-      items: [
-        { id: "cat_footwear_men_casual", name: "CASUAL SHOES", image: require("../../assets/images/categories/footwear/men_casual.jpg") },
-        { id: "cat_footwear_men_sports", name: "SPORTS SHOES", image: require("../../assets/images/categories/footwear/men_sports.jpg") },
-        { id: "cat_footwear_men_formal", name: "FORMAL SHOES", image: require("../../assets/images/categories/footwear/men_formal.jpg") },
-        { id: "cat_footwear_men_sandals", name: "SANDALS", image: require("../../assets/images/categories/footwear/men_sandals.jpg") },
-        { id: "cat_footwear_men_boots", name: "BOOTS", image: require("../../assets/images/categories/footwear/men_boots.jpg") },
-      ]
+  const fetchMainCategories = async () => {
+    try {
+      setLoadingMainCategories(true);
+      const res = await api.get("/products/categories");
+      const fetched: MainCategory[] =
+        res.data?.categories || res.data?.data?.categories || res.data || [];
+
+      const sorted = sortCategories(fetched);
+      setMainCategories(sorted);
+
+      if (!selectedCategory && sorted.length > 0) {
+        setSelectedCategory(sorted[0].name);
+      }
+    } catch (err) {
+      console.warn("[CategoriesScreen] Failed to fetch main categories.", err);
+    } finally {
+      setLoadingMainCategories(false);
     }
-  ];
-
-  const subCategories = getSubCategories(selectedCategory, categories);
-
-  // All items in the grid
-  const gridItems = subCategories;
-
-  const handleSubCategoryPress = (catId: string, catName: string) => {
-    // Single atomic update: reset all flags + set the category in one go
-    // This prevents the persisted store from overriding partial updates
-    setFilter({
-      query: '',
-      newArrivals: false,
-      popularThisWeek: false,
-      priceDropping: false,
-      discountOnly: false,
-      popularity: false,
-      priceLowToHigh: false,
-      priceHighToLow: false,
-      priceMin: undefined,
-      priceMax: undefined,
-      categoryId: catId,
-    });
-
-    let searchParams: any = { title: catName, category: catName };
-
-    // Map the selectedCategory to correct gender or category filters for the ProductListing
-    if (selectedCategory === 'men') searchParams = { gender: 'Men', search: catName, title: catName };
-    else if (selectedCategory === 'women') searchParams = { gender: 'Women', search: catName, title: catName };
-    else if (selectedCategory === 'kids') searchParams = { gender: 'Kids', search: catName, title: catName };
-    else if (selectedCategory === 'footwear') searchParams = { category: 'Shoes', search: catName, title: catName };
-    else searchParams = { search: catName, title: catName };
-
-    navigation.navigate('ProductListing', searchParams);
   };
 
-  const renderSidebarItem = ({ item }: { item: any }) => {
-    const isActive = selectedCategory === item.id;
+  const fetchTypesForCategory = async (categoryName: string) => {
+    try {
+      setLoadingTypes(true);
+
+      const res = await api.get(`/products/types?category=${encodeURIComponent(categoryName)}`);
+      const raw = res.data || [];
+
+      let normalizedTypes: TypeItem[] = [];
+
+      if (Array.isArray(raw)) {
+        normalizedTypes = raw
+          .map((item: any) => {
+            if (typeof item === "string") {
+              return { type: item };
+            }
+            if (item?.type) {
+              return {
+                type: item.type,
+                image: item.image,
+              };
+            }
+            return null;
+          })
+          .filter(Boolean) as TypeItem[];
+      }
+
+      setTypes(normalizedTypes);
+
+      const matchedInitialType =
+        initialSelectedCategory === categoryName && initialSelectedType
+          ? normalizedTypes.find((t) => t.type === initialSelectedType)
+          : null;
+
+      if (matchedInitialType) {
+        setSelectedType(matchedInitialType.type);
+        return;
+      }
+
+      if (!normalizedTypes.some((t) => t.type === selectedType)) {
+        setSelectedType(normalizedTypes[0]?.type || "");
+      }
+    } catch (err) {
+      console.warn("[CategoriesScreen] Failed to fetch types.", err);
+      setTypes([]);
+      setSelectedType("");
+      setGroupedProducts([]);
+    } finally {
+      setLoadingTypes(false);
+    }
+  };
+
+  const fetchProductsByCategoryType = async (categoryName: string, typeName: string) => {
+    try {
+      setLoadingProducts(true);
+
+      const res = await api.get(
+        `/products/byCategoryType?category=${encodeURIComponent(categoryName)}&type=${encodeURIComponent(typeName)}`
+      );
+
+      const groups: OccasionGroup[] = res.data?.groups || [];
+      setGroupedProducts(groups);
+    } catch (err) {
+      console.warn("[CategoriesScreen] Failed to fetch products by category/type.", err);
+      setGroupedProducts([]);
+    } finally {
+      setLoadingProducts(false);
+    }
+  };
+
+  const handleMainCategoryPress = (category: MainCategory) => {
+    setSelectedCategory(category.name);
+  };
+
+  const handleTypePress = (item: TypeItem) => {
+    setSelectedType(item.type);
+  };
+
+  const renderTopCategory = (item: MainCategory) => {
+    const active = selectedCategory === item.name;
+    const imageUri = normalizeImage(item.image);
+
     return (
       <TouchableOpacity
-        style={[styles.sidebarItem, isActive && { backgroundColor: isDark ? '#1E293B' : '#F0F7FF' }]}
-        onPress={() => handleSidebarItemPress(item.id, item.name)}
+        key={item.id}
+        style={[
+          styles.topCategoryChip,
+          {
+            backgroundColor: active ? (isDark ? "#1E293B" : "#E8F1FF") : colors.card,
+            borderColor: active ? "#3B82F6" : colors.border,
+          },
+        ]}
+        onPress={() => handleMainCategoryPress(item)}
       >
-        <View style={[styles.imageBox, { backgroundColor: colors.iconBg }]}>
-          <Image
-            source={typeof item.image === 'string' ? { uri: item.image } : item.image}
-            style={styles.sidebarImage}
-            resizeMode="contain"
-          />
-        </View>
-        <Text style={[styles.sidebarText, { color: colors.textSecondary }]}>
+        {!!imageUri && (
+          <Image source={{ uri: imageUri }} style={styles.topCategoryImage} resizeMode="cover" />
+        )}
+        <Text
+          style={[
+            styles.topCategoryText,
+            { color: active ? "#3B82F6" : colors.text },
+          ]}
+          numberOfLines={1}
+        >
           {item.name}
         </Text>
       </TouchableOpacity>
     );
   };
 
-  const renderGridItem = (item: Category) => (
-    <TouchableOpacity key={item.id} style={styles.subCategoryItem} onPress={() => handleSubCategoryPress(item.id, item.name)}>
-      <View style={[styles.subCategoryImageContainer, { backgroundColor: colors.iconBg }]}>
-        <Image source={typeof item.image === 'string' ? { uri: item.image } : item.image} style={styles.subCategoryImage} resizeMode="cover" />
-      </View>
-      <Text style={[styles.subCategoryName, { color: colors.text }]}>{item.name}</Text>
-    </TouchableOpacity>
-  );
+  const renderSidebarType = ({ item }: { item: TypeItem }) => {
+    const active = selectedType === item.type;
+    const imageUri = normalizeImage(item.image);
 
+    return (
+      <TouchableOpacity
+        style={[
+          styles.sidebarItem,
+          {
+            backgroundColor: active ? (isDark ? "#1E293B" : "#F0F7FF") : "transparent",
+          },
+        ]}
+        onPress={() => handleTypePress(item)}
+      >
+        <View style={[styles.imageBox, { backgroundColor: colors.iconBg }]}>
+          {imageUri ? (
+            <Image source={{ uri: imageUri }} style={styles.sidebarImage} resizeMode="cover" />
+          ) : (
+            <View style={[styles.sidebarImage, styles.placeholderCenter]}>
+              <Feather name="tag" size={18} color={colors.textSecondary} />
+            </View>
+          )}
+        </View>
 
+        <Text
+          style={[
+            styles.sidebarText,
+            { color: active ? colors.text : colors.textSecondary },
+          ]}
+          numberOfLines={2}
+        >
+          {item.type}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const renderProductCard = (product: ProductItem, index: number) => {
+    const imageUri = getProductImage(product);
+
+    return (
+      <TouchableOpacity
+        key={`${product.id || product.name || "product"}_${index}`}
+        style={[styles.productCard, { backgroundColor: colors.card }]}
+        onPress={() =>
+          navigation.navigate("ProductDetails", {
+            id: String(product.id),
+            product,
+          })
+        }
+      >
+        {imageUri ? (
+          <Image
+            source={{ uri: imageUri }}
+            style={[styles.productImage, { backgroundColor: colors.iconBg }]}
+            resizeMode="cover"
+          />
+        ) : (
+          <View
+            style={[
+              styles.productImage,
+              styles.placeholderCenter,
+              { backgroundColor: colors.iconBg },
+            ]}
+          >
+            <Text style={{ color: colors.textSecondary, fontSize: 11 }}>No Image</Text>
+          </View>
+        )}
+
+        <Text
+          style={[styles.productName, { color: colors.text }]}
+          numberOfLines={1}
+        >
+          {product.title || product.name}
+        </Text>
+
+        <Text style={[styles.productPrice, { color: colors.textSecondary }]}>
+          LKR {Number(product.price || 0).toFixed(2)}
+        </Text>
+      </TouchableOpacity>
+    );
+  };
+
+  const showMainLoader =
+    loadingMainCategories && mainCategories.length === 0;
+
+  const showTypesLoader =
+    loadingTypes && types.length === 0;
+
+  const showProductsLoader =
+    loadingProducts && groupedProducts.length === 0;
 
   return (
-    <SafeAreaView style={[styles.safe, { backgroundColor: colors.background }]}>
-      {/* Header */}
-      <View style={[styles.header, { backgroundColor: colors.background, borderBottomColor: colors.border }]}>
-        <View style={{ flexDirection: 'row', alignItems: 'center' }}>
+    <SafeAreaView
+      style={[
+        styles.safe,
+        {
+          backgroundColor: colors.background,
+          paddingTop: Platform.OS === "android" ? StatusBar.currentHeight : 0,
+        },
+      ]}
+    >
+      <View
+        style={[
+          styles.header,
+          {
+            backgroundColor: colors.background,
+            borderBottomColor: colors.border,
+          },
+        ]}
+      >
+        <View style={{ flexDirection: "row", alignItems: "center" }}>
           <TouchableOpacity onPress={() => navigation.goBack()} style={{ marginRight: 15 }}>
             <Feather name="arrow-left" size={24} color={colors.text} />
           </TouchableOpacity>
-          <Text style={[styles.title, { color: colors.text }]}>Categories</Text>
+
+          <View>
+            <Text style={[styles.title, { color: colors.text }]}>Categories</Text>
+            {!!selectedCategory && (
+              <Text style={[styles.subtitle, { color: colors.textSecondary }]}>
+                {selectedType ? `${selectedCategory} • ${selectedType}` : selectedCategory}
+              </Text>
+            )}
+          </View>
         </View>
+
         <View style={styles.headerRight}>
-          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Feather name="bell" size={22} color={colors.text} style={{ marginRight: 15 }} />
+          <TouchableOpacity onPress={() => navigation.navigate("Search")}>
+            <Feather name="search" size={21} color={colors.text} style={{ marginRight: 14 }} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Feather name="heart" size={22} color={colors.text} style={{ marginRight: 15 }} />
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => navigation.navigate('Search')}>
-            <Feather name="user" size={22} color={colors.text} />
+          <TouchableOpacity onPress={() => navigation.navigate("Notifications")}>
+            <Feather name="bell" size={21} color={colors.text} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.contentContainer}>
-        {/* Left Sidebar */}
-        <View style={[styles.sidebar, { backgroundColor: colors.card, borderColor: isDark ? '#1E3A8A' : '#3B82F6' }]}>
-          <FlatList
-            data={sidebarItems}
-            keyExtractor={item => item.id}
-            renderItem={renderSidebarItem}
-            showsVerticalScrollIndicator={false}
-            contentContainerStyle={{ paddingVertical: 10 }}
-          />
-        </View>
-
-        {/* Right Content Area */}
-<View style={[styles.mainContent, { backgroundColor: colors.background }]}>
-  {isLoadingCategories ? (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <ActivityIndicator size="large" color="#667eea" />
-      <Text style={{ marginTop: 10, color: colors.text }}>Loading...</Text>
-    </View>
-  ) : fetchedSections?.length > 0 ? (
-    <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ padding: 15 }}>
-      
-      {fetchedSections.map((section: any, index: number) => (
-        <View key={`${section.occasion}_${index}`} style={styles.section}>
-          
-          {/* Occasion Title */}
-          <Text style={[styles.sectionTitle, { color: colors.text }]}>
-            {section.occasion}
-          </Text>
-
-          {/* Subcategory Grid */}
-          <View style={styles.sectionGrid}>
-            {section.subCategories?.map((sub: any, subIndex: number) => {
-  const firstProduct = sub.products?.[0];
-  if (!firstProduct) return null;
-
-  let imageUri = "";
-
-  if (Array.isArray(firstProduct.images) && firstProduct.images.length > 0) {
-    imageUri = firstProduct.images[0];
-  } else if (typeof firstProduct.images === "string") {
-    imageUri = firstProduct.images;
-  } else if (typeof firstProduct.image === "string") {
-    imageUri = firstProduct.image;
-  }
-
-  return (
-    <TouchableOpacity
-      key={`${sub.subCategory}_${subIndex}`}
-      style={styles.sectionItem}
-      onPress={() =>
-        navigation.navigate("ProductListing", {
-          title: sub.subCategory,
-          subCategory: sub.subCategory,
-          category: section.occasion,
-          productsN: sub.products,
-        })
-      }
-    >
-      {imageUri ? (
-        <Image
-          source={{ uri: imageUri }}
-          style={[styles.sectionItemImage, { backgroundColor: colors.iconBg }]}
-          resizeMode="cover"
-        />
-      ) : (
-        <View style={[styles.sectionItemImage, { backgroundColor: colors.iconBg, justifyContent: "center", alignItems: "center" }]}>
-          <Text>No Image</Text>
-        </View>
-      )}
-
-      <Text
-        style={[styles.sectionItemName, { color: colors.textSecondary }]}
-        numberOfLines={1}
-      >
-        {sub.subCategory}
-      </Text>
-    </TouchableOpacity>
-  );
-})}
+      <View style={styles.topCategoryWrap}>
+        {showMainLoader ? (
+          <View style={styles.centerBox}>
+            <ActivityIndicator size="small" color="#667eea" />
           </View>
-        </View>
-      ))}
+        ) : (
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 10 }}
+          >
+            {mainCategories.map(renderTopCategory)}
+          </ScrollView>
+        )}
+      </View>
 
-    </ScrollView>
-  ) : (
-    <View style={styles.emptyState}>
-      <Feather name="package" size={40} color="#ccc" />
-      <Text style={styles.emptyText}>Select a category</Text>
-    </View>
-  )}
-</View>
+      <View style={styles.contentContainer}>
+        <View
+          style={[
+            styles.sidebar,
+            {
+              backgroundColor: colors.card,
+              borderColor: isDark ? "#1E3A8A" : "#3B82F6",
+            },
+          ]}
+        >
+          {showTypesLoader ? (
+            <View style={styles.centerBox}>
+              <ActivityIndicator size="small" color="#667eea" />
+            </View>
+          ) : types.length > 0 ? (
+            <FlatList
+              data={types}
+              keyExtractor={(item, index) => `${item.type}_${index}`}
+              renderItem={renderSidebarType}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ paddingVertical: 10 }}
+            />
+          ) : (
+            <View style={styles.centerBox}>
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                No types
+              </Text>
+            </View>
+          )}
+        </View>
+
+        <View style={[styles.mainContent, { backgroundColor: colors.background }]}>
+          {showProductsLoader ? (
+            <View style={styles.centerBox}>
+              <ActivityIndicator size="large" color="#667eea" />
+              <Text style={{ marginTop: 10, color: colors.text }}>Loading...</Text>
+            </View>
+          ) : groupedProducts.length > 0 ? (
+            <ScrollView
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={{ padding: 14, paddingBottom: 24 }}
+            >
+              {groupedProducts.map((group, groupIndex) => (
+                <View
+                  key={`${group.occasion}_${groupIndex}`}
+                  style={styles.section}
+                >
+                  <Text style={[styles.sectionTitle, { color: colors.text }]}>
+                    {group.occasion}
+                  </Text>
+
+                  <View style={styles.productsGrid}>
+                    {group.products.map((product, productIndex) =>
+                      renderProductCard(product, productIndex)
+                    )}
+                  </View>
+                </View>
+              ))}
+            </ScrollView>
+          ) : (
+            <View style={styles.centerBox}>
+              <Feather name="package" size={40} color="#ccc" />
+              <Text style={[styles.emptyText, { color: colors.textSecondary }]}>
+                {selectedType ? "No products found" : "Select a type"}
+              </Text>
+            </View>
+          )}
+        </View>
       </View>
     </SafeAreaView>
   );
 };
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: "#fff" , paddingTop: Platform.OS === 'android' ? StatusBar.currentHeight : 0 },
+  safe: {
+    flex: 1,
+  },
   header: {
-    flexDirection: 'row', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 15, alignItems: 'center',
-    borderBottomWidth: 1, borderBottomColor: '#F3F4F6', backgroundColor: '#fff'
+    flexDirection: "row",
+    justifyContent: "space-between",
+    paddingHorizontal: 18,
+    paddingVertical: 14,
+    alignItems: "center",
+    borderBottomWidth: 1,
   },
-  title: { fontSize: 20, fontWeight: '600', color: '#111' },
-  headerRight: { flexDirection: 'row' },
+  title: {
+    fontSize: 20,
+    fontWeight: "700",
+  },
+  subtitle: {
+    fontSize: 12,
+    marginTop: 2,
+  },
+  headerRight: {
+    flexDirection: "row",
+    alignItems: "center",
+  },
 
-  contentContainer: { flex: 1, flexDirection: 'row' },
+  topCategoryWrap: {
+    minHeight: 72,
+  },
+  topCategoryChip: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: 12,
+    paddingVertical: 9,
+    borderRadius: 999,
+    borderWidth: 1,
+    marginRight: 10,
+    minHeight: 44,
+  },
+  topCategoryImage: {
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    marginRight: 8,
+  },
+  topCategoryText: {
+    fontSize: 13,
+    fontWeight: "600",
+  },
 
-  // Sidebar
+  contentContainer: {
+    flex: 1,
+    flexDirection: "row",
+  },
+
   sidebar: {
-    width: 90,
-    backgroundColor: '#fff',
+    width: 96,
     borderWidth: 2,
-    borderColor: '#3B82F6', // Blue border like Figma
     borderRadius: 20,
-    margin: 10
+    marginLeft: 10,
+    marginBottom: 10,
+    marginRight: 8,
+    overflow: "hidden",
   },
-  sidebarItem: { alignItems: 'center', paddingVertical: 15, width: '100%' },
-  sidebarItemActive: { backgroundColor: '#F0F7FF' }, // Light blue background for active
-
+  sidebarItem: {
+    alignItems: "center",
+    paddingVertical: 14,
+    paddingHorizontal: 4,
+    width: "100%",
+  },
   imageBox: {
     width: 56,
     height: 56,
     borderRadius: 12,
-    overflow: 'hidden',
+    overflow: "hidden",
     marginBottom: 6,
-    backgroundColor: '#F3F4F6'
   },
-  sidebarImage: { width: '100%', height: '100%' },
-
-  sidebarText: { fontSize: 10, textAlign: 'center', color: '#4B5563', fontWeight: '500', paddingHorizontal: 4 },
-
-  // Main Content
-  mainContent: { flex: 1, backgroundColor: '#fff' },
-
-  // Grid (first 2 rows)
-  gridContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'space-between',
+  sidebarImage: {
+    width: "100%",
+    height: "100%",
   },
-  subCategoryItem: { width: '47%', marginBottom: 15, alignItems: 'center' },
-  subCategoryImageContainer: { width: '100%', aspectRatio: 1, borderRadius: 12, overflow: 'hidden', marginBottom: 8, backgroundColor: '#F9FAFB' },
-  subCategoryImage: { width: '100%', height: '100%' },
-  subCategoryName: { fontSize: 13, fontWeight: '500', color: '#111', textAlign: 'center' },
-
-  // Sections (like Men's Wear Casual/Work layout)
-  section: { marginBottom: 22 },
-  sectionTitle: { fontSize: 16, fontWeight: "bold", marginBottom: 12, color: '#111' },
-  sectionGrid: {
-    flexDirection: "row",
-    flexWrap: "wrap",
-    justifyContent: "flex-start",
-  },
-  sectionItem: {
-    width: "30%",
-    marginRight: "3.3%", // ≈ 3 items per row
-    marginBottom: 20,
-    alignItems: "center",
-  },
-  sectionItemImage: {
-    width: 80,
-    height: 90,
-    borderRadius: 10,
-    resizeMode: "cover",
-    backgroundColor: '#F9FAFB',
-  },
-  sectionItemName: {
+  sidebarText: {
     fontSize: 10,
-    marginTop: 8,
     textAlign: "center",
     fontWeight: "600",
-    color: '#333',
-    textTransform: 'uppercase'
+    paddingHorizontal: 2,
+    lineHeight: 13,
   },
 
+  mainContent: {
+    flex: 1,
+  },
+  section: {
+    marginBottom: 24,
+  },
+  sectionTitle: {
+    fontSize: 17,
+    fontWeight: "700",
+    marginBottom: 12,
+  },
+  productsGrid: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    justifyContent: "space-between",
+  },
+  productCard: {
+    width: "48%",
+    borderRadius: 14,
+    padding: 8,
+    marginBottom: 14,
+  },
+  productImage: {
+    width: "100%",
+    height: 140,
+    borderRadius: 12,
+    marginBottom: 8,
+  },
+  productName: {
+    fontSize: 12,
+    fontWeight: "600",
+    marginBottom: 4,
+  },
+  productPrice: {
+    fontSize: 12,
+    fontWeight: "500",
+  },
 
-  emptyState: { flex: 1, alignItems: 'center', justifyContent: 'center' },
-  emptyText: { marginTop: 10, color: '#999', fontSize: 14 },
+  centerBox: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  placeholderCenter: {
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  emptyText: {
+    marginTop: 10,
+    fontSize: 14,
+  },
 });
 
 export default CategoriesScreen;

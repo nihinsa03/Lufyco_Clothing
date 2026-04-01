@@ -14,7 +14,10 @@ import ForgotPasswordOtpScreen from "../screens/Auth/ForgotPasswordOtpScreen";
 import NewPasswordScreen from "../screens/Auth/NewPasswordScreen";
 import PasswordResetSuccessScreen from "../screens/Auth/PasswordResetSuccessScreen";
 import { useTheme } from "../context/ThemeContext";
-import { DefaultTheme as RNDefaultTheme, DarkTheme as RNDarkTheme } from '@react-navigation/native';
+import {
+  DefaultTheme as RNDefaultTheme,
+  DarkTheme as RNDarkTheme,
+} from "@react-navigation/native";
 
 // ... Keep existing App screens ...
 import IntroScreen from "../screens/IntroScreen";
@@ -67,7 +70,6 @@ import PrivacyPolicyScreen from "../screens/Profile/PrivacyPolicyScreen";
 import TermsConditionsScreen from "../screens/Profile/TermsConditionsScreen";
 import FAQScreen from "../screens/Profile/FAQScreen";
 
-
 export type RootStackParamList = {
   Splash: undefined;
   Onboarding: undefined;
@@ -78,8 +80,6 @@ export type RootStackParamList = {
   ForgotPasswordVerification: { email: string };
   ResetPassword: { email: string; otp: string };
   PasswordResetSuccess: undefined;
-  
-
 
   // Existing..
   Intro: undefined;
@@ -88,7 +88,15 @@ export type RootStackParamList = {
 
   Home: undefined;
   Main: { screen: string } | undefined;
-  Categories: undefined;
+
+  Categories:
+    | {
+        selectedCategory?: string;
+        selectedType?: string;
+        title?: string;
+      }
+    | undefined;
+
   Profile: undefined;
   OrderHistory: undefined;
   ChangePassword: undefined;
@@ -96,6 +104,7 @@ export type RootStackParamList = {
   MenCasualShirts: undefined;
   SubCategoryProducts: { title: string; categoryId: string };
   AIStylist: undefined;
+
   ProductListing: {
     gender?: string;
     category?: string;
@@ -105,6 +114,7 @@ export type RootStackParamList = {
     isSale?: boolean;
     title?: string;
   };
+
   MyCloset: undefined;
   PlanMyLook: undefined;
   SuggestedOutfit: {
@@ -178,8 +188,13 @@ export default function AppNavigator() {
   const navTheme = isDark ? RNDarkTheme : RNDefaultTheme;
 
   return (
-      <Stack.Navigator screenOptions={{ headerShown: false, cardStyle: { backgroundColor: isDark ? '#121212' : '#fff' } }}>
-        {!isAuthenticated ? (
+    <Stack.Navigator
+      screenOptions={{
+        headerShown: false,
+        cardStyle: { backgroundColor: isDark ? "#121212" : "#fff" },
+      }}
+    >
+      {!isAuthenticated ? (
         // Auth Flow
         <Stack.Group>
           <Stack.Screen name="Splash" component={SplashScreen} />
@@ -188,10 +203,19 @@ export default function AppNavigator() {
           <Stack.Screen name="Signup" component={SignupScreen} />
           <Stack.Screen name="Verification" component={VerificationScreen} />
 
-          <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} />
-          <Stack.Screen name="ForgotPasswordVerification" component={ForgotPasswordVerificationScreen} />
+          <Stack.Screen
+            name="ForgotPassword"
+            component={ForgotPasswordScreen}
+          />
+          <Stack.Screen
+            name="ForgotPasswordVerification"
+            component={ForgotPasswordVerificationScreen}
+          />
           <Stack.Screen name="ResetPassword" component={ResetPasswordScreen} />
-          <Stack.Screen name="PasswordResetSuccess" component={PasswordResetSuccessScreen} />
+          <Stack.Screen
+            name="PasswordResetSuccess"
+            component={PasswordResetSuccessScreen}
+          />
 
           {/* Legacy/Other screens if still needed accessible */}
           <Stack.Screen name="Intro" component={IntroScreen} />
@@ -203,50 +227,120 @@ export default function AppNavigator() {
           <Stack.Screen name="Main" component={BottomTabNavigator} />
 
           {/* Screens NOT in Tabs, pushed on top */}
-          <Stack.Screen name="CategoryProducts" component={require('../screens/Shop/CategoryProductsScreen').default} />
-          <Stack.Screen name="Search" component={require('../screens/Shop/SearchScreen').default} />
-          <Stack.Screen name="Filter" component={require('../screens/Shop/FilterModal').default} options={{ presentation: 'modal' }} />
-          <Stack.Screen name="Sale" component={require('../screens/Shop/SaleScreen').default} />
+          <Stack.Screen
+            name="CategoryProducts"
+            component={require("../screens/Shop/CategoryProductsScreen").default}
+          />
+          <Stack.Screen
+            name="Search"
+            component={require("../screens/Shop/SearchScreen").default}
+          />
+          <Stack.Screen
+            name="Filter"
+            component={require("../screens/Shop/FilterModal").default}
+            options={{ presentation: "modal" }}
+          />
+          <Stack.Screen
+            name="Sale"
+            component={require("../screens/Shop/SaleScreen").default}
+          />
           <Stack.Screen name="ImageSearch" component={ImageSearchScreen} />
 
           <Stack.Screen name="Categories" component={CategoriesScreen} />
           <Stack.Screen name="MensWear" component={MensWearScreen} />
-          <Stack.Screen name="MenCasualShirts" component={MenCasualShirtsScreen} />
-          <Stack.Screen name="SubCategoryProducts" component={SubCategoryProductsScreen} />
+          <Stack.Screen
+            name="MenCasualShirts"
+            component={MenCasualShirtsScreen}
+          />
+          <Stack.Screen
+            name="SubCategoryProducts"
+            component={SubCategoryProductsScreen}
+          />
           <Stack.Screen name="AIStylist" component={AIStylistScreen} />
           <Stack.Screen name="MyCloset" component={MyClosetScreen} />
           <Stack.Screen name="PlanMyLook" component={PlanMyLookScreen} />
-          <Stack.Screen name="SuggestedOutfit" component={SuggestedOutfitScreen} />
+          <Stack.Screen
+            name="SuggestedOutfit"
+            component={SuggestedOutfitScreen}
+          />
           <Stack.Screen name="SavedLooks" component={SavedLooksScreen} />
-          <Stack.Screen name="ShopNewStyles" component={ShopNewStylesScreen} />
-          <Stack.Screen name="UpcomingEvents" component={UpcomingEventsScreen} />
+          <Stack.Screen
+            name="ShopNewStyles"
+            component={ShopNewStylesScreen}
+          />
+          <Stack.Screen
+            name="UpcomingEvents"
+            component={UpcomingEventsScreen}
+          />
           <Stack.Screen name="AddToCloset" component={AddToClosetScreen} />
-          <Stack.Screen name="AddToClosetPreview" component={AddToClosetPreviewScreen} />
+          <Stack.Screen
+            name="AddToClosetPreview"
+            component={AddToClosetPreviewScreen}
+          />
           <Stack.Screen name="WomensWear" component={WomensWearScreen} />
-          <Stack.Screen name="ProductListing" component={ProductListingScreen} />
+          <Stack.Screen
+            name="ProductListing"
+            component={ProductListingScreen}
+          />
           <Stack.Screen name="WomenTops" component={WomenTopsScreen} />
-          <Stack.Screen name="WomenTopDetails" component={WomenTopDetailsScreen} />
-          <Stack.Screen name="ProductDetails" component={ProductDetailsScreen} />
-          <Stack.Screen name="OrderHistory" component={OrderHistoryScreen} />
-          <Stack.Screen name="ChangePassword" component={ChangePasswordScreen} />
-          <Stack.Screen name="Notifications" component={NotificationsScreen} />
+          <Stack.Screen
+            name="WomenTopDetails"
+            component={WomenTopDetailsScreen}
+          />
+          <Stack.Screen
+            name="ProductDetails"
+            component={ProductDetailsScreen}
+          />
+          <Stack.Screen
+            name="OrderHistory"
+            component={OrderHistoryScreen}
+          />
+          <Stack.Screen
+            name="ChangePassword"
+            component={ChangePasswordScreen}
+          />
+          <Stack.Screen
+            name="Notifications"
+            component={NotificationsScreen}
+          />
 
           {/* Checkout Flow */}
-          <Stack.Screen name="CheckoutShipping" component={CheckoutShippingScreen} />
-          <Stack.Screen name="CheckoutPayment" component={CheckoutPaymentScreen} />
-          <Stack.Screen name="CheckoutReview" component={CheckoutReviewScreen} />
+          <Stack.Screen
+            name="CheckoutShipping"
+            component={CheckoutShippingScreen}
+          />
+          <Stack.Screen
+            name="CheckoutPayment"
+            component={CheckoutPaymentScreen}
+          />
+          <Stack.Screen
+            name="CheckoutReview"
+            component={CheckoutReviewScreen}
+          />
           <Stack.Screen name="OrderSuccess" component={OrderSuccessScreen} />
           <Stack.Screen name="OrderDetails" component={OrderDetailsScreen} />
           <Stack.Screen name="TrackOrder" component={TrackOrderScreen} />
 
           {/* Profile Flow */}
-          <Stack.Screen name="ShippingAddress" component={ShippingAddressScreen} />
-          <Stack.Screen name="PaymentMethod" component={PaymentMethodScreen} />
-          <Stack.Screen name="PrivacyPolicy" component={PrivacyPolicyScreen} />
-          <Stack.Screen name="TermsConditions" component={TermsConditionsScreen} />
+          <Stack.Screen
+            name="ShippingAddress"
+            component={ShippingAddressScreen}
+          />
+          <Stack.Screen
+            name="PaymentMethod"
+            component={PaymentMethodScreen}
+          />
+          <Stack.Screen
+            name="PrivacyPolicy"
+            component={PrivacyPolicyScreen}
+          />
+          <Stack.Screen
+            name="TermsConditions"
+            component={TermsConditionsScreen}
+          />
           <Stack.Screen name="FAQ" component={FAQScreen} />
         </Stack.Group>
       )}
-      </Stack.Navigator>
+    </Stack.Navigator>
   );
 }

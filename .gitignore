@@ -46,7 +46,6 @@ datasets/
 *.rar
 
 # Uploaded images (temporary)
-uploads/
 temp/
 tmp/
 
